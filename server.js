@@ -6,11 +6,11 @@ const port = 3000;
 app.use(express.json());
 
 // Sample route
-app.get('/', (req, res) => {
+app.get('/hello', (req, res) => {
   res.send('Hello, World!');
 });
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`El servidor esta en el puerto ${port}`);
 });
