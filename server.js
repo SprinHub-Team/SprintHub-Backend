@@ -1,6 +1,8 @@
 const express = require('express');
+const dontenv = require('dotenv');
+dontenv.config();
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 
 // Middleware to parse JSON requests
 app.use(express.json());
@@ -12,5 +14,5 @@ app.get('/hello', (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`El servidor esta en el puerto ${port}`);
+  console.log(`El servidor esta en el puerto ${process.env.PORT}`);
 });
