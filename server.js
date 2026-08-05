@@ -9,12 +9,10 @@ app.use(express.json());
 
 // Sample route
 app.get('/hello', (req, res) => {
-app.get('/hello', (req, res) => {
   res.send('Hello, World!');
 });
 
 // Start the server
 app.listen(port, () => {
-  console.log(`El servidor esta en el puerto ${port}`);
-  console.log(`El servidor esta en el puerto ${process.env.PORT}`);
+  console.log(`Server is running on port ${port}`);
 });
