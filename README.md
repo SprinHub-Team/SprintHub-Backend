@@ -1,2 +1,2 @@
 SprintHub-Backend
-repositorio desarrlo sprintHub
+repositorio desarrollo sprintHub
