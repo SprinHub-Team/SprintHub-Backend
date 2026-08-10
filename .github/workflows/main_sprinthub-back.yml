@@ -50,6 +50,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'SprintHub-Back'
-          slot-name: 'Production'
+          slot-name: 'Produccion_Azure'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F0EC176F085F49B9A1D4426025C4D9E6 }}
