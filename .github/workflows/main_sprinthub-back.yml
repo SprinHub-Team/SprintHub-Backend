@@ -38,6 +38,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    environment:
+      name: 'Produccion_Azure'
     
     steps:
       - name: Download artifact from build job
@@ -50,6 +52,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'SprintHub-Back'
-          slot-name: 'Produccion_Azure'
+          slot-name: 'Prodution'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F0EC176F085F49B9A1D4426025C4D9E6 }}
