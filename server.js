@@ -1,16 +1,16 @@
-const express = require('express');
-const app = express();
-const port = 3000;
+import express from "express";
+import dotenv from "dotenv";
+import helloRoutes from "./routes/helloRoutes.js";
 
-// Middleware to parse JSON requests
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 3000;
+
 app.use(express.json());
 
-// Sample route
-app.get('/hello', (req, res) => {
-  res.send('Hello, World!');
-});
+app.use('/hello', helloRoutes);
 
-// Start the server
 app.listen(port, () => {
-  console.log(`El servidor esta en el puerto ${port}`);
+  console.log(`Server is running on port ${port}`);
 });

@@ -1,7 +1,7 @@
 {
-  "name": "sprinthub-front-end",
+  "name": "back",
   "version": "1.0.0",
-  "description": "Repositorio para trabajo SprintHub (Front-end)",
+  "description": "",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,16 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SprinHub-Team/SprintHub-Front-end.git"
+    "url": "git+https://github.com/SprinHub-Team/SprintHub-Backend.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
-    "url": "https://github.com/SprinHub-Team/SprintHub-Front-end/issues"
+    "url": "https://github.com/SprinHub-Team/SprintHub-Backend/issues"
   },
-  "homepage": "https://github.com/SprinHub-Team/SprintHub-Front-end#readme",
+  "homepage": "https://github.com/SprinHub-Team/SprintHub-Backend#readme",
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
