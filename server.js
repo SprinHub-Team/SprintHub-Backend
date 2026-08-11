@@ -4,6 +4,7 @@ import helloRoutes from "./routes/helloRoutes.js";
 import mongoose from "mongoose";
 import swaggerUi from 'swagger-ui-express';
 import fs from 'fs';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -15,6 +16,15 @@ mongoose.connect("mongodb+srv://root:123456789*10@bdprueba.f2whees.mongodb.net/?
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+const corsOptions = {
+  origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 
 const swaggerDocs = JSON.parse(fs.readFileSync('./utils/swagger-output.json', 'utf8'));
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
