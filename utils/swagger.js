@@ -11,6 +11,8 @@ const doc = {
   host: `localhost:${process.env.PORT || 3000}`
 };
 
+
 const outputFile = './swagger-output.json';
 const routes = ['./server.js']; 
 swaggerAutogen()(outputFile, routes);
+console.log('Documentación generada en Correctamente.');

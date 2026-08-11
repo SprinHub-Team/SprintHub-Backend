@@ -4,8 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js && node swagger.js",
-    "dev": "nodemon server.js && node swagger.js"
+    "start": "node ./utils/swagger.js && node server.js",
+    "dev": " node ./utils/swagger.js && nodemon server.js"
   },
   "repository": {
     "type": "git",
