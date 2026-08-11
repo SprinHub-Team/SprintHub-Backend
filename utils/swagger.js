@@ -8,9 +8,8 @@ const doc = {
     title: 'API Documentación MERN Stack',
     description: 'Documentación automática generada sin comentarios manuales'
   },
-  host: `localhost:${process.env.PORT || 3000}`
+  host: `https://sprinthub-back-bgfag6eyehh0hghh.centralus-01.azurewebsites.net'}`
 };
-
 
 const outputFile = './swagger-output.json';
 const routes = ['./server.js']; 
