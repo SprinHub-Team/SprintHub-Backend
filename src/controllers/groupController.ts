@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import {GroupModel} from '../models/Group';
-import {UserModel} from '../models/User';
+import { GroupModel } from '../models/Group';
+import { UserModel } from '../models/User';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 export const createGroup = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -17,7 +17,7 @@ export const createGroup = async (req: AuthRequest, res: Response): Promise<void
       name,
       description,
       ownerId: userId,
-      members: [userId], // El creador es miembro por defecto
+      members: [{ user: userId, role: 'admin' }], // El creador es admin por defecto
     });
 
     await newGroup.save();
@@ -31,7 +31,7 @@ export const createGroup = async (req: AuthRequest, res: Response): Promise<void
 export const addMember = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { groupId } = req.params;
-    const { email } = req.body; // Agregar por email
+    const { email, role } = req.body; // Agregar por email y especificar rol
     const userId = req.user?.userId;
 
     const group = await GroupModel.findById(groupId);
@@ -40,8 +40,10 @@ export const addMember = async (req: AuthRequest, res: Response): Promise<void> 
       return;
     }
 
-    if (group.ownerId.toString() !== userId) {
-      res.status(403).json({ message: 'Solo el propietario puede agregar miembros' });
+    // Verificar que el solicitante sea 'admin' del grupo
+    const requesterMember = group.members.find(m => m.user.toString() === userId);
+    if (!requesterMember || requesterMember.role !== 'admin') {
+      res.status(403).json({ message: 'Solo los administradores pueden agregar miembros al grupo' });
       return;
     }
 
@@ -51,12 +53,15 @@ export const addMember = async (req: AuthRequest, res: Response): Promise<void> 
       return;
     }
 
-    if (group.members.includes(userToAdd._id as any)) {
+    const isAlreadyMember = group.members.some(m => m.user.toString() === userToAdd._id.toString());
+    if (isAlreadyMember) {
       res.status(400).json({ message: 'El usuario ya pertenece al grupo' });
       return;
     }
 
-    group.members.push(userToAdd._id as any);
+    const newRole = ['admin', 'collaborator', 'visitor'].includes(role) ? role : 'collaborator';
+
+    group.members.push({ user: userToAdd._id as any, role: newRole });
     await group.save();
 
     res.json({ message: 'Miembro agregado exitosamente', group });
@@ -69,10 +74,38 @@ export const addMember = async (req: AuthRequest, res: Response): Promise<void> 
 export const getMyGroups = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?.userId;
-    const groups = await GroupModel.find({ members: userId }).populate('ownerId', 'name email').populate('members', 'name email');
+    // Buscar grupos donde el usuario está en el array de members
+    const groups = await GroupModel.find({ 'members.user': userId })
+      .populate('ownerId', 'name email')
+      .populate('members.user', 'name email');
     res.json(groups);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al obtener grupos' });
+  }
+};
+
+export const deleteGroup = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user?.userId;
+
+    const group = await GroupModel.findById(groupId);
+    if (!group) {
+      res.status(404).json({ message: 'Grupo no encontrado' });
+      return;
+    }
+
+    const requesterMember = group.members.find(m => m.user.toString() === userId);
+    if (!requesterMember || requesterMember.role !== 'admin') {
+      res.status(403).json({ message: 'Solo los administradores pueden eliminar el grupo.' });
+      return;
+    }
+
+    await GroupModel.findByIdAndDelete(groupId);
+    res.json({ message: 'Grupo eliminado exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al eliminar el grupo' });
   }
 };
