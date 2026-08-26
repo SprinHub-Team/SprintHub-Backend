@@ -25,4 +25,4 @@ const CardSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<ICard>('Card', CardSchema);
+export const CardModel = mongoose.model<ICard>('Card', CardSchema);
