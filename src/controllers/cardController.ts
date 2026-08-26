@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import Card from '../models/Card';
+import {CardModel} from '../models/Card';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 export const createCard = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -11,7 +11,7 @@ export const createCard = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    const newCard = new Card({
+    const newCard = new CardModel({
       title,
       description,
       listId,
@@ -46,7 +46,7 @@ export const getCards = async (req: AuthRequest, res: Response): Promise<void> =
       filter.assignedTo = assignedTo;
     }
 
-    const cards = await Card.find(filter).populate('assignedTo', 'name email');
+    const cards = await CardModel.find(filter).populate('assignedTo', 'name email');
     res.json(cards);
   } catch (error) {
     console.error(error);
@@ -59,7 +59,7 @@ export const updateCard = async (req: AuthRequest, res: Response): Promise<void>
     const { cardId } = req.params;
     const updates = req.body;
 
-    const updatedCard = await Card.findByIdAndUpdate(cardId, updates, { new: true });
+    const updatedCard = await CardModel.findByIdAndUpdate(cardId, updates, { new: true });
     if (!updatedCard) {
       res.status(404).json({ message: 'Tarjeta no encontrada' });
       return;
@@ -76,7 +76,7 @@ export const deleteCard = async (req: AuthRequest, res: Response): Promise<void>
   try {
     const { cardId } = req.params;
 
-    const deletedCard = await Card.findByIdAndDelete(cardId);
+    const deletedCard = await CardModel.findByIdAndDelete(cardId);
     if (!deletedCard) {
       res.status(404).json({ message: 'Tarjeta no encontrada' });
       return;

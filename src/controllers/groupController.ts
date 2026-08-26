@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import Group from '../models/Group';
-import User from '../models/User';
+import {GroupModel} from '../models/Group';
+import {UserModel} from '../models/User';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 export const createGroup = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -13,7 +13,7 @@ export const createGroup = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    const newGroup = new Group({
+    const newGroup = new GroupModel({
       name,
       description,
       ownerId: userId,
@@ -34,7 +34,7 @@ export const addMember = async (req: AuthRequest, res: Response): Promise<void> 
     const { email } = req.body; // Agregar por email
     const userId = req.user?.userId;
 
-    const group = await Group.findById(groupId);
+    const group = await GroupModel.findById(groupId);
     if (!group) {
       res.status(404).json({ message: 'Grupo no encontrado' });
       return;
@@ -45,7 +45,7 @@ export const addMember = async (req: AuthRequest, res: Response): Promise<void> 
       return;
     }
 
-    const userToAdd = await User.findOne({ email });
+    const userToAdd = await UserModel.findOne({ email });
     if (!userToAdd) {
       res.status(404).json({ message: 'Usuario a agregar no encontrado' });
       return;
@@ -69,7 +69,7 @@ export const addMember = async (req: AuthRequest, res: Response): Promise<void> 
 export const getMyGroups = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user?.userId;
-    const groups = await Group.find({ members: userId }).populate('ownerId', 'name email').populate('members', 'name email');
+    const groups = await GroupModel.find({ members: userId }).populate('ownerId', 'name email').populate('members', 'name email');
     res.json(groups);
   } catch (error) {
     console.error(error);

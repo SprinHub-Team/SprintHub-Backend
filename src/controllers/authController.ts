@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import {UserModel} from '../models/User';
 import env from '../config/env';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -15,7 +15,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Verificar si el usuario ya existe
-    const existingUser = await User.findOne({ $or: [{ email }, { documentId }] });
+    const existingUser = await UserModel.findOne({ $or: [{ email }, { documentId }] });
     if (existingUser) {
       res.status(400).json({ message: 'El correo o documento ya están registrados' });
       return;
@@ -26,7 +26,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const passwordHash = await bcrypt.hash(password, salt);
 
     // Crear usuario (el primero podría ser admin, pero por defecto será user)
-    const newUser = new User({ name, email, documentId, passwordHash });
+    const newUser = new UserModel({ name, email, documentId, passwordHash });
     await newUser.save();
 
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
@@ -45,7 +45,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
     if (!user) {
       res.status(401).json({ message: 'Credenciales incorrectas' });
       return;
