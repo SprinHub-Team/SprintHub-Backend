@@ -6,7 +6,7 @@ export interface ICard extends Document {
   listId: mongoose.Types.ObjectId;
   boardId: mongoose.Types.ObjectId;
   position: number;
-  assignedTo?: mongoose.Types.ObjectId[];
+  assignedTo?: mongoose.Types.ObjectId;
   dueDate?: Date;
   createdAt: Date;
   updatedAt: Date;
