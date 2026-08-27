@@ -10,8 +10,6 @@ export interface IBoard extends Document {
 }
 
 
-
-
 const BoardSchema: Schema = new Schema(
   {
     title: { type: String, required: true },

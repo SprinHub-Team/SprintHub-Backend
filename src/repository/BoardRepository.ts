@@ -1,26 +1,39 @@
 import { BoardModel, IBoard } from "../models/Board";
 import mongoose from "mongoose";
-import BoardRequest from '../dtos/BoardRequest';
 
 export class BoardRepository {
-
-  async findByGroupId(groupId: string): Promise<IBoard[] | null> {
-    const idBuscado = new mongoose.Types.ObjectId(groupId);
-    return BoardModel.find({ groupId: idBuscado }).exec();
+  async findByGroupId(
+    groupId: mongoose.Types.ObjectId,
+  ): Promise<IBoard[] | null> {
+    return BoardModel.find({ groupId: groupId }).exec();
   }
 
-  async create(data: BoardRequest): Promise <IBoard> {
+  async create(data: {
+    title: string;
+    description?: string;
+    groupId: mongoose.Types.ObjectId;
+    ownerId: mongoose.Types.ObjectId;
+  }): Promise<IBoard> {
     return BoardModel.create(data);
   }
 
-  async update(data: BoardRequest, id: string): Promise <IBoard | null>{
-    const idActualizar = new mongoose.Types.ObjectId(id);
-    return BoardModel.findByIdAndUpdate(idActualizar,data,{ new: true, runValidators: true }).exec();
+  async update(
+    data: {
+      title: string;
+      description?: string;
+      groupId: mongoose.Types.ObjectId;
+      ownerId: mongoose.Types.ObjectId;
+    },
+    idActualizar: mongoose.Types.ObjectId,
+  ): Promise<IBoard | null> {
+    return BoardModel.findByIdAndUpdate(idActualizar, data, {
+      new: true,
+      runValidators: true,
+    }).exec();
   }
 
-  async delete(id: string): Promise<boolean | null>{
-    const idEliminar = new mongoose.Types.ObjectId(id);
+  async delete(idEliminar: mongoose.Types.ObjectId): Promise<boolean | null> {
     const resultado = await BoardModel.findByIdAndDelete(idEliminar).exec();
-    return resultado!=null;
+    return resultado != null;
   }
 }
