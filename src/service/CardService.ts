@@ -2,7 +2,7 @@ import { CreateCardDto, UpdateCardDto } from "../dtos/CardDto";
 import { CardRepository } from "../repository/CardRepository";
 import { ColumnRepository } from "../repository/ColumnRepository"; 
 import AppError from "../errors/AppError";
-import { toObjectId } from "../utils/objectId";
+import { toObjectId, toObjectIds } from "../utils/objectId";
 import { ICard } from "../models/Card";
 
 export class CardService{
@@ -39,14 +39,13 @@ export class CardService{
             throw new AppError("La columna relacionada no existe", 404);
         } 
         
-        const assignedToObjectId = toObjectId(data.assignedTo, "El id de la persona asignada es invalido");
-
-        //FALTA LA CREACION DE USUARIO REPOSITORI PARA VALIDACION DE PERSONA ASIGNADA Y 
-        //LA CREACION DE LIST REPOSITORY PARA VALIDACION DE  LISTA DE CARD
+        const assignedToObjectId = toObjectIds(data.assignedTo, "El id de la persona asignada es invalido");
+        const boardObjectId = toObjectId(data.boardId, "El id del tablero es invalido");
 
         return this.cardRepository.create({
             title: data.title,
             description: data.description,
+            boardId: boardObjectId,
             columnId: columnObjectId,
             position: data.position,
             assignedTo: assignedToObjectId
@@ -63,17 +62,23 @@ export class CardService{
             throw new AppError("La tarjeta que se intenta actualizar no existe", 404);
         }
 
-        const assignedToObjectId = toObjectId(data.assignedTo, "El id de la persona asignada es invalido");
-
-        //FALTA LA CREACION DE USUARIO REPOSITORI PARA VALIDACION DE PERSONA ASIGNADA Y 
-        //LA CREACION DE LIST REPOSITORY PARA VALIDACION DE  LISTA DE CARD
-
-        return this.cardRepository.update(cardObjectId,{
+        const updates: any = {
             title: data.title,
             description: data.description,
-            position: data.position,
-            assignedTo: assignedToObjectId
-        });
+            position: data.position
+        };
+
+        if (data.assignedTo) {
+            updates.assignedTo = toObjectIds(data.assignedTo, "El id de la persona asignada es invalido");
+        }
+        if (data.boardId) {
+            updates.boardId = toObjectId(data.boardId, "El id del tablero es invalido");
+        }
+        if (data.columnId) {
+            updates.columnId = toObjectId(data.columnId, "El id de la columna es invalido");
+        }
+
+        return this.cardRepository.update(cardObjectId, updates);
 
     }
 
