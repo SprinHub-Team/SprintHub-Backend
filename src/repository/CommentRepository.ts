@@ -2,7 +2,7 @@ import { CommentModel, IComment } from "../models/Comment";
 import mongoose from "mongoose";
 
 export class CommentRepository {
-  async findByCardId(cardId: mongoose.Types.ObjectId): Promise<IComment[]> {
+  async findByCardId(cardId: string): Promise<IComment[]> {
     return CommentModel.find({ cardId: cardId }).exec();
   }
 
@@ -14,7 +14,7 @@ export class CommentRepository {
   }
 
   async update(
-    idActualizar: mongoose.Types.ObjectId,
+    idActualizar: string,
     data: Partial<Omit<IComment,'_id' | 'createdAt' | 'updateAt'>>
   ): Promise<IComment | null> {
 
@@ -26,10 +26,18 @@ export class CommentRepository {
 
   }
 
-  async delete(idEliminar: mongoose.Types.ObjectId): Promise<boolean>{
+  async delete(idEliminar: string): Promise<boolean>{
    
     const resultado = await CommentModel.findByIdAndDelete(idEliminar).exec();
     return resultado !== null;
   
   }
+
+  async existManyByIds(commentsIds: string[]): Promise<boolean>{
+
+    const conteo = await CommentModel.countDocuments({ _id: { $in: commentsIds } }).exec();
+    return conteo === commentsIds.length;
+
+  }
+
 }

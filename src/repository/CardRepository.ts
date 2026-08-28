@@ -1,12 +1,15 @@
 import {CardModel, ICard} from "../models/Card";
-import mongoose from 'mongoose';
 
 export class CardRepository{
-    async findByColumnId(columnId: mongoose.Types.ObjectId):Promise<ICard[]>{
+    async findByColumnId(columnId: string):Promise<ICard[]>{
         return CardModel.find({ columnId }).lean().exec();
     }
 
-    async create(data: Omit<ICard,'_id' | 'createdAt' | 'updatedAt'>): Promise<ICard>{
+    async create(data: Omit<ICard,'_id' | 'createdAt' | 'updatedAt' | 'commentsIds' | 'columnId' | 'assignedTo'> & {
+    commentsIds: string[];
+    columnId: string;
+    assignedTo: string;
+    }): Promise<ICard>{
         
         const newCard = await CardModel.create(data);
         return newCard.toObject();
@@ -14,9 +17,11 @@ export class CardRepository{
     }
 
     async update(
-        idActualizar: mongoose.Types.ObjectId,
-        data: Partial<Omit<ICard,'_id' | 'createdAt' | 'updatedAt'>>
-        ):Promise<ICard | null>{
+        idActualizar: string,
+        data: Partial<Omit<ICard,'_id' | 'createdAt' | 'updatedAt' | 'assignedTo' | 'commentsIds'>> &{
+        assignedTo: string;
+        commentsIds: string[];
+        }):Promise<ICard | null>{
 
         const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
             new: true,
@@ -26,20 +31,20 @@ export class CardRepository{
 
     }
 
-    async delete(idEliminar: mongoose.Types.ObjectId): Promise<boolean>{
+    async delete(idEliminar: string): Promise<boolean>{
         
         const resultado = await CardModel.findByIdAndDelete(idEliminar);
         return resultado !== null;
         
     }
 
-    async existById(id: mongoose.Types.ObjectId){
+    async existById(id: string){
 
         const existe = await CardModel.exists({_id: id});
         return existe !== null;
     }
 
-    async existManyByIds(ids: mongoose.Types.ObjectId[]): Promise<boolean>{
+    async existManyByIds(ids: string[]): Promise<boolean>{
         const conteo = await CardModel.countDocuments({_id:{$in: ids}}).exec();
         return conteo === ids.length;
     }

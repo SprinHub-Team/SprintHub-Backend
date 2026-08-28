@@ -5,6 +5,7 @@ export const cardSchema = z.object({
     title: z.string().min(2),
     description: z.string().min(2),
     columnId: z.string(),
+    commentsIds: z.array(z.string()),
     position: z.number(),
     assignedTo: z.string(),
     dueDate: z.date()
@@ -12,14 +13,9 @@ export const cardSchema = z.object({
 
 export type Card = z.infer<typeof cardSchema>;
 
-export const createCardSchema = cardSchema.omit({
+export const cardSchemaoutId = cardSchema.omit({
     id: true
 });
 
-export type CreateCardDto= z.infer<typeof createCardSchema>;
+export type CardSchemaoutId= z.infer<typeof cardSchemaoutId>;
 
-export const updateCardSchema = createCardSchema.omit({
-    columnId: true
-});
-
-export type UpdateCardDto = z.infer<typeof updateCardSchema>;
