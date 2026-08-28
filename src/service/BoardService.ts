@@ -2,23 +2,24 @@ import {CreateBoardDto, UpdateBoardDto } from "../dtos/BoardDto";
 import {BoardRepository} from "../repository/BoardRepository";
 import { ColumnRepository } from "../repository/ColumnRepository"; 
 import AppError from "../errors/AppError";
-import {toObjectId} from "../utils/objectId";
 import {IBoard} from "../models/Board";
+import { UserRepository } from "../repository/UserRepository";
+import mongoose from "mongoose";
+import { group } from "node:console";
 
 export class BoardService{
 
     constructor(
         private boardRepository: BoardRepository,
-        private columnRepository: ColumnRepository
+        private columnRepository: ColumnRepository,
+        private userRepository: UserRepository
     ){}
 
     async findByGroupId(groupId: string): Promise<IBoard[]>{
 
-        const groupObjectId = toObjectId(groupId,"El id del grupo es invalido");
-
         //FALTA CREACION DE REPOSITORY PARA VALIDAR ESPACIO DE TRABAJO
 
-        const boards = await this.boardRepository.findByGroupId(groupObjectId);
+        const boards = await this.boardRepository.findByGroupId(groupId);
 
         if(boards.length === 0){
             throw new AppError("Tablero/s no encontrado/s",404);
@@ -29,56 +30,67 @@ export class BoardService{
 
     async create(data: CreateBoardDto): Promise<IBoard>{
 
-        const groupObjectId = toObjectId(data.groupId, "El id del grupo es invalido");
-        const ownerObjectId = toObjectId(data.ownerId, "El id del administrador es invalido");
-        const columnsObjectIds = data.columnsIds ? data.columnsIds.map(column => toObjectId(column,"Uno o varios de los ids de la columnas son invalidos")) : [];
+        const ownerExist = this.userRepository.existById(data.ownerId);
+        if(!ownerExist){
+            throw new AppError("El usuario reacionado no existe", 404);
+        }
 
-        // FALTA CREACION DE REPOSITORY PARA VALIDAR ESPACIOS Y EL ADMINISTRADOR QUE LO CREA
+        // FALTA CREACION DE REPOSITORY PARA VALIDAR ESPACIOS
 
-        const columnsExist = await this.columnRepository.existManyByIds(columnsObjectIds);
-        if(!columnsExist){
-            throw new AppError("Una o varias de las columnas relacionadas no existen", 404);
-        } 
+        let columnsIds: string[] = [];
+        if(data.columnsIds && data.columnsIds.length>0){
         
+        columnsIds = data.columnsIds;
+
+        const columsExist = this.columnRepository.existManyByIds(columnsIds);
+        if(!columsExist){
+            new AppError("Una o varias de las columnas relacionadas no existen", 404);
+        }
+
+        }
+
         return this.boardRepository.create({
             title: data.title,
             description: data.description,
-            groupId: groupObjectId,
-            ownerId: ownerObjectId,
-            columnsIds: columnsObjectIds,
+            groupId: data.groupId,
+            ownerId: data.ownerId,
+            columnsIds: columnsIds,
         });
 
     }
 
     async update(id: string, data: UpdateBoardDto): Promise<IBoard | null>{
-        const boardObjectId = toObjectId(id, "El id del tablero es invalido");
-        const boardExist = await this.boardRepository.existById(boardObjectId);
+
+        const boardExist = await this.boardRepository.existById(id);
         if(!boardExist){
             throw new AppError("El tablero que se intenta actualizar no existe", 404);
         }
 
-        const updates: any = {
-            title: data.title,
-            description: data.description,
-        };
+        let columnsIds: string[] = [];
+        if(data.columnsIds && data.columnsIds.length>0){
 
-        if (data.columnsIds) {
-            const columnsObjectIds = data.columnsIds.map(column => toObjectId(column,"Uno o varios de los ids de la columnas son invalidos"));
-            const columnsExist = await this.columnRepository.existManyByIds(columnsObjectIds);
-            if(!columnsExist){
-                throw new AppError("Una o varias de las columnas relacionadas no existen", 404);
-            }
-            updates.columnsIds = columnsObjectIds;
+        columnsIds = data.columnsIds;
+
+        const columsExist = this.columnRepository.existManyByIds(columnsIds);
+        if(!columsExist){
+            new AppError("Una o varias de las columnas relacionadas no existen", 404);
         }
 
-        return this.boardRepository.update(boardObjectId, updates);
+        }
+
+        return this.boardRepository.update(id,
+            {title: data.title,
+            description: data.description,
+            columnsIds: columnsIds
+        });
     }
 
-    async delete(id: string): Promise<boolean>{
+    // async delete(id: string): Promise<boolean>{
         
-        const boardObjectId = toObjectId(id, "El id del tablero es invalido");
-        return this.boardRepository.delete(boardObjectId);
+    //     const eliminarColumns = await 
+
+    //     return this.boardRepository.delete(id);
     
-    }
+    // }
 }
 

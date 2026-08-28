@@ -1,18 +1,20 @@
 import { UserModel, IUser } from '../models/User';
 import { CreateUserDto, UpdateUserDto } from '../dtos/UserDto';
+import mongoose from 'mongoose';
 
-export const UserRepository = {
+export class UserRepository{
+  
   async findById(id: string): Promise<IUser | null> {
     return UserModel.findById(id);
-  },
+  }
 
   async findByEmail(email: string): Promise<IUser | null> {
     return UserModel.findOne({ email });
-  },
+  }
 
   async findByDocumentId(documentId: string): Promise<IUser | null> {
     return UserModel.findOne({ documentId });
-  },
+  }
 
   async create(data: Omit<CreateUserDto, 'password'> & { passwordHash: string; role?: 'admin' | 'user' }): Promise<IUser> {
     const user = new UserModel({
@@ -23,13 +25,21 @@ export const UserRepository = {
       role: data.role || 'user'
     });
     return user.save();
-  },
+  }
 
   async update(id: string, data: UpdateUserDto): Promise<IUser | null> {
     return UserModel.findByIdAndUpdate(id, data, { new: true });
-  },
+  }
 
   async delete(id: string): Promise<IUser | null> {
     return UserModel.findByIdAndDelete(id);
   }
+
+  async existById(id: string): Promise<boolean>{
+
+    const resultado = UserModel.exists({_id: id}).exec();
+    return resultado !== null;
+
+  }
+
 };

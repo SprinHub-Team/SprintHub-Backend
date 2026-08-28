@@ -1,27 +1,30 @@
-import { CreateCardDto, UpdateCardDto } from "../dtos/CardDto";
+import { CardSchemaoutId } from "../dtos/CardDto";
 import { CardRepository } from "../repository/CardRepository";
-import { ColumnRepository } from "../repository/ColumnRepository"; 
+import { ColumnRepository } from "../repository/ColumnRepository";
+import { CommentRepository } from "../repository/CommentRepository";
+import { UserRepository} from "../repository/UserRepository";
 import AppError from "../errors/AppError";
-import { toObjectId, toObjectIds } from "../utils/objectId";
 import { ICard } from "../models/Card";
+import mongoose from "mongoose";
+
 
 export class CardService{
 
     constructor(
         private cardRepository: CardRepository,
-        private columnRepository: ColumnRepository
+        private columnRepository: ColumnRepository,
+        private commentRepository: CommentRepository,
+        private userRepository: UserRepository
     ){}
 
     async findByColumnId(columnId: string): Promise<ICard[]>{
 
-        const columnObjectId = toObjectId(columnId,"El id de la columna es invalido");
-
-        const columnExist = await this.columnRepository.existById(columnObjectId);
+        const columnExist = await this.columnRepository.existById(columnId);
         if(!columnExist){
             throw new AppError("La columna relacionada no existe", 404);
         } 
 
-        const cards = await this.cardRepository.findByColumnId(columnObjectId);
+        const cards = await this.cardRepository.findByColumnId(columnId);
 
         if(cards.length === 0){
             throw new AppError("Card/s no encontrada/s",404);
@@ -30,62 +33,93 @@ export class CardService{
 
     }
 
-    async create(data: CreateCardDto): Promise<ICard>{
+    async create(data: CardSchemaoutId): Promise<ICard>{
 
-        const columnObjectId = toObjectId(data.columnId, "El id de la columna es invalido");
-
-        const columnExist = await this.columnRepository.existById(columnObjectId);
+        const columnExist = await this.columnRepository.existById(data.columnId);
         if(!columnExist){
             throw new AppError("La columna relacionada no existe", 404);
-        } 
+        }
         
-        const assignedToObjectId = toObjectIds(data.assignedTo, "El id de la persona asignada es invalido");
-        const boardObjectId = toObjectId(data.boardId, "El id del tablero es invalido");
+        let commentsIds: string[] = [];
+        if(data.commentsIds && data.commentsIds.length > 0){
+
+        commentsIds = data.commentsIds;
+
+        const commentsExist = this.commentRepository.existManyByIds(commentsIds);
+        if(!commentsExist){
+            new AppError("Uno o varios de los comentarios relacionados no existen", 404);
+        }
+
+        }
+
+        const asignedToExist = this.userRepository.existById(data.assignedTo);
+        if(!asignedToExist){
+            throw new AppError("El usuario asignado no existe", 404);
+        }
 
         return this.cardRepository.create({
             title: data.title,
             description: data.description,
-            boardId: boardObjectId,
-            columnId: columnObjectId,
+            columnId: data.columnId,
+            commentsIds: commentsIds,
             position: data.position,
-            assignedTo: assignedToObjectId
+            assignedTo: data.assignedTo
         }); 
 
     }
 
-    async update(id: string, data: UpdateCardDto): Promise<ICard | null>{
+    async update(id: string, data: CardSchemaoutId): Promise<ICard | null>{
 
-        const cardObjectId = toObjectId(id, "El id de la card es invalido");
-
-        const cardExist = await this.cardRepository.existById(cardObjectId);
+        const cardExist = await this.cardRepository.existById(id);
         if(!cardExist){
             throw new AppError("La tarjeta que se intenta actualizar no existe", 404);
         }
 
-        const updates: any = {
+        const asignedToExist = this.userRepository.existById(data.assignedTo);
+        if(!asignedToExist){
+            throw new AppError("El usuario asignado no existe", 404);
+        }
+        
+        let commentsIds: string[] = [];
+        if(data.commentsIds && data.commentsIds.length > 0){
+
+        commentsIds = data.commentsIds;
+
+        const commentsExist = this.commentRepository.existManyByIds(commentsIds);
+        if(!commentsExist){
+            new AppError("Uno o varios de los comentarios relacionados no existen", 404);
+        }
+
+        }
+        
+        return this.cardRepository.update(id,{
             title: data.title,
             description: data.description,
-            position: data.position
-        };
-
-        if (data.assignedTo) {
-            updates.assignedTo = toObjectIds(data.assignedTo, "El id de la persona asignada es invalido");
-        }
-        if (data.boardId) {
-            updates.boardId = toObjectId(data.boardId, "El id del tablero es invalido");
-        }
-        if (data.columnId) {
-            updates.columnId = toObjectId(data.columnId, "El id de la columna es invalido");
-        }
-
-        return this.cardRepository.update(cardObjectId, updates);
+            commentsIds : commentsIds,
+            position: data.position,
+            assignedTo: data.assignedTo
+        });
 
     }
 
-    async delete(id: string): Promise<boolean>{
+    // async delete(id: string): Promise<boolean>{
         
-        const cardObjectId = toObjectId(id, "El id de la card es invalido");
-        return this.cardRepository.delete(cardObjectId);
+    //     await this.commentRepository.deleteManyByCardId(id);
 
-    }
+    //     const eliminado = this.cardRepository.delete(id);
+    //     if(!eliminado){
+    //         throw new AppError("La tarjeta que se intenta elminar no existe", 404);
+    //     }
+
+    //     return eliminado;
+
+    // }
+
+    // async deleteManyByColumnId(id: string): Promise<boolean>{
+
+    //     cardsthis.cardRepository.findByColumnId(id);
+
+
+    // }
+
 }

@@ -4,8 +4,8 @@ const CardSchema = new Schema(
   {
     title: { type: String, required: true },
     description: { type: String },
-    columnId: { type: Schema.Types.ObjectId, ref: 'Column', required: true },
-    boardId: { type: Schema.Types.ObjectId, ref: 'Board', required: true },
+    columnId: { type: Schema.Types.ObjectId, ref: 'Board', required: true },
+    commentsIds: [{type: Schema.Types.ObjectId, ref: 'Comment'}],
     position: { type: Number, required: true, default: 0 },
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
     dueDate: { type: Date }

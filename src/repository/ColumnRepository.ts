@@ -2,7 +2,7 @@ import { ColumnModel, IColumn } from "../models/Column";
 import mongoose from "mongoose";
 
 export class ColumnRepository {
-  async findByBoardId(boardId: mongoose.Types.ObjectId): Promise<IColumn[]> {
+  async findByBoardId(boardId: string): Promise<IColumn[]> {
     return ColumnModel.find({ boardId: boardId }).lean().exec();
   }
 
@@ -14,7 +14,7 @@ export class ColumnRepository {
   }
 
   async update(
-    idActualizar: mongoose.Types.ObjectId,
+    idActualizar: string,
     data: Partial<Omit<IColumn,'_id' | 'createdAt' | 'updateAt'>>
   ): Promise<IColumn | null> {
 
@@ -26,24 +26,25 @@ export class ColumnRepository {
 
   }
 
-  async delete(idEliminar: mongoose.Types.ObjectId): Promise<boolean> {
+  async delete(idEliminar: string): Promise<boolean> {
     
     const resultado = await ColumnModel.findByIdAndDelete(idEliminar).exec();
     return resultado !== null;
   
   }
 
-  async existManyByIds(boardsIds: mongoose.Types.ObjectId[]): Promise<boolean>{
+  async existManyByIds(boardsIds: string[]): Promise<boolean>{
 
     const conteo = await ColumnModel.countDocuments({ _id: { $in: boardsIds } }).exec();
     return conteo === boardsIds.length;
 
   }
 
-  async existById(id: mongoose.Types.ObjectId): Promise<boolean>{
+  async existById(id: string): Promise<boolean>{
 
     const existe = ColumnModel.exists({_id: id}).exec();
     return existe !== null;
 
   }
+
 }

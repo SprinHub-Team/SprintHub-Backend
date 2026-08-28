@@ -1,13 +1,16 @@
 import { BoardModel, IBoard } from "../models/Board";
-import mongoose from "mongoose";
 
 export class BoardRepository {
 
-  async findByGroupId(groupId: mongoose.Types.ObjectId): Promise<IBoard[]> {
+  async findByGroupId(groupId: string): Promise<IBoard[]> {
     return BoardModel.find({ groupId }).lean().exec();
   }
 
-  async create(data: Omit<IBoard,'_id' | 'createdAt' | 'updatedAt'>): Promise<IBoard> {
+  async create(data: Omit<IBoard,'_id' | 'createdAt' | 'updatedAt' | 'groupId' | 'ownerId' | 'columnsIds'>&{
+    groupId: string,
+    ownerId: string,
+    columnsIds: string[]
+  }): Promise<IBoard> {
     
     const newBoard = await BoardModel.create(data);
     return newBoard.toObject();
@@ -15,8 +18,10 @@ export class BoardRepository {
   }
 
   async update(
-    idActualizar: mongoose.Types.ObjectId,
-    data: Partial<Omit<IBoard,'_id' | 'createdAt' | 'updatedAt'>>
+    idActualizar: string,
+    data: Partial<Omit<IBoard,'_id' | 'createdAt' | 'updatedAt' | 'columnsIds'>>&{
+      columnsIds: string[];
+    }
   ): Promise<IBoard | null> {
 
     const updateBoard = await BoardModel.findByIdAndUpdate(idActualizar, data, {
@@ -27,14 +32,14 @@ export class BoardRepository {
   
   }
 
-  async delete(idEliminar: mongoose.Types.ObjectId): Promise<boolean> {
+  async delete(idEliminar: string): Promise<boolean> {
    
     const resultado = await BoardModel.findByIdAndDelete(idEliminar).exec();
     return resultado !== null;
   
   }
 
-  async existById(id: mongoose.Types.ObjectId): Promise<boolean> {
+  async existById(id: string): Promise<boolean> {
 
     const existe = await BoardModel.exists({_id: id}).exec();
     return existe !== null;
