@@ -3,6 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import groupRoutes from "./routes/groupRoutes";
 import cardRoutes from "./routes/cardRoutes";
+import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
 
@@ -19,5 +20,7 @@ app.get("/api/health", (req, res) => {
     message: "Api funcionando.",
   });
 });
+
+app.use(errorMiddleware);
 
 export default app;

@@ -5,7 +5,8 @@ export const boardSchema = z.object({
   title: z.string().min(2).max(150),
   description: z.string().min(2),
   groupId: z.string(),
-  ownerId: z.string()
+  ownerId: z.string(),
+  columnsIds: z.array(z.string()).min(1)
 });
 
 export type Board = z.infer< typeof boardSchema>;
@@ -16,6 +17,9 @@ export const createBoardSchema = boardSchema.omit({
 
 export type CreateBoardDto = z.infer<typeof createBoardSchema>;
 
-export const updateBoardSchema = createBoardSchema.partial();
+export const updateBoardSchema = createBoardSchema.omit({
+  groupId: true,
+  ownerId: true
+});
 
 export type UpdateBoardDto = z.infer<typeof updateBoardSchema>;

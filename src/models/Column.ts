@@ -1,12 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
-
-export interface IColumn extends Document {
-  name: string;
-  boardId: mongoose.Types.ObjectId;
-  cardsId: mongoose.Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose, { Schema, Document, InferSchemaType } from "mongoose";
 
 const ColumnSchema: Schema = new Schema(
   {
@@ -14,7 +6,15 @@ const ColumnSchema: Schema = new Schema(
     cardsId:[{type: Schema.Types.ObjectId, ref: 'Card', required: true}],
     boardId:{type: Schema.Types.ObjectId, ref: 'Board', required: true}
   },
-  {timestamps: true}
+  {timestamps: true,
+    versionKey: false
+  }
 );
+
+export type IColumn = InferSchemaType<typeof ColumnSchema> & {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updateAt: Date;
+};
 
 export const ColumnModel = mongoose.model<IColumn>('Column', ColumnSchema);
