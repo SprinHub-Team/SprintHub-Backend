@@ -4,7 +4,6 @@ export const cardSchema = z.object({
     id: z.string(),
     title: z.string().min(2),
     description: z.string().min(2),
-    listId: z.string(),
     columnId: z.string(),
     position: z.number(),
     assignedTo: z.string(),

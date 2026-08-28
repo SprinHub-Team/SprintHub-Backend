@@ -40,7 +40,6 @@ export class CardService{
         } 
         
         const assignedToObjectId = toObjectId(data.assignedTo, "El id de la persona asignada es invalido");
-        const listObjectId = toObjectId(data.listId, "El id de la lista es invalido");
 
         //FALTA LA CREACION DE USUARIO REPOSITORI PARA VALIDACION DE PERSONA ASIGNADA Y 
         //LA CREACION DE LIST REPOSITORY PARA VALIDACION DE  LISTA DE CARD
@@ -48,7 +47,6 @@ export class CardService{
         return this.cardRepository.create({
             title: data.title,
             description: data.description,
-            listId: listObjectId,
             columnId: columnObjectId,
             position: data.position,
             assignedTo: assignedToObjectId
@@ -66,7 +64,6 @@ export class CardService{
         }
 
         const assignedToObjectId = toObjectId(data.assignedTo, "El id de la persona asignada es invalido");
-        const listObjectId = toObjectId(data.listId, "El id de la lista es invalido");
 
         //FALTA LA CREACION DE USUARIO REPOSITORI PARA VALIDACION DE PERSONA ASIGNADA Y 
         //LA CREACION DE LIST REPOSITORY PARA VALIDACION DE  LISTA DE CARD
@@ -74,7 +71,6 @@ export class CardService{
         return this.cardRepository.update(cardObjectId,{
             title: data.title,
             description: data.description,
-            listId: listObjectId,
             position: data.position,
             assignedTo: assignedToObjectId
         });

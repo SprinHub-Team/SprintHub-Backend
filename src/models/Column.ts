@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, InferSchemaType } from "mongoose";
+import mongoose, { Schema, InferSchemaType } from "mongoose";
 
 const ColumnSchema: Schema = new Schema(
   {
