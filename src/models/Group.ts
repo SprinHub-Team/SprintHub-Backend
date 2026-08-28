@@ -1,20 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, InferSchemaType } from 'mongoose';
 
-export interface IGroupMember {
-  user: mongoose.Types.ObjectId;
-  role: 'admin' | 'collaborator' | 'visitor';
-}
-
-export interface IGroup extends Document {
-  name: string;
-  description?: string;
-  ownerId: mongoose.Types.ObjectId;
-  members: IGroupMember[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const GroupSchema: Schema = new Schema(
+const GroupSchema = new Schema(
   {
     name: { type: String, required: true },
     description: { type: String },
@@ -22,11 +8,26 @@ const GroupSchema: Schema = new Schema(
     members: [
       {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        role: { type: String, enum: ['admin', 'collaborator', 'visitor'], default: 'collaborator' }
+        role: { type: String, enum: ['admin', 'collaborator', 'visitor'], default: 'collaborator', required: true }
       }
-    ],
+    ]
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    versionKey: false
+  }
 );
+
+export type IGroup = Omit<InferSchemaType<typeof GroupSchema>, 'members'> & {
+  _id: mongoose.Types.ObjectId;
+  members: {
+    user: mongoose.Types.ObjectId;
+    role: 'admin' | 'collaborator' | 'visitor';
+  }[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type IGroupMember = IGroup['members'][number];
 
 export const GroupModel = mongoose.model<IGroup>('Group', GroupSchema);

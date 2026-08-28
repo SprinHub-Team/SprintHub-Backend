@@ -4,17 +4,17 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 
 export const createCard = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { title, description, listId, boardId, position, dueDate, assignedTo } = req.body;
+    const { title, description, columnId, boardId, position, dueDate, assignedTo } = req.body;
 
-    if (!title || !listId || !boardId) {
-      res.status(400).json({ message: 'Título, listId y boardId son obligatorios' });
+    if (!title || !columnId || !boardId) {
+      res.status(400).json({ message: 'Título, columnId y boardId son obligatorios' });
       return;
     }
 
     const newCard = new CardModel({
       title,
       description,
-      listId,
+      columnId,
       boardId,
       position: position || 0,
       dueDate,
@@ -32,15 +32,15 @@ export const createCard = async (req: AuthRequest, res: Response): Promise<void>
 export const getCards = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { boardId } = req.params;
-    const { title, listId, assignedTo } = req.query;
+    const { title, columnId, assignedTo } = req.query;
 
     let filter: any = { boardId };
 
     if (title) {
       filter.title = { $regex: title, $options: 'i' }; // Búsqueda insensible a mayúsculas
     }
-    if (listId) {
-      filter.listId = listId;
+    if (columnId) {
+      filter.columnId = columnId;
     }
     if (assignedTo) {
       filter.assignedTo = assignedTo;
