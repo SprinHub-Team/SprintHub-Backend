@@ -4,7 +4,7 @@ const CardSchema = new Schema(
   {
     title: { type: String, required: true },
     description: { type: String },
-    listId: { type: Schema.Types.ObjectId, ref: 'List', required: true },
+    columnId: { type: Schema.Types.ObjectId, ref: 'Column', required: true },
     boardId: { type: Schema.Types.ObjectId, ref: 'Board', required: true },
     position: { type: Number, required: true, default: 0 },
     assignedTo: [{ type: Schema.Types.ObjectId, ref: 'User' }],
