@@ -1,20 +1,21 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, InferSchemaType } from 'mongoose';
 
-export interface IList extends Document {
-  title: string;
-  boardId: mongoose.Types.ObjectId;
-  position: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const ListSchema: Schema = new Schema(
+const ListSchema = new Schema(
   {
     title: { type: String, required: true },
     boardId: { type: Schema.Types.ObjectId, ref: 'Board', required: true },
     position: { type: Number, required: true, default: 0 },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    versionKey: false
+  }
 );
+
+export type IList = InferSchemaType<typeof ListSchema> & {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export const ListModel = mongoose.model<IList>('List', ListSchema);

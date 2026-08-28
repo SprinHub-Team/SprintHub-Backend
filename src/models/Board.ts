@@ -1,12 +1,12 @@
-import mongoose, { Schema, Document, InferSchemaType } from 'mongoose';
+import mongoose, { Schema, InferSchemaType } from 'mongoose';
 
-const BoardSchema: Schema = new Schema(
+const BoardSchema = new Schema(
   {
     title: { type: String, required: true },
     description: { type: String },
     groupId: { type: Schema.Types.ObjectId, ref: 'Group', required: true },
     ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    columnsIds:[{ type: Schema.Types.ObjectId, ref:'Column'}]
+    columnsIds: [{ type: Schema.Types.ObjectId, ref: 'Column' }]
   },
   { timestamps: true,
     versionKey: false
@@ -16,7 +16,7 @@ const BoardSchema: Schema = new Schema(
 export type IBoard = InferSchemaType<typeof BoardSchema> & {
   _id: mongoose.Types.ObjectId;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
 };
 
 export const BoardModel = mongoose.model<IBoard>('Board', BoardSchema);

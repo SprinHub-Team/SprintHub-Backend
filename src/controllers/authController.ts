@@ -1,22 +1,26 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import {UserModel} from '../models/User';
+import { UserModel } from '../models/User';
 import env from '../config/env';
+import { createUserSchema, loginSchema } from '../dtos/UserDto';
+import { UserRepository } from '../repository/UserRepository';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, documentId, password } = req.body;
-
-    // Validación simple
-    if (!name || !email || !documentId || !password) {
-      res.status(400).json({ message: 'Todos los campos son obligatorios' });
+    // Validación con Zod
+    const validation = createUserSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(400).json({ message: 'Errores de validación', errors: validation.error.format() });
       return;
     }
 
+    const { name, email, documentId, password } = validation.data;
+
     // Verificar si el usuario ya existe
-    const existingUser = await UserModel.findOne({ $or: [{ email }, { documentId }] });
-    if (existingUser) {
+    const existingEmail = await UserRepository.findByEmail(email);
+    const existingDoc = await UserRepository.findByDocumentId(documentId);
+    if (existingEmail || existingDoc) {
       res.status(400).json({ message: 'El correo o documento ya están registrados' });
       return;
     }
@@ -25,9 +29,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // Crear usuario (el primero podría ser admin, pero por defecto será user)
-    const newUser = new UserModel({ name, email, documentId, passwordHash });
-    await newUser.save();
+    // Crear usuario
+    await UserRepository.create({ name, email, documentId, passwordHash });
 
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (error) {
@@ -38,14 +41,15 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ message: 'Correo y contraseña son obligatorios' });
+    const validation = loginSchema.safeParse(req.body);
+    if (!validation.success) {
+      res.status(400).json({ message: 'Credenciales inválidas', errors: validation.error.format() });
       return;
     }
 
-    const user = await UserModel.findOne({ email });
+    const { email, password } = validation.data;
+
+    const user = await UserRepository.findByEmail(email);
     if (!user) {
       res.status(401).json({ message: 'Credenciales incorrectas' });
       return;
