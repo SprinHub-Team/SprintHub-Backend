@@ -1,16 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, InferSchemaType } from 'mongoose';
 
-export interface IUser extends Document {
-  name: string;
-  email: string;
-  documentId: string;
-  passwordHash: string;
-  role: 'admin' | 'user';
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const UserSchema: Schema = new Schema(
+const UserSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -18,7 +8,16 @@ const UserSchema: Schema = new Schema(
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['admin', 'user'], default: 'user' },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    versionKey: false
+  }
 );
+
+export type IUser = InferSchemaType<typeof UserSchema> & {
+  _id: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export const UserModel = mongoose.model<IUser>('User', UserSchema);

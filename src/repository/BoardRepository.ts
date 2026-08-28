@@ -7,7 +7,7 @@ export class BoardRepository {
     return BoardModel.find({ groupId }).lean().exec();
   }
 
-  async create(data: Omit<IBoard,'_id' | 'createdAt' | 'updateAt'>): Promise<IBoard> {
+  async create(data: Omit<IBoard,'_id' | 'createdAt' | 'updatedAt'>): Promise<IBoard> {
     
     const newBoard = await BoardModel.create(data);
     return newBoard.toObject();
@@ -16,7 +16,7 @@ export class BoardRepository {
 
   async update(
     idActualizar: mongoose.Types.ObjectId,
-    data: Partial<Omit<IBoard,'_id' | 'createdAt' | 'updateAt'>>
+    data: Partial<Omit<IBoard,'_id' | 'createdAt' | 'updatedAt'>>
   ): Promise<IBoard | null> {
 
     const updateBoard = await BoardModel.findByIdAndUpdate(idActualizar, data, {

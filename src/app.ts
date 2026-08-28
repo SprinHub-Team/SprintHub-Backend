@@ -3,6 +3,8 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import groupRoutes from "./routes/groupRoutes";
 import cardRoutes from "./routes/cardRoutes";
+import boardRoutes from "./routes/boardRoutes";
+import columnRoutes from "./routes/columnRoutes";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -13,6 +15,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/cards", cardRoutes);
+app.use("/api/boards", boardRoutes);
+app.use("/api/columns", columnRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
