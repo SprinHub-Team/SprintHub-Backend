@@ -8,7 +8,7 @@ export const cardSchema = z.object({
     columnId: z.string(),
     commentsIds: z.array(z.string()),
     position: z.number(),
-    assignedTo: z.array(z.string()),
+    assignedTo: z.string(),
     dueDate: z.date().optional()
 });
 
