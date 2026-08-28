@@ -31,7 +31,7 @@ export class BoardService{
 
         const groupObjectId = toObjectId(data.groupId, "El id del grupo es invalido");
         const ownerObjectId = toObjectId(data.ownerId, "El id del administrador es invalido");
-        const columnsObjectIds = data.columnsIds.map(column => toObjectId(column,"Uno o varios de los ids de la columnas son invalidos"));
+        const columnsObjectIds = data.columnsIds ? data.columnsIds.map(column => toObjectId(column,"Uno o varios de los ids de la columnas son invalidos")) : [];
 
         // FALTA CREACION DE REPOSITORY PARA VALIDAR ESPACIOS Y EL ADMINISTRADOR QUE LO CREA
 
@@ -51,26 +51,27 @@ export class BoardService{
     }
 
     async update(id: string, data: UpdateBoardDto): Promise<IBoard | null>{
-
         const boardObjectId = toObjectId(id, "El id del tablero es invalido");
-        const columnsObjectIds = data.columnsIds.map(column => toObjectId(column,"Uno o varios de los ids de la columnas son invalidos"));
-
         const boardExist = await this.boardRepository.existById(boardObjectId);
         if(!boardExist){
             throw new AppError("El tablero que se intenta actualizar no existe", 404);
         }
 
-        const columnsExist = await this.columnRepository.existManyByIds(columnsObjectIds);
-        if(!columnsExist){
-            throw new AppError("Una o varias de las columnas relacionadas no existen", 404);
-        }
-
-        return this.boardRepository.update(boardObjectId,{
+        const updates: any = {
             title: data.title,
             description: data.description,
-            columnsIds: columnsObjectIds
-        });
+        };
 
+        if (data.columnsIds) {
+            const columnsObjectIds = data.columnsIds.map(column => toObjectId(column,"Uno o varios de los ids de la columnas son invalidos"));
+            const columnsExist = await this.columnRepository.existManyByIds(columnsObjectIds);
+            if(!columnsExist){
+                throw new AppError("Una o varias de las columnas relacionadas no existen", 404);
+            }
+            updates.columnsIds = columnsObjectIds;
+        }
+
+        return this.boardRepository.update(boardObjectId, updates);
     }
 
     async delete(id: string): Promise<boolean>{

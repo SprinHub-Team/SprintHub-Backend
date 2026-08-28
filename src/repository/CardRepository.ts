@@ -6,7 +6,7 @@ export class CardRepository{
         return CardModel.find({ columnId }).lean().exec();
     }
 
-    async create(data: Omit<ICard,'_id' | 'createdAt' | 'updateAt'>): Promise<ICard>{
+    async create(data: Omit<ICard,'_id' | 'createdAt' | 'updatedAt'>): Promise<ICard>{
         
         const newCard = await CardModel.create(data);
         return newCard.toObject();
@@ -15,7 +15,7 @@ export class CardRepository{
 
     async update(
         idActualizar: mongoose.Types.ObjectId,
-        data: Partial<Omit<ICard,'_id' | 'createdAt' | 'updateAt'>>
+        data: Partial<Omit<ICard,'_id' | 'createdAt' | 'updatedAt'>>
         ):Promise<ICard | null>{
 
         const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
