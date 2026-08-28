@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, InferSchemaType } from 'mongoose';
-import { Column } from '../dtos/ColumnDto';
 
 const BoardSchema: Schema = new Schema(
   {
