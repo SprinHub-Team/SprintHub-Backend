@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, InferSchemaType } from "mongoose";
+import mongoose, { Schema, InferSchemaType } from "mongoose";
 
 const CommentSchema: Schema = new Schema(
   {

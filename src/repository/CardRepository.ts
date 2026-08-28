@@ -39,4 +39,9 @@ export class CardRepository{
         return existe !== null;
     }
 
+    async existManyByIds(ids: mongoose.Types.ObjectId[]): Promise<boolean>{
+        const conteo = await CardModel.countDocuments({_id:{$in: ids}}).exec();
+        return conteo === ids.length;
+    }
+
 }
