@@ -30,4 +30,10 @@ export class GroupRepository {
     const result = await GroupModel.findByIdAndDelete(id).exec();
     return result !== null;
   }
+
+  async existById(id: string): Promise<boolean>{
+    const result = await GroupModel.exists({_id: id}).exec();
+    return result !== null;
+  }
+
 }

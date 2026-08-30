@@ -6,7 +6,6 @@ export const boardSchema = z.object({
   description: z.string().min(2),
   groupId: z.string(),
   ownerId: z.string(),
-  columnsIds: z.array(z.string()).optional()
 });
 
 export type Board = z.infer< typeof boardSchema>;

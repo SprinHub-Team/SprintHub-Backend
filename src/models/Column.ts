@@ -1,15 +1,27 @@
 import mongoose, { Schema, InferSchemaType } from "mongoose";
+import { CardModel } from "./Card";
 
 const ColumnSchema: Schema = new Schema(
   {
     name:{ type: String, required:true},
-    cardsId:[{type: Schema.Types.ObjectId, ref: 'Card', required: true}],
     boardId:{type: Schema.Types.ObjectId, ref: 'Board', required: true}
   },
   {timestamps: true,
     versionKey: false
   }
 );
+
+ColumnSchema.pre('findOneAndDelete', async function(){
+
+  const columnId = this.getQuery()._id;
+  const cards = await CardModel.find({columnId}).select('_id');
+
+  for(const card of cards){
+    await CardModel.findByIdAndDelete(card.id);
+  }
+
+});
+
 
 export type IColumn = InferSchemaType<typeof ColumnSchema> & {
   _id: mongoose.Types.ObjectId;

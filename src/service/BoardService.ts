@@ -1,23 +1,25 @@
 import {CreateBoardDto, UpdateBoardDto } from "../dtos/BoardDto";
 import {BoardRepository} from "../repository/BoardRepository";
-import { ColumnRepository } from "../repository/ColumnRepository"; 
 import AppError from "../errors/AppError";
 import {IBoard} from "../models/Board";
 import { UserRepository } from "../repository/UserRepository";
-import mongoose from "mongoose";
-import { group } from "node:console";
+import { GroupRepository } from "../repository/GroupRepository";
+
 
 export class BoardService{
 
     constructor(
         private boardRepository: BoardRepository,
-        private columnRepository: ColumnRepository,
-        private userRepository: UserRepository
+        private userRepository: UserRepository,
+        private groupRepository: GroupRepository
     ){}
 
     async findByGroupId(groupId: string): Promise<IBoard[]>{
 
-        //FALTA CREACION DE REPOSITORY PARA VALIDAR ESPACIO DE TRABAJO
+        const groupExist = this.groupRepository.existById(groupId);
+        if(!groupExist){
+            throw new AppError("El grupo relacionado no existe.", 404);
+        }
 
         const boards = await this.boardRepository.findByGroupId(groupId);
 
@@ -35,18 +37,9 @@ export class BoardService{
             throw new AppError("El usuario reacionado no existe", 404);
         }
 
-        // FALTA CREACION DE REPOSITORY PARA VALIDAR ESPACIOS
-
-        let columnsIds: string[] = [];
-        if(data.columnsIds && data.columnsIds.length>0){
-        
-        columnsIds = data.columnsIds;
-
-        const columsExist = this.columnRepository.existManyByIds(columnsIds);
-        if(!columsExist){
-            new AppError("Una o varias de las columnas relacionadas no existen", 404);
-        }
-
+        const groupExist = this.groupRepository.existById(data.groupId);
+        if(!groupExist){
+            throw new AppError("El grupo relacionado no existe.", 404);
         }
 
         return this.boardRepository.create({
@@ -54,7 +47,6 @@ export class BoardService{
             description: data.description,
             groupId: data.groupId,
             ownerId: data.ownerId,
-            columnsIds: columnsIds,
         });
 
     }
@@ -66,31 +58,22 @@ export class BoardService{
             throw new AppError("El tablero que se intenta actualizar no existe", 404);
         }
 
-        let columnsIds: string[] = [];
-        if(data.columnsIds && data.columnsIds.length>0){
-
-        columnsIds = data.columnsIds;
-
-        const columsExist = this.columnRepository.existManyByIds(columnsIds);
-        if(!columsExist){
-            new AppError("Una o varias de las columnas relacionadas no existen", 404);
-        }
-
-        }
-
         return this.boardRepository.update(id,
             {title: data.title,
-            description: data.description,
-            columnsIds: columnsIds
+            description: data.description
         });
     }
 
-    // async delete(id: string): Promise<boolean>{
+    async delete(id: string): Promise<boolean>{
         
-    //     const eliminarColumns = await 
+        const eliminado = this.boardRepository.delete(id);
+        if(!eliminado){
+            throw new AppError("El tablero que se intenta elminar no existe", 404);
+        }
 
-    //     return this.boardRepository.delete(id);
+        return eliminado;
     
-    // }
+    }
+    
 }
 

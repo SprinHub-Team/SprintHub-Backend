@@ -1,22 +1,19 @@
 import { ColumnModel, IColumn } from "../models/Column";
-import mongoose from "mongoose";
 
 export class ColumnRepository {
+
   async findByBoardId(boardId: string): Promise<IColumn[]> {
-    return ColumnModel.find({ boardId: boardId }).lean().exec();
+    return ColumnModel.find({ boardId }).lean().exec();
   }
 
-  async create(data: Omit<IColumn,'_id' | 'createdAt' | 'updateAt'>): Promise<IColumn> {
+  async create(data: Pick<IColumn, 'name'>&{boardId: string}): Promise<IColumn> {
     
     const newColumn = await ColumnModel.create(data);
-    return (await newColumn).toObject();
+    return newColumn.toObject();
   
   }
 
-  async update(
-    idActualizar: string,
-    data: Partial<Omit<IColumn,'_id' | 'createdAt' | 'updateAt'>>
-  ): Promise<IColumn | null> {
+  async update(idActualizar: string, data: {name: string | undefined}): Promise<IColumn | null> {
 
     const updateColumn = await ColumnModel.findByIdAndUpdate(idActualizar, data, {
       new: true,
@@ -42,7 +39,7 @@ export class ColumnRepository {
 
   async existById(id: string): Promise<boolean>{
 
-    const existe = ColumnModel.exists({_id: id}).exec();
+    const existe = await ColumnModel.exists({_id: id}).exec();
     return existe !== null;
 
   }
