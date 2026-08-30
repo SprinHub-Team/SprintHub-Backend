@@ -1,22 +1,18 @@
 import { CommentModel, IComment } from "../models/Comment";
-import mongoose from "mongoose";
 
 export class CommentRepository {
   async findByCardId(cardId: string): Promise<IComment[]> {
     return CommentModel.find({ cardId: cardId }).exec();
   }
 
-  async create(data: Omit<IComment,'_id' | 'createdAt' | 'updateAt'>) : Promise<IComment> {
+  async create(data: Pick<IComment,'name' | 'description'>&{cardId: string, createdFor: string}) : Promise<IComment> {
     
     const newComment = await CommentModel.create(data);
     return newComment.toObject();
 
   }
 
-  async update(
-    idActualizar: string,
-    data: Partial<Omit<IComment,'_id' | 'createdAt' | 'updateAt'>>
-  ): Promise<IComment | null> {
+  async update(idActualizar: string, data: Partial<Pick<IComment,'name' | 'description'>>&{createdFor: string}): Promise<IComment | null> {
 
     const updateComment = await CommentModel.findByIdAndUpdate(idActualizar, data, {
       new: true,

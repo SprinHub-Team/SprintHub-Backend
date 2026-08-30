@@ -4,7 +4,6 @@ export const columnSchema = z.object({
   id: z.string(),
   name: z.string().min(2).max(150),
   boardId: z.string(),
-  cardsId: z.array(z.string())
 });
 
 export type Column = z.infer< typeof columnSchema>;

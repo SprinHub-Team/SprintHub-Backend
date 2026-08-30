@@ -1,11 +1,9 @@
 import { CardSchemaoutId } from "../dtos/CardDto";
 import { CardRepository } from "../repository/CardRepository";
 import { ColumnRepository } from "../repository/ColumnRepository";
-import { CommentRepository } from "../repository/CommentRepository";
 import { UserRepository} from "../repository/UserRepository";
 import AppError from "../errors/AppError";
 import { ICard } from "../models/Card";
-import mongoose from "mongoose";
 
 
 export class CardService{
@@ -13,7 +11,6 @@ export class CardService{
     constructor(
         private cardRepository: CardRepository,
         private columnRepository: ColumnRepository,
-        private commentRepository: CommentRepository,
         private userRepository: UserRepository
     ){}
 
@@ -39,18 +36,6 @@ export class CardService{
         if(!columnExist){
             throw new AppError("La columna relacionada no existe", 404);
         }
-        
-        let commentsIds: string[] = [];
-        if(data.commentsIds && data.commentsIds.length > 0){
-
-        commentsIds = data.commentsIds;
-
-        const commentsExist = this.commentRepository.existManyByIds(commentsIds);
-        if(!commentsExist){
-            new AppError("Uno o varios de los comentarios relacionados no existen", 404);
-        }
-
-        }
 
         const asignedToExist = this.userRepository.existById(data.assignedTo);
         if(!asignedToExist){
@@ -61,7 +46,6 @@ export class CardService{
             title: data.title,
             description: data.description,
             columnId: data.columnId,
-            commentsIds: commentsIds,
             position: data.position,
             assignedTo: data.assignedTo
         }); 
@@ -75,51 +59,36 @@ export class CardService{
             throw new AppError("La tarjeta que se intenta actualizar no existe", 404);
         }
 
-        const asignedToExist = this.userRepository.existById(data.assignedTo);
+        const asignedToExist = await this.userRepository.existById(data.assignedTo);
         if(!asignedToExist){
             throw new AppError("El usuario asignado no existe", 404);
         }
-        
-        let commentsIds: string[] = [];
-        if(data.commentsIds && data.commentsIds.length > 0){
 
-        commentsIds = data.commentsIds;
-
-        const commentsExist = this.commentRepository.existManyByIds(commentsIds);
-        if(!commentsExist){
-            new AppError("Uno o varios de los comentarios relacionados no existen", 404);
-        }
-
+        const columnExist = await this.columnRepository.existById(data.columnId);
+        if(!columnExist){
+            throw new AppError("La columna relacionada no existe", 404);
         }
         
         return this.cardRepository.update(id,{
-            title: data.title,
             description: data.description,
-            commentsIds : commentsIds,
+            title: data.title,
             position: data.position,
+            columnId: data.columnId,
             assignedTo: data.assignedTo
         });
 
     }
 
-    // async delete(id: string): Promise<boolean>{
+    async delete(id: string): Promise<boolean>{
         
-    //     await this.commentRepository.deleteManyByCardId(id);
 
-    //     const eliminado = this.cardRepository.delete(id);
-    //     if(!eliminado){
-    //         throw new AppError("La tarjeta que se intenta elminar no existe", 404);
-    //     }
+        const eliminado = await this.cardRepository.delete(id);
+        if(!eliminado){
+            throw new AppError("La tarjeta que se intenta elminar no existe", 404);
+        }
 
-    //     return eliminado;
+        return eliminado;
 
-    // }
-
-    // async deleteManyByColumnId(id: string): Promise<boolean>{
-
-    //     cardsthis.cardRepository.findByColumnId(id);
-
-
-    // }
+    }
 
 }

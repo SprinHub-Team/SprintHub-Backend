@@ -12,6 +12,7 @@ const CommentSchema: Schema = new Schema(
    },
 );
 
+
 export type IComment = InferSchemaType<typeof CommentSchema> & {
   _id: mongoose.Types.ObjectId;
   createdAt: Date;
