@@ -6,6 +6,10 @@ export class ColumnRepository {
     return ColumnModel.find({ boardId }).lean().exec();
   }
 
+  async findById(id: string): Promise<IColumn | null> {
+    return ColumnModel.findById(id).lean().exec();
+  }
+
   async create(data: Pick<IColumn, 'name'>&{boardId: string}): Promise<IColumn> {
     
     const newColumn = await ColumnModel.create(data);

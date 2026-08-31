@@ -1,49 +1,106 @@
-import { Request, Response } from 'express';
-import { BoardService } from '../service/BoardService';
-import { BoardRepository } from '../repository/BoardRepository';
-import { ColumnRepository } from '../repository/ColumnRepository';
-import { AuthRequest } from '../middlewares/authMiddleware';
+import {Request, Response, NextFunction} from 'express';
+import { BoardService } from '../service/boardService';
+import { createBoardSchema, updateBoardSchema } from '../dtos/BoardDto';
+import {mongoIdSchema} from '../utils/idValidator'
 
-const boardRepository = new BoardRepository();
-const columnRepository = new ColumnRepository();
-const boardService = new BoardService(boardRepository, columnRepository);
+export class BoardController{
 
-export const getBoardsByGroup = async (req: AuthRequest, res: Response) => {
-  try {
-    const groupId = req.params.groupId as string;
-    const boards = await boardService.findByGroupId(groupId);
-    res.json(boards);
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message });
+constructor(
+  private boardService: BoardService
+){}
+
+async findByGroupId(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+    const groupId = mongoIdSchema.parse(req.params.id);
+
+    const boards = await this.boardService.findByGroupId(groupId);
+
+    return res.status(200).json({
+      data: boards
+    });
+
+  }catch(error){
+    next(error);
   }
-};
 
-export const createBoard = async (req: AuthRequest, res: Response) => {
-  try {
-    const data = { ...req.body, ownerId: req.user?.userId };
-    const newBoard = await boardService.create(data);
-    res.status(201).json(newBoard);
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message });
-  }
-};
+}
 
-export const updateBoard = async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id as string;
-    const updatedBoard = await boardService.update(id, req.body);
-    res.json(updatedBoard);
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message });
-  }
-};
+async getBoardWhitDetails(req: Request, res: Response, next: NextFunction){
 
-export const deleteBoard = async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id as string;
-    await boardService.delete(id);
-    res.json({ message: 'Tablero eliminado' });
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message });
+  try{
+
+    const boardId = mongoIdSchema.parse(req.params.id);
+
+    const board = await this.boardService.getBoardWhitDetails(boardId);
+
+    return res.status(200).json({
+      data: board
+    });
+
+  }catch(error){
+    next(error);
   }
-};
+
+}
+
+async create(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+    const data = createBoardSchema.parse(req.body);
+
+    const board = await this.boardService.create(data);
+
+    return res.status(201).json({
+      mesagge: "Tablero creado correctamente",
+      data: board
+    });
+
+  }catch(error){
+    next(error);
+  }
+
+}
+
+async update(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+    const data = updateBoardSchema.parse(req.body);
+
+    const boardId = mongoIdSchema.parse(req.params.id);
+
+    const board = await this.boardService.update(
+      boardId, data
+    );
+
+    return res.status(200).json({
+      message: "Tablero actulizado correctamente",
+      data: board
+    });
+
+  }catch(error){
+    next(error);
+  }
+
+}
+
+async delete(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+   const boardId = mongoIdSchema.parse(req.params.id);
+
+   await this.boardService.delete(boardId);
+
+   return res.status(204).send();
+
+  }catch(error){
+    next(error);
+  }
+
+}
+
+}

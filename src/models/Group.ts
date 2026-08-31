@@ -8,14 +8,11 @@ const GroupSchema = new Schema(
     members: [
       {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        role: { type: String, enum: ['admin', 'collaborator', 'visitor'], default: 'collaborator', required: true }
-      }
-    ]
+        role: { type: String, enum: ['admin', 'collaborator', 'visitor'], default: 'collaborator', required: true },
+      },
+    ],
   },
-  { 
-    timestamps: true,
-    versionKey: false
-  }
+  { timestamps: true, versionKey: false }
 );
 
 export type IGroup = Omit<InferSchemaType<typeof GroupSchema>, 'members'> & {

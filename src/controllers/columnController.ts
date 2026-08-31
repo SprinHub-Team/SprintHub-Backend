@@ -1,56 +1,106 @@
-import { Request, Response } from 'express';
-import { ColumnModel } from '../models/Column';
-import { BoardModel } from '../models/Board';
+import {Request, Response, NextFunction} from 'express';
+import { ColumnService } from '../service/columnService';
+import { createColumnSchema, updateColumnSchema } from '../dtos/ColumnDto';
+import {mongoIdSchema} from '../utils/idValidator'
 
-export const getColumnsByBoard = async (req: Request, res: Response) => {
-  try {
-    const { boardId } = req.params;
-    const columns = await ColumnModel.find({ boardId });
-    // Populating would be good, but we can also just fetch cards separately
-    res.json(columns);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
+export class ColumnController{
 
-export const createColumn = async (req: Request, res: Response) => {
-  try {
-    const { name, boardId } = req.body;
-    const newColumn = await ColumnModel.create({ name, boardId, cardsId: [] });
-    
-    // Add to board's columnsIds
-    await BoardModel.findByIdAndUpdate(boardId, {
-      $push: { columnsIds: newColumn._id }
+constructor(
+  private columnService: ColumnService
+){}
+
+async findByBoardId(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+    const boardId = mongoIdSchema.parse(req.params.id);
+
+    const columns = await this.columnService.findByBoardId(boardId);
+
+    return res.status(200).json({
+      data: columns
     });
 
-    res.status(201).json(newColumn);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  }catch(error){
+    next(error);
   }
-};
 
-export const updateColumn = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const updated = await ColumnModel.findByIdAndUpdate(id, req.body, { new: true });
-    res.json(updated);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
+}
 
-export const deleteColumn = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const col = await ColumnModel.findById(id);
-    if(col){
-       await BoardModel.findByIdAndUpdate(col.boardId, {
-         $pull: { columnsIds: id }
-       });
-       await ColumnModel.findByIdAndDelete(id);
-    }
-    res.json({ message: 'Columna eliminada' });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+async getColumnWhitDetails(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+    const columnId = mongoIdSchema.parse(req.params.id);
+
+    const column = await this.columnService.getColumnWhitDetails(columnId);
+
+    return res.status(200).json({
+      data: column
+    });
+
+  }catch(error){
+    next(error);
   }
-};
+
+}
+
+async create(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+    const data = createColumnSchema.parse(req.body);
+
+    const column = await this.columnService.create(data);
+
+    return res.status(201).json({
+      mesagge: "Columna creado correctamente",
+      data: column
+    });
+
+  }catch(error){
+    next(error);
+  }
+
+}
+
+async update(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+    const data = updateColumnSchema.parse(req.body);
+
+    const columnId = mongoIdSchema.parse(req.params.id);
+
+    const column = await this.columnService.update(
+      columnId, data
+    );
+
+    return res.status(200).json({
+      message: "Columna actulizada correctamente",
+      data: column
+    });
+
+  }catch(error){
+    next(error);
+  }
+
+}
+
+async delete(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+   const columnId = mongoIdSchema.parse(req.params.id);
+
+   await this.columnService.delete(columnId);
+
+   return res.status(204).send();
+
+  }catch(error){
+    next(error);
+  }
+
+}
+
+}

@@ -1,90 +1,106 @@
-import { Response } from 'express';
-import {CardModel} from '../models/Card';
-import { AuthRequest } from '../middlewares/authMiddleware';
+import {Request, Response, NextFunction} from 'express';
+import { CardService } from '../service/cardService';
+import { cardSchemaOutId } from '../dtos/CardDto';
+import {mongoIdSchema} from '../utils/idValidator'
 
-export const createCard = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { title, description, columnId, boardId, position, dueDate, assignedTo } = req.body;
+export class CardController{
 
-    if (!title || !columnId || !boardId) {
-      res.status(400).json({ message: 'Título, columnId y boardId son obligatorios' });
-      return;
-    }
+constructor(
+  private cardService: CardService
+){}
 
-    const newCard = new CardModel({
-      title,
-      description,
-      columnId,
-      boardId,
-      position: position || 0,
-      dueDate,
-      assignedTo: assignedTo || [],
+async findByColumnId(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+    const boardId = mongoIdSchema.parse(req.params.id);
+
+    const columns = await this.cardService.findByColumnId(boardId);
+
+    return res.status(200).json({
+      data: columns
     });
 
-    await newCard.save();
-    res.status(201).json({ message: 'Tarjeta creada exitosamente', card: newCard });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al crear la tarjeta' });
+  }catch(error){
+    next(error);
   }
-};
 
-export const getCards = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { boardId } = req.params;
-    const { title, columnId, assignedTo } = req.query;
+}
 
-    let filter: any = { boardId };
+async getCardWhitDetails(req: Request, res: Response, next: NextFunction){
 
-    if (title) {
-      filter.title = { $regex: title, $options: 'i' }; // Búsqueda insensible a mayúsculas
-    }
-    if (columnId) {
-      filter.columnId = columnId;
-    }
-    if (assignedTo) {
-      filter.assignedTo = assignedTo;
-    }
+  try{
 
-    const cards = await CardModel.find(filter).populate('assignedTo', 'name email');
-    res.json(cards);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al obtener las tarjetas' });
+    const cardId = mongoIdSchema.parse(req.params.id);
+
+    const card = await this.cardService.getCardWhitDetails(cardId);
+
+    return res.status(200).json({
+      data: card
+    });
+
+  }catch(error){
+    next(error);
   }
-};
 
-export const updateCard = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { cardId } = req.params;
-    const updates = req.body;
+}
 
-    const updatedCard = await CardModel.findByIdAndUpdate(cardId, updates, { new: true });
-    if (!updatedCard) {
-      res.status(404).json({ message: 'Tarjeta no encontrada' });
-      return;
-    }
+async create(req: Request, res: Response, next: NextFunction){
 
-    res.json({ message: 'Tarjeta actualizada', card: updatedCard });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al actualizar la tarjeta' });
+  try{
+
+    const data = cardSchemaOutId.parse(req.body);
+
+    const card = await this.cardService.create(data);
+
+    return res.status(201).json({
+      mesagge: "Tarjeta creada correctamente",
+      data: card
+    });
+
+  }catch(error){
+    next(error);
   }
-};
 
-export const deleteCard = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const { cardId } = req.params;
+}
 
-    const deletedCard = await CardModel.findByIdAndDelete(cardId);
-    if (!deletedCard) {
-      res.status(404).json({ message: 'Tarjeta no encontrada' });
-      return;
-    }
+async update(req: Request, res: Response, next: NextFunction){
 
-    res.json({ message: 'Tarjeta eliminada correctamente' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al eliminar la tarjeta' });
+  try{
+
+    const data = cardSchemaOutId.parse(req.body);
+
+    const cardId = mongoIdSchema.parse(req.params.id);
+
+    const card = await this.cardService.update(
+      cardId, data
+    );
+
+    return res.status(200).json({
+      message: "Card actulizada correctamente",
+      data: card
+    });
+
+  }catch(error){
+    next(error);
   }
-};
+
+}
+
+async delete(req: Request, res: Response, next: NextFunction){
+
+  try{
+
+   const cardId = mongoIdSchema.parse(req.params.id);
+
+   await this.cardService.delete(cardId);
+
+   return res.status(204).send();
+
+  }catch(error){
+    next(error);
+  }
+
+}
+
+}

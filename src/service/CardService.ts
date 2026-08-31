@@ -1,9 +1,10 @@
 import { CardSchemaoutId } from "../dtos/CardDto";
-import { CardRepository } from "../repository/CardRepository";
-import { ColumnRepository } from "../repository/ColumnRepository";
-import { UserRepository} from "../repository/UserRepository";
+import { CardRepository } from "../repository/cardRepository";
+import { ColumnRepository } from "../repository/columnRepository";
+import { UserRepository} from "../repository/userRepository";
 import AppError from "../errors/AppError";
 import { ICard } from "../models/Card";
+import { CommentRepository } from "../repository/commentRepository";
 
 
 export class CardService{
@@ -11,7 +12,8 @@ export class CardService{
     constructor(
         private cardRepository: CardRepository,
         private columnRepository: ColumnRepository,
-        private userRepository: UserRepository
+        private userRepository: UserRepository,
+        private commentRepository: CommentRepository
     ){}
 
     async findByColumnId(columnId: string): Promise<ICard[]>{
@@ -22,11 +24,27 @@ export class CardService{
         } 
 
         const cards = await this.cardRepository.findByColumnId(columnId);
-
-        if(cards.length === 0){
-            throw new AppError("Card/s no encontrada/s",404);
-        }
         return cards;
+
+    }
+
+    async getCardWhitDetails(cardId: string){
+
+        const card = await this.cardRepository.findById(cardId);
+        if(!card){
+        throw new AppError("El tablero buscado no existe.", 404);
+        }
+        
+        const comments = await this.commentRepository.findByCardId(cardId);
+
+        let assignedTo = null;
+
+        if(card.assignedTo !== undefined && card.assignedTo !== null){
+        assignedTo = await this.userRepository.findById(card.assignedTo.toString());
+        }
+
+
+        return {...card, comments, assignedTo};
 
     }
 
@@ -79,15 +97,12 @@ export class CardService{
 
     }
 
-    async delete(id: string): Promise<boolean>{
+    async delete(id: string): Promise<void>{
         
-
         const eliminado = await this.cardRepository.delete(id);
         if(!eliminado){
             throw new AppError("La tarjeta que se intenta elminar no existe", 404);
         }
-
-        return eliminado;
 
     }
 

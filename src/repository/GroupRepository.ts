@@ -1,39 +1,58 @@
 import { GroupModel, IGroup } from '../models/Group';
-import mongoose from 'mongoose';
 
 export class GroupRepository {
-  async findById(id: mongoose.Types.ObjectId): Promise<IGroup | null> {
-    return GroupModel.findById(id).populate('ownerId', 'name email').populate('members.user', 'name email').exec();
-  }
-
-  async findByUserId(userId: mongoose.Types.ObjectId): Promise<IGroup[]> {
-    return GroupModel.find({ 'members.user': userId })
+  async findById(id: string): Promise<IGroup | null> {
+    return GroupModel.findById(id)
       .populate('ownerId', 'name email')
       .populate('members.user', 'name email')
+      .lean()
       .exec();
   }
 
-  async create(data: Partial<IGroup>): Promise<IGroup> {
-    const newGroup = new GroupModel(data);
-    return newGroup.save();
+  async findByUserId(userId: string): Promise<IGroup[]> {
+    return GroupModel.find({ 'members.user': userId })
+      .populate('ownerId', 'name email')
+      .populate('members.user', 'name email')
+      .lean()
+      .exec();
   }
 
-  async addMember(groupId: mongoose.Types.ObjectId, userId: mongoose.Types.ObjectId, role: string): Promise<IGroup | null> {
+  async create(data: Pick<IGroup, 'name' | 'description'> & {ownerId: string}): Promise<IGroup> {
+    const group = await GroupModel.create({ ...data, members: [] });
+    return group.toObject();
+  }
+
+  async update(id: string, data: Partial<Pick<IGroup, 'name' | 'description'>>): Promise<IGroup | null> {
+    return GroupModel.findByIdAndUpdate(id, data, { new: true, runValidators: true }).lean().exec();
+  }
+
+  async addMember(groupId: string, userId: string, role: 'admin' | 'collaborator' | 'visitor'): Promise<IGroup | null> {
     return GroupModel.findByIdAndUpdate(
       groupId,
-      { $push: { members: { user: userId, role } } },
-      { new: true }
-    ).exec();
+      { $addToSet: { members: { user: userId, role } } },
+      { new: true, runValidators: true }
+    ).lean().exec();
   }
 
-  async delete(id: mongoose.Types.ObjectId): Promise<boolean> {
+  async removeMember(groupId: string, userId: string): Promise<IGroup | null> {
+    return GroupModel.findByIdAndUpdate(
+      groupId,
+      { $pull: { members: { user: userId } } },
+      { new: true }
+    ).lean().exec();
+  }
+
+  async isMember(groupId: string, userId: string): Promise<boolean> {
+    const exists = await GroupModel.exists({ _id: groupId, 'members.user': userId });
+    return exists !== null;
+  }
+
+  async delete(id: string): Promise<boolean> {
     const result = await GroupModel.findByIdAndDelete(id).exec();
     return result !== null;
   }
 
-  async existById(id: string): Promise<boolean>{
-    const result = await GroupModel.exists({_id: id}).exec();
-    return result !== null;
+  async existById(id: string): Promise<boolean> {
+    return (await GroupModel.exists({ _id: id })) !== null;
   }
-
 }

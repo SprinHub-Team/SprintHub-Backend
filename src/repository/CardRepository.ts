@@ -6,6 +6,10 @@ export class CardRepository{
         return CardModel.find({ columnId }).lean().exec();
     }
 
+    async findById(id: string):Promise<ICard | null>{
+        return CardModel.findById(id).lean().exec();
+    }
+
     async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate'>&{columnId: string, assignedTo: string }): Promise<ICard>{
         
         const newCard = await CardModel.create(data);
