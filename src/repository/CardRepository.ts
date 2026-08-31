@@ -14,12 +14,12 @@ export class CardRepository{
         return CardModel.findById(id).lean().exec();
     }
 
-    async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
+    async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate' | 'priority' | 'tasks'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
         const newCard = await CardModel.create(data);
         return newCard.toObject();
     }
 
-    async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'position'>>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
+    async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'position' | 'priority' | 'tasks'>>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
         const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
             new: true,
             runValidators: true

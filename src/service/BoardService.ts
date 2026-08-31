@@ -39,7 +39,9 @@ export class BoardService{
 
         const owner = await this.userRepository.findById(board.ownerId.toString());
 
-        return {...board, columns, owner};
+        const group = await this.groupRepository.findById(board.groupId.toString());
+
+        return {...board, columns, owner, group};
 
     }
 
