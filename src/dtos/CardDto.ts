@@ -2,11 +2,11 @@ import z from 'zod';
 
 export const cardSchema = z.object({
     id: z.string(),
-    title: z.string().min(2),
-    description: z.string().min(2),
+    title: z.string().min(2, "El título debe tener al menos 2 caracteres"),
+    description: z.string().optional().default(''),
     columnId: z.string(),
-    position: z.number(),
-    assignedTo: z.string(),
+    position: z.number().optional().default(0),
+    assignedTo: z.string().optional(),
     dueDate: z.date().optional()
 });
 
@@ -16,5 +16,5 @@ export const cardSchemaOutId = cardSchema.omit({
     id: true
 });
 
-export type CardSchemaoutId= z.infer<typeof cardSchemaOutId>;
+export type CardSchemaoutId = z.infer<typeof cardSchemaOutId>;
 

@@ -1,10 +1,13 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { GroupService } from '../service/groupService';
-import { GroupRepository } from '../repository/groupRepository';
+import { GroupService } from '../service/GroupService';
+import { GroupRepository } from '../repository/GroupRepository';
+import { UserRepository } from '../repository/UserRepository';
 import { createGroupSchema, addMemberSchema } from '../dtos/GroupDto';
+import AppError from '../errors/AppError';
 
-const groupService = new GroupService(new GroupRepository());
+const groupService = new GroupService(new GroupRepository(), new UserRepository());
+const userRepo = new UserRepository();
 
 export const createGroup = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -20,7 +23,7 @@ export const createGroup = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    const newGroup = await groupService.createGroup(userId, validation.data);
+    const newGroup = await groupService.createGroup({ ...validation.data, ownerId: userId });
     res.status(201).json({ message: 'Grupo creado exitosamente', group: newGroup });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error al crear el grupo' });
@@ -30,8 +33,8 @@ export const createGroup = async (req: AuthRequest, res: Response): Promise<void
 export const addMember = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const groupId = req.params.groupId as string;
-    const userId = req.user?.userId;
-    if (!userId) {
+    const reqUserId = req.user?.userId;
+    if (!reqUserId) {
       res.status(401).json({ message: 'No autorizado' });
       return;
     }
@@ -42,8 +45,20 @@ export const addMember = async (req: AuthRequest, res: Response): Promise<void> 
       return;
     }
 
-    const group = await groupService.addMember(userId, groupId, validation.data);
-    res.json({ message: 'Miembro agregado exitosamente', group });
+    // Verify requester is admin
+    const group = await groupService.getGroupById(groupId);
+    const requester = group.members.find((m: any) => m.user._id?.toString() === reqUserId || m.user.toString() === reqUserId);
+    if (!requester || requester.role !== 'admin') {
+      throw new AppError('Solo los administradores pueden agregar miembros al grupo', 403);
+    }
+
+    const userToAdd = await userRepo.findByEmail(validation.data.email);
+    if (!userToAdd) {
+      throw new AppError('Usuario a agregar no encontrado', 404);
+    }
+
+    const updatedGroup = await groupService.addMember(groupId, userToAdd._id.toString(), validation.data.role);
+    res.json({ message: 'Miembro agregado exitosamente', group: updatedGroup });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error al agregar miembro' });
   }
@@ -57,7 +72,7 @@ export const getMyGroups = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    const groups = await groupService.getMyGroups(userId);
+    const groups = await groupService.getGroupsForUser(userId);
     res.json(groups);
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error al obtener grupos' });
@@ -73,7 +88,14 @@ export const deleteGroup = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    await groupService.deleteGroup(userId, groupId);
+    // Verify requester is admin
+    const group = await groupService.getGroupById(groupId);
+    const requester = group.members.find((m: any) => m.user._id?.toString() === userId || m.user.toString() === userId);
+    if (!requester || requester.role !== 'admin') {
+      throw new AppError('Solo los administradores pueden eliminar el grupo', 403);
+    }
+
+    await groupService.deleteGroup(groupId);
     res.json({ message: 'Grupo eliminado exitosamente' });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error al eliminar el grupo' });

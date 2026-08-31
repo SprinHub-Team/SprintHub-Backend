@@ -1,5 +1,5 @@
-import { GroupRepository } from '../repository/groupRepository';
-import { UserRepository } from '../repository/userRepository';
+import { GroupRepository } from '../repository/GroupRepository';
+import { UserRepository } from '../repository/UserRepository';
 import AppError from '../errors/AppError';
 
 export class GroupService {

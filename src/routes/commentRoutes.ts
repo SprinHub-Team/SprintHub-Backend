@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { CommentRepository } from '../repository/commentRepository';
-import { CommentService } from '../service/commentService';
-import { UserRepository } from '../repository/userRepository';
+import { CommentRepository } from '../repository/CommentRepository';
+import { CommentService } from '../service/CommentService';
+import { UserRepository } from '../repository/UserRepository';
 import { CommentController } from '../controllers/commentController';
-import { CardRepository } from '../repository/cardRepository';
+import { CardRepository } from '../repository/CardRepository';
 
 const commentRepository = new CommentRepository();
 const cardRepository = new CardRepository();

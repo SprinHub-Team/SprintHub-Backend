@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { UserRepository } from '../repository/userRepository';
+import { UserRepository } from '../repository/UserRepository';
 import AppError from '../errors/AppError';
 
 export class UserService {
@@ -14,6 +14,24 @@ export class UserService {
 
     const passwordHash = await bcrypt.hash(data.password, 10);
     return this.userRepo.create({ ...data, passwordHash });
+  }
+
+  async loginUser(data: { email: string; password: string }) {
+    const user = await this.userRepo.findByEmail(data.email);
+    if (!user) throw new AppError('Credenciales incorrectas', 401);
+
+    const isMatch = await bcrypt.compare(data.password, user.passwordHash);
+    if (!isMatch) throw new AppError('Credenciales incorrectas', 401);
+
+    const jwt = require('jsonwebtoken');
+    const env = require('../config/env').default;
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      env.jwtsecret || 'secret',
+      { expiresIn: '8h' }
+    );
+
+    return { token, user };
   }
 
   async getUserById(id: string) {

@@ -1,10 +1,10 @@
 import {CreateBoardDto, UpdateBoardDto } from "../dtos/BoardDto";
-import {BoardRepository} from "../repository/boardRepository";
+import {BoardRepository} from "../repository/BoardRepository";
 import AppError from "../errors/AppError";
 import {IBoard} from "../models/Board";
-import { UserRepository } from "../repository/userRepository";
-import { GroupRepository } from "../repository/groupRepository";
-import { ColumnRepository } from "../repository/columnRepository";
+import { UserRepository } from "../repository/UserRepository";
+import { GroupRepository } from "../repository/GroupRepository";
+import { ColumnRepository } from "../repository/ColumnRepository";
 
 
 export class BoardService{
@@ -57,13 +57,20 @@ export class BoardService{
             throw new AppError("El grupo relacionado no existe.", 404);
         }
 
-        return this.boardRepository.create({
+        const newBoard = await this.boardRepository.create({
             title: data.title,
             description: data.description,
             groupId: data.groupId,
             ownerId: data.ownerId,
         });
 
+        // Columnas predeterminadas estilo Trello
+        const boardIdStr = newBoard._id.toString();
+        await this.columnRepository.create({ name: 'Por hacer', boardId: boardIdStr });
+        await this.columnRepository.create({ name: 'En proceso', boardId: boardIdStr });
+        await this.columnRepository.create({ name: 'Hecho', boardId: boardIdStr });
+
+        return newBoard;
     }
 
     async update(id: string, data: UpdateBoardDto): Promise<IBoard | null>{

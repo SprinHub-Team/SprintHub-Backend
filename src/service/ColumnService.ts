@@ -1,9 +1,9 @@
 import { CreateColumnDto } from "../dtos/ColumnDto";
-import { ColumnRepository } from "../repository/columnRepository";
-import { BoardRepository } from "../repository/boardRepository";
+import { ColumnRepository } from "../repository/ColumnRepository";
+import { BoardRepository } from "../repository/BoardRepository";
 import AppError from "../errors/AppError";
 import { IColumn } from "../models/Column";
-import { CardRepository } from "../repository/cardRepository";
+import { CardRepository } from "../repository/CardRepository";
 
 export class ColumnService{
 
