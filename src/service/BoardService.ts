@@ -1,9 +1,10 @@
 import {CreateBoardDto, UpdateBoardDto } from "../dtos/BoardDto";
-import {BoardRepository} from "../repository/BoardRepository";
+import {BoardRepository} from "../repository/boardRepository";
 import AppError from "../errors/AppError";
 import {IBoard} from "../models/Board";
-import { UserRepository } from "../repository/UserRepository";
-import { GroupRepository } from "../repository/GroupRepository";
+import { UserRepository } from "../repository/userRepository";
+import { GroupRepository } from "../repository/groupRepository";
+import { ColumnRepository } from "../repository/columnRepository";
 
 
 export class BoardService{
@@ -11,33 +12,47 @@ export class BoardService{
     constructor(
         private boardRepository: BoardRepository,
         private userRepository: UserRepository,
-        private groupRepository: GroupRepository
+        private groupRepository: GroupRepository,
+        private columnRepository: ColumnRepository
     ){}
 
     async findByGroupId(groupId: string): Promise<IBoard[]>{
 
-        const groupExist = this.groupRepository.existById(groupId);
+        const groupExist = await this.groupRepository.existById(groupId);
         if(!groupExist){
             throw new AppError("El grupo relacionado no existe.", 404);
         }
 
         const boards = await this.boardRepository.findByGroupId(groupId);
-
-        if(boards.length === 0){
-            throw new AppError("Tablero/s no encontrado/s",404);
-        }
         return boards;
 
     }
 
+    async getBoardWhitDetails(boardId: string){
+
+        const board = await this.boardRepository.findById(boardId);
+        if(!board){
+        throw new AppError("El tablero buscado no existe.", 404);
+        }
+        
+        const columns = await this.columnRepository.findByBoardId(boardId);
+
+        const owner = await this.userRepository.findById(board.ownerId.toString());
+
+        return {...board, columns, owner};
+
+    }
+
+
+
     async create(data: CreateBoardDto): Promise<IBoard>{
 
-        const ownerExist = this.userRepository.existById(data.ownerId);
+        const ownerExist = await this.userRepository.existById(data.ownerId);
         if(!ownerExist){
             throw new AppError("El usuario reacionado no existe", 404);
         }
 
-        const groupExist = this.groupRepository.existById(data.groupId);
+        const groupExist = await this.groupRepository.existById(data.groupId);
         if(!groupExist){
             throw new AppError("El grupo relacionado no existe.", 404);
         }
@@ -64,15 +79,13 @@ export class BoardService{
         });
     }
 
-    async delete(id: string): Promise<boolean>{
+    async delete(id: string): Promise<void>{
         
-        const eliminado = this.boardRepository.delete(id);
+        const eliminado = await this.boardRepository.delete(id);
         if(!eliminado){
             throw new AppError("El tablero que se intenta elminar no existe", 404);
         }
 
-        return eliminado;
-    
     }
     
 }

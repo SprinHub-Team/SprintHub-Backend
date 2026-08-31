@@ -6,6 +6,10 @@ export class BoardRepository {
     return BoardModel.find({ groupId }).lean().exec();
   }
 
+  async findById(id: string): Promise<IBoard | null> {
+    return BoardModel.findById(id).lean().exec();
+  }
+
   async create(data: Pick<IBoard,'description' | 'title'>&{groupId: string, ownerId: string}): Promise<IBoard> {
     
     const newBoard = await BoardModel.create(data);

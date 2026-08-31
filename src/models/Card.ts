@@ -18,7 +18,7 @@ const CardSchema = new Schema(
 CardSchema.pre('findOneAndDelete', async function(){
 
   const cardId = this.getQuery()._id;
-  await CommentModel.findByIdAndDelete({cardId});
+  await CommentModel.deleteMany({cardId});
 
 });
 

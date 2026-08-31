@@ -14,6 +14,8 @@ export const createColumnSchema = columnSchema.omit({
 
 export type CreateColumnDto = z.infer<typeof createColumnSchema>;
 
-export const updateColumnSchema = createColumnSchema.partial();
+export const updateColumnSchema = createColumnSchema.omit({
+  boardId: true
+});
 
 export type UpdateColumnDto = z.infer<typeof updateColumnSchema>;

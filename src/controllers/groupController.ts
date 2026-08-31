@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { GroupService } from '../service/GroupService';
-import { GroupRepository } from '../repository/GroupRepository';
+import { GroupService } from '../service/groupService';
+import { GroupRepository } from '../repository/groupRepository';
 import { createGroupSchema, addMemberSchema } from '../dtos/GroupDto';
 
 const groupService = new GroupService(new GroupRepository());

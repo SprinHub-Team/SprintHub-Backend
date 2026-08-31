@@ -1,14 +1,16 @@
 import { CreateColumnDto } from "../dtos/ColumnDto";
-import { ColumnRepository } from "../repository/ColumnRepository";
-import { BoardRepository } from "../repository/BoardRepository";
+import { ColumnRepository } from "../repository/columnRepository";
+import { BoardRepository } from "../repository/boardRepository";
 import AppError from "../errors/AppError";
 import { IColumn } from "../models/Column";
+import { CardRepository } from "../repository/cardRepository";
 
 export class ColumnService{
 
     constructor(
         private columnRepository: ColumnRepository,
         private boardRepository: BoardRepository,
+        private cardRepository: CardRepository
     ){}
 
     async findByBoardId(boardId: string): Promise<IColumn[]>{
@@ -19,10 +21,20 @@ export class ColumnService{
         }
 
         const columns = await this.columnRepository.findByBoardId(boardId);
-        if(columns.length=== 0){
-            throw new AppError("Columna/s no encontrada/s",404);
-        }
         return columns;
+
+    }
+
+    async getColumnWhitDetails(columnId: string){
+
+        const column = await this.columnRepository.findById(columnId);
+        if(!column){
+        throw new AppError("La columna buscada no existe.", 404);
+        }
+        
+        const cards = await this.cardRepository.findByColumnId(columnId);
+
+        return {...column, cards};
 
     }
 
@@ -51,14 +63,12 @@ export class ColumnService{
 
     }
 
-    async delete(cardId: string): Promise<boolean>{
+    async delete(cardId: string): Promise<void>{
         
         const eliminado =  await this.columnRepository.delete(cardId);
         if(!eliminado){
             throw new AppError("La columna que se intenta elminar no existe", 404);
         }
         
-        return eliminado;
-
     }
 }

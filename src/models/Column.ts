@@ -17,7 +17,7 @@ ColumnSchema.pre('findOneAndDelete', async function(){
   const cards = await CardModel.find({columnId}).select('_id');
 
   for(const card of cards){
-    await CardModel.findByIdAndDelete(card.id);
+    await CardModel.findByIdAndDelete(card._id);
   }
 
 });
