@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { createUserSchema, loginSchema } from '../dtos/UserDto';
-import { UserService } from '../service/userService';
+import { UserService } from '../service/UserService';
 
 const userService = new UserService();
 
@@ -12,7 +12,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    await userService.registerUser(validation.data);
+    await userService.createUser(validation.data);
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al registrar usuario' });

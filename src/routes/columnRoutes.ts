@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import {ColumnRepository} from '../repository/columnRepository';
-import {ColumnService} from '../service/columnService';
+import {ColumnRepository} from '../repository/ColumnRepository';
+import {ColumnService} from '../service/ColumnService';
 import { ColumnController } from '../controllers/columnController';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { BoardRepository } from '../repository/boardRepository';
-import { CardRepository } from '../repository/cardRepository';
+import { BoardRepository } from '../repository/BoardRepository';
+import { CardRepository } from '../repository/CardRepository';
 
 const columnRepository = new ColumnRepository();
 const boardRepository = new BoardRepository();

@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { CardRepository } from '../repository/cardRepository';
-import { CardService } from '../service/cardService';
-import { ColumnRepository } from '../repository/columnRepository';
-import { UserRepository } from '../repository/userRepository';
-import { CommentRepository } from '../repository/commentRepository';
+import { CardRepository } from '../repository/CardRepository';
+import { CardService } from '../service/CardService';
+import { ColumnRepository } from '../repository/ColumnRepository';
+import { UserRepository } from '../repository/UserRepository';
+import { CommentRepository } from '../repository/CommentRepository';
 import { CardController } from '../controllers/cardController';
 
 const cardRepository = new CardRepository();
@@ -27,6 +27,7 @@ router.use(requireAuth);
 
 router.post('/', cardController.create);
 router.get('/column/:column', cardController.findByColumnId);
+router.get('/board/:boardId', cardController.findByBoardId);
 router.get('/:id', cardController.getCardWhitDetails);
 router.put('/:id', cardController.update);
 router.delete('/:id', cardController.delete);

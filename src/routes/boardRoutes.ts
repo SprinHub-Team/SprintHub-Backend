@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { BoardRepository } from '../repository/boardRepository';
-import { BoardService } from '../service/boardService';
+import { BoardRepository } from '../repository/BoardRepository';
+import { BoardService } from '../service/BoardService';
 import { BoardController} from '../controllers/boardController';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { UserRepository } from '../repository/userRepository';
-import { GroupRepository } from '../repository/groupRepository';
-import { ColumnRepository } from '../repository/columnRepository';
+import { UserRepository } from '../repository/UserRepository';
+import { GroupRepository } from '../repository/GroupRepository';
+import { ColumnRepository } from '../repository/ColumnRepository';
 
 const boardrepository = new BoardRepository();
 const userRepository = new UserRepository();

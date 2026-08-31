@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from 'express';
-import { ColumnService } from '../service/columnService';
+import { ColumnService } from '../service/ColumnService';
 import { createColumnSchema, updateColumnSchema } from '../dtos/ColumnDto';
 import {mongoIdSchema} from '../utils/idValidator'
 
@@ -9,98 +9,65 @@ constructor(
   private columnService: ColumnService
 ){}
 
-async findByBoardId(req: Request, res: Response, next: NextFunction){
-
+findByBoardId = async (req: Request, res: Response, next: NextFunction) => {
   try{
-
-    const boardId = mongoIdSchema.parse(req.params.id);
-
+    const boardId = mongoIdSchema.parse(req.params.boardId);
     const columns = await this.columnService.findByBoardId(boardId);
-
     return res.status(200).json({
       data: columns
     });
-
   }catch(error){
     next(error);
   }
-
 }
 
-async getColumnWhitDetails(req: Request, res: Response, next: NextFunction){
-
+getColumnWhitDetails = async (req: Request, res: Response, next: NextFunction) => {
   try{
-
     const columnId = mongoIdSchema.parse(req.params.id);
-
     const column = await this.columnService.getColumnWhitDetails(columnId);
-
     return res.status(200).json({
       data: column
     });
-
   }catch(error){
     next(error);
   }
-
 }
 
-async create(req: Request, res: Response, next: NextFunction){
-
+create = async (req: Request, res: Response, next: NextFunction) => {
   try{
-
     const data = createColumnSchema.parse(req.body);
-
     const column = await this.columnService.create(data);
-
     return res.status(201).json({
       mesagge: "Columna creado correctamente",
       data: column
     });
-
   }catch(error){
     next(error);
   }
-
 }
 
-async update(req: Request, res: Response, next: NextFunction){
-
+update = async (req: Request, res: Response, next: NextFunction) => {
   try{
-
     const data = updateColumnSchema.parse(req.body);
-
     const columnId = mongoIdSchema.parse(req.params.id);
-
-    const column = await this.columnService.update(
-      columnId, data
-    );
-
+    const column = await this.columnService.update(columnId, data);
     return res.status(200).json({
       message: "Columna actulizada correctamente",
       data: column
     });
-
   }catch(error){
     next(error);
   }
-
 }
 
-async delete(req: Request, res: Response, next: NextFunction){
-
+delete = async (req: Request, res: Response, next: NextFunction) => {
   try{
-
    const columnId = mongoIdSchema.parse(req.params.id);
-
    await this.columnService.delete(columnId);
-
    return res.status(204).send();
-
   }catch(error){
     next(error);
   }
-
 }
 
 }

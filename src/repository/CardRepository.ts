@@ -6,25 +6,25 @@ export class CardRepository{
         return CardModel.find({ columnId }).lean().exec();
     }
 
+    async findByColumnIds(columnIds: string[]): Promise<ICard[]> {
+        return CardModel.find({ columnId: { $in: columnIds } }).lean().exec();
+    }
+
     async findById(id: string):Promise<ICard | null>{
         return CardModel.findById(id).lean().exec();
     }
 
-    async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate'>&{columnId: string, assignedTo: string }): Promise<ICard>{
-        
+    async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
         const newCard = await CardModel.create(data);
         return newCard.toObject();
-
     }
 
-    async update(idActualizar: string, data: Pick<ICard,'description' |'title' | 'position'>&{columnId: string, assignedTo: string }):Promise<ICard | null>{
-
+    async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'position'>>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
         const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
             new: true,
             runValidators: true
         }).exec();
         return updateCard ? updateCard.toObject(): null;
-
     }
 
     async delete(idEliminar: string): Promise<boolean>{
