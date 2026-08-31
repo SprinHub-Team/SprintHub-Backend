@@ -7,7 +7,13 @@ export const cardSchema = z.object({
     columnId: z.string(),
     position: z.number().optional().default(0),
     assignedTo: z.string().optional(),
-    dueDate: z.date().optional()
+    dueDate: z.date().optional(),
+    priority: z.enum(['alta', 'media', 'baja']).optional().default('media'),
+    tasks: z.array(z.object({
+        _id: z.string().optional(),
+        title: z.string(),
+        completed: z.boolean().default(false)
+    })).optional().default([])
 });
 
 export type Card = z.infer<typeof cardSchema>;

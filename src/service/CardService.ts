@@ -69,7 +69,9 @@ export class CardService{
             description: data.description,
             columnId: data.columnId,
             position: data.position ?? 0,
-            assignedTo: data.assignedTo
+            assignedTo: data.assignedTo,
+            priority: data.priority as any,
+            tasks: data.tasks as any
         }); 
     }
 
@@ -98,7 +100,9 @@ export class CardService{
             title: data.title,
             position: data.position,
             columnId: data.columnId,
-            assignedTo: data.assignedTo
+            assignedTo: data.assignedTo,
+            priority: data.priority as any,
+            tasks: data.tasks as any
         });
     }
 
