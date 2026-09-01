@@ -13,7 +13,11 @@ const ColumnSchema: Schema = new Schema(
 
 ColumnSchema.pre('findOneAndDelete', async function(){
   const columnId = this.getQuery()._id;
-  await CardModel.deleteMany({columnId});
+  const cards = await CardModel.find({columnId}).select('_id');
+
+  for(const card of cards){
+    await CardModel.findByIdAndDelete(card._id);
+  }
 });
 
 
