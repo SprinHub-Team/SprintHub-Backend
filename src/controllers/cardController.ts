@@ -9,77 +9,116 @@ constructor(
   private cardService: CardService
 ){}
 
-findByColumnId = async (req: Request, res: Response, next: NextFunction) => {
-  try{
-    const columnId = mongoIdSchema.parse(req.params.id);
-    const columns = await this.cardService.findByColumnId(columnId);
-    return res.status(200).json({
-      data: columns
-    });
-  }catch(error){
-    next(error);
-  }
-}
+async findByColumnId(req: Request, res: Response, next: NextFunction){
 
-findByBoardId = async (req: Request, res: Response, next: NextFunction) => {
   try{
-    const boardId = mongoIdSchema.parse(req.params.boardId);
-    const cards = await this.cardService.findByBoardId(boardId);
+
+    const columnId = mongoIdSchema.parse(req.params.column || req.params.id);
+
+    const cards = await this.cardService.findByColumnId(columnId);
+
     return res.status(200).json({
       data: cards
     });
+
   }catch(error){
     next(error);
   }
+
 }
 
-getCardWhitDetails = async (req: Request, res: Response, next: NextFunction) => {
+async findByBoardId(req: Request, res: Response, next: NextFunction){
+
   try{
+
+    const boardId = mongoIdSchema.parse(req.params.boardId);
+
+    const cards = await this.cardService.findByBoardId(boardId);
+
+    return res.status(200).json({
+      data: cards
+    });
+
+  }catch(error){
+    next(error);
+  }
+
+}
+
+async getCardWhitDetails(req: Request, res: Response, next: NextFunction){
+
+  try{
+
     const cardId = mongoIdSchema.parse(req.params.id);
+
     const card = await this.cardService.getCardWhitDetails(cardId);
+
     return res.status(200).json({
       data: card
     });
+
   }catch(error){
     next(error);
   }
+
 }
 
-create = async (req: Request, res: Response, next: NextFunction) => {
+async create(req: Request, res: Response, next: NextFunction){
+
   try{
+
     const data = cardSchemaOutId.parse(req.body);
+
     const card = await this.cardService.create(data);
+
     return res.status(201).json({
       message: "Tarjeta creada correctamente",
       data: card
     });
+
   }catch(error){
     next(error);
   }
+
 }
 
-update = async (req: Request, res: Response, next: NextFunction) => {
+async update(req: Request, res: Response, next: NextFunction){
+
   try{
+
     const data = cardSchemaOutId.partial().parse(req.body);
+
     const cardId = mongoIdSchema.parse(req.params.id);
-    const card = await this.cardService.update(cardId, data);
+
+    const card = await this.cardService.update(
+      cardId, data
+    );
+
     return res.status(200).json({
       message: "Tarjeta actualizada correctamente",
       data: card
     });
+
   }catch(error){
     next(error);
   }
+
 }
 
-delete = async (req: Request, res: Response, next: NextFunction) => {
+async delete(req: Request, res: Response, next: NextFunction){
+
   try{
+
    const cardId = mongoIdSchema.parse(req.params.id);
+
    await this.cardService.delete(cardId);
+
    return res.status(204).send();
+
   }catch(error){
     next(error);
   }
+
 }
 
 }

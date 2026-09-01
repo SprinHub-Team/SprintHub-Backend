@@ -45,11 +45,11 @@ export const addMember = async (req: AuthRequest, res: Response): Promise<void> 
       return;
     }
 
-    // Verify requester is admin
+    // Verify requester is admin or collaborator
     const group = await groupService.getGroupById(groupId);
     const requester = group.members.find((m: any) => m.user._id?.toString() === reqUserId || m.user.toString() === reqUserId);
-    if (!requester || requester.role !== 'admin') {
-      throw new AppError('Solo los administradores pueden agregar miembros al grupo', 403);
+    if (!requester || (requester.role !== 'admin' && requester.role !== 'collaborator')) {
+      throw new AppError('Solo los administradores o colaboradores pueden agregar miembros al grupo', 403);
     }
 
     const userToAdd = await userRepo.findByEmail(validation.data.email);
