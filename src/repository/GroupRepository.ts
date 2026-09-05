@@ -23,14 +23,14 @@ export class GroupRepository {
   }
 
   async update(id: string, data: Partial<Pick<IGroup, 'name' | 'description'>>): Promise<IGroup | null> {
-    return GroupModel.findByIdAndUpdate(id, data, { new: true, runValidators: true }).lean().exec();
+    return GroupModel.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true }).lean().exec();
   }
 
   async addMember(groupId: string, userId: string, role: 'admin' | 'collaborator' | 'visitor'): Promise<IGroup | null> {
     return GroupModel.findByIdAndUpdate(
       groupId,
       { $addToSet: { members: { user: userId, role } } },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     ).lean().exec();
   }
 
@@ -38,7 +38,7 @@ export class GroupRepository {
     return GroupModel.findByIdAndUpdate(
       groupId,
       { $pull: { members: { user: userId } } },
-      { new: true }
+      { returnDocument: 'after' }
     ).lean().exec();
   }
 

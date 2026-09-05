@@ -27,7 +27,7 @@ export class CommentRepository {
   async update(idActualizar: string, data: Partial<Pick<IComment,'name' | 'description'>>): Promise<IComment | null> {
 
     const updateComment = await CommentModel.findByIdAndUpdate(idActualizar, data, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).exec();
     return updateComment ? updateComment.toObject() :null;
