@@ -21,7 +21,7 @@ export class CardRepository{
 
     async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'position' | 'priority' | 'tasks'>>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
         const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
-            new: true,
+            returnDocument: 'after',
             runValidators: true
         }).exec();
         return updateCard ? updateCard.toObject(): null;

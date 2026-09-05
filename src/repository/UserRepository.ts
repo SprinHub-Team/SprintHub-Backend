@@ -19,7 +19,7 @@ export class UserRepository {
   }
 
   async update(id: string, data: Partial<Pick<IUser, 'name' | 'email' | 'role'>>): Promise<IUser | null> {
-    return UserModel.findByIdAndUpdate(id, data, { new: true, runValidators: true }).lean().exec();
+    return UserModel.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true }).lean().exec();
   }
 
   async delete(id: string): Promise<boolean> {
