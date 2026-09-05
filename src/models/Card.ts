@@ -9,7 +9,7 @@ const CardSchema = new Schema(
     position: { type: Number, required: true, default: 0 },
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
     dueDate: { type: Date },
-    priority: { type: String, enum: ['Alta', 'Media', 'Baja'], default: 'Media' },
+    priority: { type: String, enum: ['alta', 'media', 'baja'], default: 'media' },
     tasks: [{ title: { type: String, required: true }, completed: { type: Boolean, default: false } }]
   },
   { timestamps: true,

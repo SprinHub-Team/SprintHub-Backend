@@ -7,6 +7,7 @@ import cardRoutes from "./routes/cardRoutes";
 import boardRoutes from "./routes/boardRoutes";
 import columnRoutes from "./routes/columnRoutes";
 import commentRoutes from "./routes/columnRoutes";
+import reportRoutes from "./routes/reportRoutes";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -22,6 +23,7 @@ app.use("/api/boards", boardRoutes);
 app.use("/api/columns", columnRoutes);
 app.use("/api/cards", cardRoutes);
 app.use("/api/comment", commentRoutes);
+app.use("/api/reports", reportRoutes);
 
 
 
