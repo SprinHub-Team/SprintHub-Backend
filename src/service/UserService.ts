@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
-import { UserRepository } from '../repository/UserRepository';
+import { UserRepository } from '../repository/userRepository';
 import AppError from '../errors/AppError';
 
 export class UserService {
-  constructor(private userRepo = new UserRepository()) {}
+  constructor(private readonly userRepo : UserRepository) {}
 
   async createUser(data: { name: string; email: string; documentId: string; password: string }) {
     const emailTaken = await this.userRepo.findByEmail(data.email);

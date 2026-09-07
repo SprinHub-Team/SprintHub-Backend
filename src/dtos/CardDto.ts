@@ -1,7 +1,7 @@
 import z from 'zod';
+import { mongoIdSchema } from '../utils/idValidator';
 
-export const cardSchema = z.object({
-    id: z.string(),
+export const createCardSchema = z.object({
     title: z.string().min(2, "El título debe tener al menos 2 caracteres"),
     description: z.string().optional().default(''),
     columnId: z.string(),
@@ -16,11 +16,29 @@ export const cardSchema = z.object({
     })).optional().default([])
 });
 
-export type Card = z.infer<typeof cardSchema>;
+export type CreateCardDto = z.infer<typeof createCardSchema>;
 
-export const cardSchemaOutId = cardSchema.omit({
-    id: true
+export const updateCardSchema = createCardSchema.partial();
+
+export type UpdateCardDto = z.infer<typeof updateCardSchema>;
+
+export const createCardRequest = z.object({
+	cardData: createCardSchema,
+	paramData: z.object({boardId: mongoIdSchema})
 });
 
-export type CardSchemaoutId = z.infer<typeof cardSchemaOutId>;
+export type CreateCardRequest = z.infer<typeof createCardRequest>;
 
+export const updateCardRequest = z.object({
+	cardData: updateCardSchema,
+	paramData: z.object({boardId: mongoIdSchema, cardId: mongoIdSchema})
+});
+
+export type UpdateCardRequest = z.infer<typeof updateCardRequest>;
+
+export const deleteCardRequest = z.object({
+  boardId: mongoIdSchema,
+  cardId: mongoIdSchema
+});
+
+export type DeleteCardRequest = z.infer<typeof deleteCardRequest>;

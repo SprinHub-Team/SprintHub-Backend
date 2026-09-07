@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from 'express';
-import { CardService } from '../service/CardService';
-import { cardSchemaOutId } from '../dtos/CardDto';
+import { CardService } from '../service/cardService';
+import { createCardSchema, updateCardSchema } from '../dtos/CardDto';
 import {mongoIdSchema} from '../utils/idValidator'
 
 export class CardController{
@@ -67,7 +67,7 @@ async create(req: Request, res: Response, next: NextFunction){
 
   try{
 
-    const data = cardSchemaOutId.parse(req.body);
+    const data = createCardSchema.parse(req.body);
 
     const card = await this.cardService.create(data);
 
@@ -86,7 +86,7 @@ async update(req: Request, res: Response, next: NextFunction){
 
   try{
 
-    const data = cardSchemaOutId.partial().parse(req.body);
+    const data = updateCardSchema.parse(req.body);
 
     const cardId = mongoIdSchema.parse(req.params.id);
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { createUserSchema, loginSchema } from '../dtos/UserDto';
-import { UserService } from '../service/UserService';
+import { UserService } from '../service/userService';
 
 const userService = new UserService();
 

@@ -1,6 +1,7 @@
 import { BoardModel, IBoard } from "../models/Board";
 
-export class BoardRepository {
+export class 
+BoardRepository {
 
   async findByGroupId(groupId: string): Promise<IBoard[]> {
     return BoardModel.find({ groupId }).lean().exec();

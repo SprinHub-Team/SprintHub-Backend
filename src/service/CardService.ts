@@ -1,19 +1,19 @@
-import { CardSchemaoutId } from "../dtos/CardDto";
-import { CardRepository } from "../repository/CardRepository";
-import { ColumnRepository } from "../repository/ColumnRepository";
-import { UserRepository} from "../repository/UserRepository";
+import { CreateCardDto, UpdateCardDto } from "../dtos/CardDto";
+import { CardRepository } from "../repository/cardRepository";
+import { ColumnRepository } from "../repository/columnRepository";
+import { UserRepository} from "../repository/userRepository";
 import AppError from "../errors/AppError";
 import { ICard } from "../models/Card";
-import { CommentRepository } from "../repository/CommentRepository";
+import { CommentRepository } from "../repository/commentRepository";
 
 
 export class CardService{
 
     constructor(
-        private cardRepository: CardRepository,
-        private columnRepository: ColumnRepository,
-        private userRepository: UserRepository,
-        private commentRepository: CommentRepository
+        private readonly cardRepository: CardRepository,
+        private readonly columnRepository: ColumnRepository,
+        private readonly userRepository: UserRepository,
+        private readonly commentRepository: CommentRepository
     ){}
 
     async findByColumnId(columnId: string): Promise<ICard[]>{
@@ -51,7 +51,7 @@ export class CardService{
 
     }
 
-    async create(data: CardSchemaoutId): Promise<ICard>{
+    async create(data: CreateCardDto): Promise<ICard>{
         const columnExist = await this.columnRepository.existById(data.columnId);
         if(!columnExist){
             throw new AppError("La columna relacionada no existe", 404);
@@ -75,7 +75,7 @@ export class CardService{
         }); 
     }
 
-    async update(id: string, data: Partial<CardSchemaoutId>): Promise<ICard | null>{
+    async update(id: string, data: UpdateCardDto): Promise<ICard | null>{
         const cardExist = await this.cardRepository.existById(id);
         if(!cardExist){
             throw new AppError("La tarjeta que se intenta actualizar no existe", 404);

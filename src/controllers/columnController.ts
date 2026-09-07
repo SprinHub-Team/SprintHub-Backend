@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from 'express';
-import { ColumnService } from '../service/ColumnService';
+import { ColumnService } from '../service/columnService';
 import { createColumnSchema, updateColumnSchema } from '../dtos/ColumnDto';
 import {mongoIdSchema} from '../utils/idValidator'
 
