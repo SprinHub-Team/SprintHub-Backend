@@ -4,6 +4,7 @@ import { userRepository } from '../dependencies/userDependency';
 import { CommentController } from '../controllers/commentController';
 import { cardRepository } from '../dependencies/cardDependency';
 
+
 export const commentRepository = new CommentRepository();
 
 export const commentService = new CommentService(

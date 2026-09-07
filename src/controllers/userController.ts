@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { UserService } from '../service/userService';
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
-const userService = new UserService();
-
-export const getMyProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+ async getMyProfile(req: AuthRequest, res: Response): Promise<void> {
   try {
     const userId = req.user?.userId;
     if (!userId) {
@@ -12,7 +12,7 @@ export const getMyProfile = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    const user = await userService.getUserById(userId);
+    const user = await this.userService.getUserById(userId);
     res.json({
       id: user._id,
       name: user.name,
@@ -23,4 +23,5 @@ export const getMyProfile = async (req: AuthRequest, res: Response): Promise<voi
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error al obtener perfil' });
   }
-};
+}
+}
