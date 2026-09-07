@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { ReportRepository } from '../repository/ReportRepository';
-import { ReportService } from '../service/ReportService';
+import { ReportRepository } from '../repository/reportRepository';
+import { ReportService } from '../service/reportService';
 import { ReportController } from '../controllers/reportController';
 
 const reportRepository = new ReportRepository();

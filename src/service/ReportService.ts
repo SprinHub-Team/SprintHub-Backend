@@ -1,4 +1,4 @@
-import { ReportRepository } from "../repository/ReportRepository";
+import { ReportRepository } from "../repository/reportRepository";
 import AppError from "../errors/AppError";
 
 export class ReportService {

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ReportService } from '../service/ReportService';
+import { ReportService } from '../service/reportService';
 import { mongoIdSchema } from '../utils/idValidator';
 
 export class ReportController {
