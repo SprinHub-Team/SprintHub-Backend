@@ -1,19 +1,19 @@
 import {CreateBoardDto, UpdateBoardDto } from "../dtos/BoardDto";
-import {BoardRepository} from "../repository/BoardRepository";
+import {BoardRepository} from "../repository/boardRepository";
 import AppError from "../errors/AppError";
 import {IBoard} from "../models/Board";
-import { UserRepository } from "../repository/UserRepository";
-import { GroupRepository } from "../repository/GroupRepository";
-import { ColumnRepository } from "../repository/ColumnRepository";
+import { UserRepository } from "../repository/userRepository";
+import { GroupRepository } from "../repository/groupRepository";
+import { ColumnRepository } from "../repository/columnRepository";
 
 
 export class BoardService{
 
     constructor(
-        private boardRepository: BoardRepository,
-        private userRepository: UserRepository,
-        private groupRepository: GroupRepository,
-        private columnRepository: ColumnRepository
+        private readonly boardRepository: BoardRepository,
+        private readonly userRepository: UserRepository,
+        private readonly groupRepository: GroupRepository,
+        private readonly columnRepository: ColumnRepository
     ){}
 
     async findByGroupId(groupId: string): Promise<IBoard[]>{

@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from 'express';
-import { CardService } from '../service/CardService';
+import { CardService } from '../service/cardService';
 import { cardSchemaOutId } from '../dtos/CardDto';
 import {mongoIdSchema} from '../utils/idValidator'
 

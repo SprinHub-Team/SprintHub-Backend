@@ -1,16 +1,16 @@
 import { CreateCommentDto, UpdateCommentDto } from "../dtos/CommentDto";
 import AppError from "../errors/AppError";
 import { IComment } from "../models/Comment";
-import { CardRepository } from "../repository/CardRepository";
-import { CommentRepository } from "../repository/CommentRepository";
-import { UserRepository } from "../repository/UserRepository";
+import { CardRepository } from "../repository/cardRepository";
+import { CommentRepository } from "../repository/commentRepository";
+import { UserRepository } from "../repository/userRepository";
 
 export class CommentService{
 
     constructor(
-        private commentRepository: CommentRepository,
-        private cardRepository: CardRepository,
-        private userRepository: UserRepository
+        private readonly commentRepository: CommentRepository,
+        private readonly cardRepository: CardRepository,
+        private readonly userRepository: UserRepository
     ){}
 
     async findByCardId(cardId: string) : Promise<IComment[]>{

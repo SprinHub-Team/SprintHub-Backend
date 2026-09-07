@@ -1,11 +1,11 @@
-import { GroupRepository } from '../repository/GroupRepository';
-import { UserRepository } from '../repository/UserRepository';
+import { GroupRepository } from '../repository/groupRepository';
+import { UserRepository } from '../repository/userRepository';
 import AppError from '../errors/AppError';
 
 export class GroupService {
   constructor(
-    private groupRepo = new GroupRepository(),
-    private userRepo = new UserRepository()
+    private readonly groupRepo : GroupRepository,
+    private readonly userRepo : UserRepository
   ) {}
 
   async createGroup(data: { name: string; description?: string; ownerId: string }) {
@@ -39,6 +39,10 @@ export class GroupService {
     if (alreadyMember) throw new AppError('El usuario ya pertenece al grupo', 409);
 
     return this.groupRepo.addMember(groupId, userId, role);
+  }
+
+  async isMember(groupId: string, userId: string) {
+    return await this.groupRepo.isMember(groupId, userId);
   }
 
   async removeMember(groupId: string, userId: string) {

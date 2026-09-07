@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from 'express';
-import { BoardService } from '../service/BoardService';
+import { BoardService } from '../service/boardService';
 import { createBoardSchema, updateBoardSchema } from '../dtos/BoardDto';
 import {mongoIdSchema} from '../utils/idValidator'
 

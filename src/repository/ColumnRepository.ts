@@ -20,7 +20,7 @@ export class ColumnRepository {
   async update(idActualizar: string, data: {name: string | undefined}): Promise<IColumn | null> {
 
     const updateColumn = await ColumnModel.findByIdAndUpdate(idActualizar, data, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).exec();
     return updateColumn ? updateColumn.toObject() : null;
