@@ -1,19 +1,19 @@
 import { CardSchemaoutId } from "../dtos/CardDto";
-import { CardRepository } from "../repository/CardRepository";
-import { ColumnRepository } from "../repository/ColumnRepository";
-import { UserRepository} from "../repository/UserRepository";
+import { CardRepository } from "../repository/cardRepository";
+import { ColumnRepository } from "../repository/columnRepository";
+import { UserRepository} from "../repository/userRepository";
 import AppError from "../errors/AppError";
 import { ICard } from "../models/Card";
-import { CommentRepository } from "../repository/CommentRepository";
+import { CommentRepository } from "../repository/commentRepository";
 
 
 export class CardService{
 
     constructor(
-        private cardRepository: CardRepository,
-        private columnRepository: ColumnRepository,
-        private userRepository: UserRepository,
-        private commentRepository: CommentRepository
+        private readonly cardRepository: CardRepository,
+        private readonly columnRepository: ColumnRepository,
+        private readonly userRepository: UserRepository,
+        private readonly commentRepository: CommentRepository
     ){}
 
     async findByColumnId(columnId: string): Promise<ICard[]>{

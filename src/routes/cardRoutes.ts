@@ -1,25 +1,6 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { CardRepository } from '../repository/CardRepository';
-import { CardService } from '../service/CardService';
-import { ColumnRepository } from '../repository/ColumnRepository';
-import { UserRepository } from '../repository/UserRepository';
-import { CommentRepository } from '../repository/CommentRepository';
-import { CardController } from '../controllers/cardController';
-
-const cardRepository = new CardRepository();
-const columnRepository = new ColumnRepository();
-const userRepository = new UserRepository();
-const commentRepository = new CommentRepository();
-
-const cardService = new CardService(
-    cardRepository,
-    columnRepository,
-    userRepository,
-    commentRepository
-);
-
-const cardController = new CardController(cardService);
+import { cardController } from '../dependencies/cardDependency';
 
 const router = Router();
 

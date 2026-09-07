@@ -1,8 +1,8 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { GroupService } from '../service/GroupService';
-import { GroupRepository } from '../repository/GroupRepository';
-import { UserRepository } from '../repository/UserRepository';
+import { GroupService } from '../service/groupService';
+import { GroupRepository } from '../repository/groupRepository';
+import { UserRepository } from '../repository/userRepository';
 import { createGroupSchema, addMemberSchema } from '../dtos/GroupDto';
 import AppError from '../errors/AppError';
 

@@ -1,24 +1,6 @@
 import { Router } from 'express';
-import { BoardRepository } from '../repository/BoardRepository';
-import { BoardService } from '../service/BoardService';
-import { BoardController} from '../controllers/boardController';
+import { boardController} from '../dependencies/boardDependency';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { UserRepository } from '../repository/UserRepository';
-import { GroupRepository } from '../repository/GroupRepository';
-import { ColumnRepository } from '../repository/ColumnRepository';
-
-const boardrepository = new BoardRepository();
-const userRepository = new UserRepository();
-const groupRepository = new GroupRepository();
-const columnRepository = new ColumnRepository();
-
-const boardService = new BoardService(
-    boardrepository,
-    userRepository,
-    groupRepository,
-    columnRepository);
-
-const boardController = new BoardController(boardService);
 
 const router = Router();
 

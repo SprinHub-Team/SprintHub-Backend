@@ -1,16 +1,16 @@
 import { CreateColumnDto } from "../dtos/ColumnDto";
-import { ColumnRepository } from "../repository/ColumnRepository";
-import { BoardRepository } from "../repository/BoardRepository";
+import { ColumnRepository } from "../repository/columnRepository";
+import { BoardRepository } from "../repository/boardRepository";
 import AppError from "../errors/AppError";
 import { IColumn } from "../models/Column";
-import { CardRepository } from "../repository/CardRepository";
+import { CardRepository } from "../repository/cardRepository";
 
 export class ColumnService{
 
     constructor(
-        private columnRepository: ColumnRepository,
-        private boardRepository: BoardRepository,
-        private cardRepository: CardRepository
+        private readonly columnRepository: ColumnRepository,
+        private readonly boardRepository: BoardRepository,
+        private readonly cardRepository: CardRepository
     ){}
 
     async findByBoardId(boardId: string): Promise<IColumn[]>{

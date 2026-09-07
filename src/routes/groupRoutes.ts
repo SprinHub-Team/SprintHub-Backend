@@ -4,7 +4,6 @@ import { requireAuth } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-// Todas las rutas de grupos requieren autenticación
 router.use(requireAuth);
 
 router.post('/', createGroup);
