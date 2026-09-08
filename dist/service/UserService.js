@@ -5,52 +5,91 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const UserRepository_1 = require("../repository/UserRepository");
-const AppError_1 = __importDefault(require("../errors/AppError"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 class UserService {
-    userRepo;
-    constructor(userRepo = new UserRepository_1.UserRepository()) {
-        this.userRepo = userRepo;
+    userRepository;
+    constructor(userRepository) {
+        this.userRepository = userRepository;
     }
     async createUser(data) {
-        const emailTaken = await this.userRepo.findByEmail(data.email);
-        if (emailTaken)
-            throw new AppError_1.default('El email ya está registrado', 409);
-        const docTaken = await this.userRepo.findByDocumentId(data.documentId);
-        if (docTaken)
-            throw new AppError_1.default('El documento ya está registrado', 409);
+        if (!data.name || !data.email || !data.password) {
+            throw new Error('Faltan campos obligatorios (nombre, email, contraseña)');
+        }
+        const existingUser = await this.userRepository.findByEmail(data.email);
+        if (existingUser) {
+            throw new Error('El email ya está registrado');
+        }
         const passwordHash = await bcrypt_1.default.hash(data.password, 10);
-        return this.userRepo.create({ ...data, passwordHash });
+        return await this.userRepository.create({
+            ...data,
+            passwordHash,
+            password: passwordHash
+        });
     }
-    async loginUser(data) {
-        const user = await this.userRepo.findByEmail(data.email);
-        if (!user)
-            throw new AppError_1.default('Credenciales incorrectas', 401);
-        const isMatch = await bcrypt_1.default.compare(data.password, user.passwordHash);
-        if (!isMatch)
-            throw new AppError_1.default('Credenciales incorrectas', 401);
-        const jwt = require('jsonwebtoken');
-        const env = require('../config/env').default;
-        const token = jwt.sign({ userId: user._id, role: user.role }, env.jwtsecret || 'secret', { expiresIn: '8h' });
-        return { token, user };
+    async getAllUsers() {
+        return await this.userRepository.findAll();
     }
+    // Obtener un usuario por ID
     async getUserById(id) {
-        const user = await this.userRepo.findById(id);
-        if (!user)
-            throw new AppError_1.default('Usuario no encontrado', 404);
+        if (!id) {
+            throw new Error('El ID del usuario es obligatorio');
+        }
+        const user = await this.userRepository.findById(id);
+        if (!user) {
+            throw new Error('Usuario no encontrado');
+        }
         return user;
     }
-    async updateUser(id, data) {
-        const exists = await this.userRepo.existById(id);
-        if (!exists)
-            throw new AppError_1.default('Usuario no encontrado', 404);
-        return this.userRepo.update(id, data);
+    async updateUser(id, updateData) {
+        if (!id) {
+            throw new Error('El ID del usuario es obligatorio');
+        }
+        const updatedUser = await this.userRepository.update(id, updateData);
+        if (!updatedUser) {
+            throw new Error('Usuario no encontrado para actualizar');
+        }
+        return updatedUser;
     }
     async deleteUser(id) {
-        const exists = await this.userRepo.existById(id);
-        if (!exists)
-            throw new AppError_1.default('Usuario no encontrado', 404);
-        return this.userRepo.delete(id);
+        if (!id) {
+            throw new Error('El ID del usuario es obligatorio');
+        }
+        const deletedUser = await this.userRepository.delete(id);
+        if (!deletedUser) {
+            throw new Error('Usuario no encontrado para eliminar');
+        }
+        return deletedUser;
+    }
+    async loginUser(data) {
+        const { email, password } = data;
+        if (!email || !password) {
+            throw new Error('Email y contraseña son obligatorios');
+        }
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            throw new Error('Credenciales inválidas');
+        }
+        const hash = user.passwordHash || user.password;
+        if (!hash) {
+            throw new Error('El usuario no tiene una contraseña registrada');
+        }
+        const isValidPassword = await bcrypt_1.default.compare(password, hash);
+        if (!isValidPassword) {
+            throw new Error('Credenciales inválidas');
+        }
+        const env = require('../config/env').default;
+        const secret = env.jwtsecret || 'secret';
+        const token = jsonwebtoken_1.default.sign({ userId: user._id, role: user.role || 'user' }, secret, { expiresIn: '1d' });
+        return {
+            user: {
+                id: user._id,
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role || 'user'
+            },
+            token,
+        };
     }
 }
 exports.UserService = UserService;

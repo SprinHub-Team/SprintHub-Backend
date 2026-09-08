@@ -19,7 +19,7 @@ class CommentRepository {
     }
     async update(idActualizar, data) {
         const updateComment = await Comment_1.CommentModel.findByIdAndUpdate(idActualizar, data, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
         }).exec();
         return updateComment ? updateComment.toObject() : null;

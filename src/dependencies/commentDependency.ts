@@ -1,16 +1,16 @@
 import { CommentRepository } from '../repository/commentRepository';
 import { CommentService } from '../service/commentService';
-import { userRepository } from '../dependencies/userDependency';
+import { UserRepository } from '../repository/userRepository';
 import { CommentController } from '../controllers/commentController';
-import { cardRepository } from '../dependencies/cardDependency';
+import { CardRepository } from '../repository/cardRepository';
 
 
 export const commentRepository = new CommentRepository();
 
 export const commentService = new CommentService(
     commentRepository,
-    cardRepository,
-    userRepository
+    new CardRepository(),
+    new UserRepository()
 );
 
 export const commentController = new CommentController(commentService);

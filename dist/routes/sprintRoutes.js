@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const sprintDependency_1 = require("../dependencies/sprintDependency");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.requireAuth);
+router.post('/', (req, res) => sprintDependency_1.sprintController.create(req, res));
+router.get('/group/:groupId', (req, res) => sprintDependency_1.sprintController.getByGroup(req, res));
+router.put('/cards/:cardId/move', (req, res) => sprintDependency_1.sprintController.moveCard(req, res));
+router.get('/:sprintId/cards', (req, res) => sprintDependency_1.sprintController.getSprintCards(req, res));
+router.post('/cards/:cardId/export', (req, res) => sprintDependency_1.sprintController.exportToBoard(req, res));
+exports.default = router;

@@ -1,38 +1,34 @@
-import { UserModel, IUser } from '../models/User';
+// Usa llaves y el nombre exacto que tienes en tu archivo User.ts
+import { UserModel } from '../models/User';
 
 export class UserRepository {
-  async findById(id: string): Promise<IUser | null> {
-    return UserModel.findById(id).lean().exec();
+  async create(data: any) {
+    const newUser = new UserModel(data); // Cambia User por UserModel
+    return await newUser.save();
   }
 
-  async findByEmail(email: string): Promise<IUser | null> {
-    return UserModel.findOne({ email }).exec();
+  async findByEmail(email: string) {
+    return await UserModel.findOne({ email }); // Cambia User por UserModel
   }
 
-  async findByDocumentId(documentId: string): Promise<IUser | null> {
-    return UserModel.findOne({ documentId }).lean().exec();
+  async findAll() {
+    return await UserModel.find().select('-password');
   }
 
-  async create(data: Pick<IUser, 'name' | 'email' | 'documentId' | 'passwordHash'> & { role?: 'admin' | 'user' }): Promise<IUser> {
-    const user = await UserModel.create(data);
-    return user.toObject();
+  async findById(id: string) {
+    return await UserModel.findById(id).select('-password');
   }
 
-  async update(id: string, data: Partial<Pick<IUser, 'name' | 'email' | 'role'>>): Promise<IUser | null> {
-    return UserModel.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true }).lean().exec();
+  async update(id: string, data: any) {
+    return await UserModel.findByIdAndUpdate(id, data, { new: true }).select('-password');
   }
 
-  async delete(id: string): Promise<boolean> {
-    const result = await UserModel.findByIdAndDelete(id).exec();
-    return result !== null;
+  async delete(id: string) {
+    return await UserModel.findByIdAndDelete(id);
   }
 
-  async existById(id: string): Promise<boolean> {
-    return (await UserModel.exists({ _id: id })) !== null;
-  }
-
-  async existManyByIds(ids: string[]): Promise<boolean> {
-    const count = await UserModel.countDocuments({ _id: { $in: ids } }).exec();
-    return count === ids.length;
+  async existById(id: string) {
+    const user = await UserModel.exists({ _id: id });
+    return user !== null;
   }
 }

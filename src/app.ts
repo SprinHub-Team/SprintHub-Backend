@@ -6,8 +6,10 @@ import groupRoutes from "./routes/groupRoutes";
 import cardRoutes from "./routes/cardRoutes";
 import boardRoutes from "./routes/boardRoutes";
 import columnRoutes from "./routes/columnRoutes";
-import commentRoutes from "./routes/columnRoutes";
+import commentRoutes from "./routes/commentRoutes";
 import reportRoutes from "./routes/reportRoutes";
+import cardPBRoutes from "./routes/cardPBRoutes";
+import sprintRoutes from "./routes/sprintRoutes";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -24,6 +26,8 @@ app.use("/api/columns", columnRoutes);
 app.use("/api/cards", cardRoutes);
 app.use("/api/comment", commentRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/cardPB", cardPBRoutes);
+app.use("/api/sprints", sprintRoutes);
 
 
 

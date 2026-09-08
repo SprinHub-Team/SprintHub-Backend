@@ -15,7 +15,7 @@ class BoardRepository {
     }
     async update(idActualizar, data) {
         const updateBoard = await Board_1.BoardModel.findByIdAndUpdate(idActualizar, data, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
         }).exec();
         return updateBoard ? updateBoard.toObject() : null;

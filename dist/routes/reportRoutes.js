@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
-const ReportRepository_1 = require("../repository/ReportRepository");
-const ReportService_1 = require("../service/ReportService");
+const reportRepository_1 = require("../repository/reportRepository");
+const reportService_1 = require("../service/reportService");
 const reportController_1 = require("../controllers/reportController");
-const reportRepository = new ReportRepository_1.ReportRepository();
-const reportService = new ReportService_1.ReportService(reportRepository);
+const reportRepository = new reportRepository_1.ReportRepository();
+const reportService = new reportService_1.ReportService(reportRepository);
 const reportController = new reportController_1.ReportController(reportService);
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.requireAuth);

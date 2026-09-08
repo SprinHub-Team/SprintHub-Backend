@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.cardController = exports.cardService = exports.cardRepository = void 0;
+const cardRepository_1 = require("../repository/cardRepository");
+const cardService_1 = require("../service/cardService");
+const columnRepository_1 = require("../repository/columnRepository");
+const userRepository_1 = require("../repository/userRepository");
+const commentRepository_1 = require("../repository/commentRepository");
+const cardController_1 = require("../controllers/cardController");
+exports.cardRepository = new cardRepository_1.CardRepository();
+exports.cardService = new cardService_1.CardService(exports.cardRepository, new columnRepository_1.ColumnRepository(), new userRepository_1.UserRepository(), new commentRepository_1.CommentRepository());
+exports.cardController = new cardController_1.CardController(exports.cardService);

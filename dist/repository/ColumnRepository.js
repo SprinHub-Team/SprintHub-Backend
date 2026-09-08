@@ -15,7 +15,7 @@ class ColumnRepository {
     }
     async update(idActualizar, data) {
         const updateColumn = await Column_1.ColumnModel.findByIdAndUpdate(idActualizar, data, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
         }).exec();
         return updateColumn ? updateColumn.toObject() : null;

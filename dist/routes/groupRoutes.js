@@ -1,13 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const groupController_1 = require("../controllers/groupController");
+// ¡IMPORTANTE! Importar desde dependencias
+const groupDependency_1 = require("../dependencies/groupDependency");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const router = (0, express_1.Router)();
-// Todas las rutas de grupos requieren autenticación
 router.use(authMiddleware_1.requireAuth);
-router.post('/', groupController_1.createGroup);
-router.get('/', groupController_1.getMyGroups);
-router.post('/:groupId/members', groupController_1.addMember);
-router.delete('/:groupId', groupController_1.deleteGroup);
+router.post('/', (req, res) => groupDependency_1.groupController.createGroup(req, res));
+router.get('/', (req, res) => groupDependency_1.groupController.getMyGroups(req, res));
+router.get('/:id', (req, res) => groupDependency_1.groupController.getGroupById(req, res));
 exports.default = router;

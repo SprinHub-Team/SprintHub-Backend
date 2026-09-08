@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.commentController = exports.commentService = exports.commentRepository = void 0;
+const commentRepository_1 = require("../repository/commentRepository");
+const commentService_1 = require("../service/commentService");
+const userRepository_1 = require("../repository/userRepository");
+const commentController_1 = require("../controllers/commentController");
+const cardRepository_1 = require("../repository/cardRepository");
+exports.commentRepository = new commentRepository_1.CommentRepository();
+exports.commentService = new commentService_1.CommentService(exports.commentRepository, new cardRepository_1.CardRepository(), new userRepository_1.UserRepository());
+exports.commentController = new commentController_1.CommentController(exports.commentService);

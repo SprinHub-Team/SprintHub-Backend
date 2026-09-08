@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sprintController = void 0;
+const sprintRepository_1 = require("../repository/sprintRepository");
+const CardPBRepository_1 = require("../repository/CardPBRepository");
+const SprintService_1 = require("../service/SprintService");
+const SprintController_1 = require("../controllers/SprintController");
+const cardRepository_1 = require("../repository/cardRepository");
+const sprintRepository = new sprintRepository_1.SprintRepository();
+const cardPBRepository = new CardPBRepository_1.CardPBRepository();
+const cardRepository = new cardRepository_1.CardRepository();
+const sprintService = new SprintService_1.SprintService(sprintRepository, cardPBRepository, cardRepository);
+exports.sprintController = new SprintController_1.SprintController(sprintService);

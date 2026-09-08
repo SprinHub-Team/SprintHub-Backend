@@ -1,54 +1,104 @@
-import bcrypt from 'bcrypt';
 import { UserRepository } from '../repository/userRepository';
-import AppError from '../errors/AppError';
-
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 export class UserService {
-  constructor(private readonly userRepo : UserRepository) {}
+  constructor(private userRepository: UserRepository) {}
 
-  async createUser(data: { name: string; email: string; documentId: string; password: string }) {
-    const emailTaken = await this.userRepo.findByEmail(data.email);
-    if (emailTaken) throw new AppError('El email ya está registrado', 409);
+  async createUser(data: any) {
+    if (!data.name || !data.email || !data.password) {
+      throw new Error('Faltan campos obligatorios (nombre, email, contraseña)');
+    }
 
-    const docTaken = await this.userRepo.findByDocumentId(data.documentId);
-    if (docTaken) throw new AppError('El documento ya está registrado', 409);
+    const existingUser = await this.userRepository.findByEmail(data.email);
+    if (existingUser) {
+      throw new Error('El email ya está registrado');
+    }
 
     const passwordHash = await bcrypt.hash(data.password, 10);
-    return this.userRepo.create({ ...data, passwordHash });
+    return await this.userRepository.create({
+      ...data,
+      passwordHash,
+      password: passwordHash
+    });
   }
 
-  async loginUser(data: { email: string; password: string }) {
-    const user = await this.userRepo.findByEmail(data.email);
-    if (!user) throw new AppError('Credenciales incorrectas', 401);
-
-    const isMatch = await bcrypt.compare(data.password, user.passwordHash);
-    if (!isMatch) throw new AppError('Credenciales incorrectas', 401);
-
-    const jwt = require('jsonwebtoken');
-    const env = require('../config/env').default;
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      env.jwtsecret || 'secret',
-      { expiresIn: '8h' }
-    );
-
-    return { token, user };
+  async getAllUsers() {
+    return await this.userRepository.findAll();
   }
 
+  // Obtener un usuario por ID
   async getUserById(id: string) {
-    const user = await this.userRepo.findById(id);
-    if (!user) throw new AppError('Usuario no encontrado', 404);
+    if (!id) {
+      throw new Error('El ID del usuario es obligatorio');
+    }
+    const user = await this.userRepository.findById(id);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
     return user;
   }
 
-  async updateUser(id: string, data: { name?: string; email?: string }) {
-    const exists = await this.userRepo.existById(id);
-    if (!exists) throw new AppError('Usuario no encontrado', 404);
-    return this.userRepo.update(id, data);
+  async updateUser(id: string, updateData: any) {
+    if (!id) {
+      throw new Error('El ID del usuario es obligatorio');
+    }
+    const updatedUser = await this.userRepository.update(id, updateData);
+    if (!updatedUser) {
+      throw new Error('Usuario no encontrado para actualizar');
+    }
+    return updatedUser;
   }
 
+
   async deleteUser(id: string) {
-    const exists = await this.userRepo.existById(id);
-    if (!exists) throw new AppError('Usuario no encontrado', 404);
-    return this.userRepo.delete(id);
+    if (!id) {
+      throw new Error('El ID del usuario es obligatorio');
+    }
+    const deletedUser = await this.userRepository.delete(id);
+    if (!deletedUser) {
+      throw new Error('Usuario no encontrado para eliminar');
+    }
+    return deletedUser;
+  }
+  async loginUser(data: any) {
+    const { email, password } = data;
+
+    if (!email || !password) {
+      throw new Error('Email y contraseña son obligatorios');
+    }
+
+    const user: any = await this.userRepository.findByEmail(email);
+    if (!user) {
+      throw new Error('Credenciales inválidas');
+    }
+
+    const hash = user.passwordHash || user.password;
+    if (!hash) {
+      throw new Error('El usuario no tiene una contraseña registrada');
+    }
+
+    const isValidPassword = await bcrypt.compare(password, hash);
+    if (!isValidPassword) {
+      throw new Error('Credenciales inválidas');
+    }
+
+    const env = require('../config/env').default;
+    const secret = env.jwtsecret || 'secret';
+    const token = jwt.sign(
+      { userId: user._id, role: user.role || 'user' }, 
+      secret, 
+      { expiresIn: '1d' }
+    );
+
+    return {
+      user: {
+        id: user._id,
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role || 'user'
+      },
+      token,
+    };
   }
 }

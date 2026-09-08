@@ -11,8 +11,10 @@ const groupRoutes_1 = __importDefault(require("./routes/groupRoutes"));
 const cardRoutes_1 = __importDefault(require("./routes/cardRoutes"));
 const boardRoutes_1 = __importDefault(require("./routes/boardRoutes"));
 const columnRoutes_1 = __importDefault(require("./routes/columnRoutes"));
-const columnRoutes_2 = __importDefault(require("./routes/columnRoutes"));
+const commentRoutes_1 = __importDefault(require("./routes/commentRoutes"));
 const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
+const cardPBRoutes_1 = __importDefault(require("./routes/cardPBRoutes"));
+const sprintRoutes_1 = __importDefault(require("./routes/sprintRoutes"));
 const errorMiddleware_1 = require("./middlewares/errorMiddleware");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -23,8 +25,10 @@ app.use("/api/groups", groupRoutes_1.default);
 app.use("/api/boards", boardRoutes_1.default);
 app.use("/api/columns", columnRoutes_1.default);
 app.use("/api/cards", cardRoutes_1.default);
-app.use("/api/comment", columnRoutes_2.default);
+app.use("/api/comment", commentRoutes_1.default);
 app.use("/api/reports", reportRoutes_1.default);
+app.use("/api/cardPB", cardPBRoutes_1.default);
+app.use("/api/sprints", sprintRoutes_1.default);
 app.get("/api/health", (req, res) => {
     res.json({
         success: true,

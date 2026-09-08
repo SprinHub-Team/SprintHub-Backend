@@ -18,7 +18,7 @@ class CardRepository {
     }
     async update(idActualizar, data) {
         const updateCard = await Card_1.CardModel.findByIdAndUpdate(idActualizar, data, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true
         }).exec();
         return updateCard ? updateCard.toObject() : null;

@@ -39,7 +39,7 @@ const Comment_1 = require("./Comment");
 const CardSchema = new mongoose_1.Schema({
     title: { type: String, required: true },
     description: { type: String },
-    columnId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Board', required: true },
+    columnId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Board', required: true }, // se coloco que este en false porque cuando se haga la validacion de la columna en el product backlog mongodb lanzaria un error de validacion y no se podria crear la tarjeta, ya que en el product backlog no hay columnas pero si se puede crear una tarjeta sin columna en pocas palabras no se debe de poner el true porque lanzaria error de validacion 
     position: { type: Number, required: true, default: 0 },
     assignedTo: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
     dueDate: { type: Date },
