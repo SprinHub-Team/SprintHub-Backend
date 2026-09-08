@@ -1,8 +1,9 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { UserService } from '../service/userService';
+import { services } from '../dependencies/serviceDependency';
 
-const userService = new UserService();
+const userService = services.user;
 
 export const getMyProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {

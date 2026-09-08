@@ -1,6 +1,5 @@
 import {Request, Response, NextFunction} from 'express';
 import { CardService } from '../service/cardService';
-import { createCardSchema, updateCardSchema } from '../dtos/CardDto';
 import {mongoIdSchema} from '../utils/idValidator'
 
 export class CardController{
@@ -56,64 +55,6 @@ async getCardWhitDetails(req: Request, res: Response, next: NextFunction){
     return res.status(200).json({
       data: card
     });
-
-  }catch(error){
-    next(error);
-  }
-
-}
-
-async create(req: Request, res: Response, next: NextFunction){
-
-  try{
-
-    const data = createCardSchema.parse(req.body);
-
-    const card = await this.cardService.create(data);
-
-    return res.status(201).json({
-      message: "Tarjeta creada correctamente",
-      data: card
-    });
-
-  }catch(error){
-    next(error);
-  }
-
-}
-
-async update(req: Request, res: Response, next: NextFunction){
-
-  try{
-
-    const data = updateCardSchema.parse(req.body);
-
-    const cardId = mongoIdSchema.parse(req.params.id);
-
-    const card = await this.cardService.update(
-      cardId, data
-    );
-
-    return res.status(200).json({
-      message: "Tarjeta actualizada correctamente",
-      data: card
-    });
-
-  }catch(error){
-    next(error);
-  }
-
-}
-
-async delete(req: Request, res: Response, next: NextFunction){
-
-  try{
-
-   const cardId = mongoIdSchema.parse(req.params.id);
-
-   await this.cardService.delete(cardId);
-
-   return res.status(204).send();
 
   }catch(error){
     next(error);

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { createUserSchema, loginSchema } from '../dtos/UserDto';
-import { UserService } from '../service/userService';
+import { services } from '../dependencies/serviceDependency';
 
-const userService = new UserService();
+const userService = services.user;
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {

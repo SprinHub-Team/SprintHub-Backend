@@ -6,7 +6,7 @@ import groupRoutes from "./routes/groupRoutes";
 import cardRoutes from "./routes/cardRoutes";
 import boardRoutes from "./routes/boardRoutes";
 import columnRoutes from "./routes/columnRoutes";
-import commentRoutes from "./routes/columnRoutes";
+import commentRoutes from "./routes/commentRoutes";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();

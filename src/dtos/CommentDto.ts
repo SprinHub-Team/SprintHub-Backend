@@ -2,7 +2,6 @@ import z from "zod";
 import { mongoIdSchema } from "../utils/idValidator";
 
 export const createCommentSchema = z.object({
-  id: z.string(),
   name: z.string().min(2),
   description: z.string().min(2),
   cardId: z.string(),
