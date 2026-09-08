@@ -1,8 +1,9 @@
 import { Server } from "socket.io";
 import { AuthSocket } from "../socketAuthMiddleware";
-import { boardService } from "../../dependencies/boardDependency";
-import { groupService } from "../../dependencies/groupDependency";
+import { services } from '../../dependencies/serviceDependency';
 import { mongoIdSchema } from "../../utils/idValidator";
+
+const { board: boardService, group: groupService } = services;
 
 export function registerBoardHandlers(io: Server, socket: AuthSocket){
 
@@ -14,7 +15,7 @@ export function registerBoardHandlers(io: Server, socket: AuthSocket){
 
             const board = await boardService.getBoardWhitDetails(boardIdParsed);
 
-            const isMember = await groupService.isMember(board.groupId.toString(), socket.data.role);
+            const isMember = await groupService.isMember(board.groupId.toString(), socket.data.userId);
             if(!isMember){
 				return callback?.({ok: false, error: 'No tienes acceso a este tablero'});
             }

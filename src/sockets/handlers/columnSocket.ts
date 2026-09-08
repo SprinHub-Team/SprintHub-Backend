@@ -1,8 +1,10 @@
 import { Server } from 'socket.io';
 import { AuthSocket } from '../socketAuthMiddleware';
-import { columnService } from '../../dependencies/columnDependency';
 import { createColumnRequest, CreateColumnRequest, deleteColumnRequest, DeleteColumnRequest, updateColumnRequest, UpdateColumnRequest } from '../../dtos/ColumnDto';
-import { mongoIdSchema } from '../../utils/idValidator';
+import { services } from '../../dependencies/serviceDependency';
+
+const columnService = services.column;
+
 
 export function registerColumnsHandlers(io: Server, socket: AuthSocket){
 
