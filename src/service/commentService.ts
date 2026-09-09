@@ -57,7 +57,7 @@ export class CommentService{
     async update(id: string, data: UpdateCommentDto): Promise<IComment | null>{
 
         const commentExist = await this.commentRepository.existById(id);
-        if(commentExist){
+        if(!commentExist){
             throw new AppError("El cometario que se intenta actualizar no existe", 404);
         }
 

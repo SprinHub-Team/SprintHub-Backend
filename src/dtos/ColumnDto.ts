@@ -3,7 +3,7 @@ import { mongoIdSchema } from '../utils/idValidator';
 
 export const createColumnSchema = z.object({
   name: z.string().min(2).max(150),
-  boardId: z.string(),
+  boardId: mongoIdSchema,
 });
 
 export type CreateColumnDto = z.infer< typeof createColumnSchema>;

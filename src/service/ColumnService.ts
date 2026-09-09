@@ -1,24 +1,21 @@
-import { CreateColumnDto } from "../dtos/ColumnDto";
+import { CreateColumnDto, UpdateColumnDto } from "../dtos/ColumnDto";
 import { ColumnRepository } from "../repository/columnRepository";
 import { BoardRepository } from "../repository/boardRepository";
 import AppError from "../errors/AppError";
 import { IColumn } from "../models/Column";
 import { CardRepository } from "../repository/cardRepository";
+import { GroupRepository } from "../repository/groupRepository";
 
 export class ColumnService{
 
     constructor(
         private readonly columnRepository: ColumnRepository,
         private readonly boardRepository: BoardRepository,
-        private readonly cardRepository: CardRepository
+        private readonly cardRepository: CardRepository,
+        private readonly groupRepository: GroupRepository
     ){}
 
     async findByBoardId(boardId: string): Promise<IColumn[]>{
-
-        const boardExist = await this.boardRepository.existById(boardId);
-        if(!boardExist){
-            throw new AppError("El tablero relacionado no existe.",404);
-        }
 
         const columns = await this.columnRepository.findByBoardId(boardId);
         return columns;
@@ -38,11 +35,21 @@ export class ColumnService{
 
     }
 
-    async create(data: CreateColumnDto): Promise<IColumn>{
+    async create(data: CreateColumnDto, userId: string): Promise<IColumn>{
 
-        const boardExist = await this.boardRepository.existById(data.boardId);
-        if(!boardExist){
-            throw new AppError("El tablero relacionado no existe.",404);
+        const groupId = await this.boardRepository.getGroupIdByBoardId(data.boardId);
+         if(!groupId){
+            throw new AppError("El tablero relacionado no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
         return this.columnRepository.create({
@@ -52,22 +59,48 @@ export class ColumnService{
 
     }
 
-    async update(id: string, data: {name: string | undefined}): Promise<IColumn | null>{
+    async update(id: string, data: UpdateColumnDto, userId: string): Promise<IColumn | null>{
 
-        const columnExist = await this.columnRepository.existById(id);
-        if(!columnExist){
-            throw new AppError("La columna que se intenta actualizae no existe.", 404)
+
+        const groupId = await this.columnRepository.getGroupIdByColumnId(id);
+         if(!groupId){
+            throw new AppError("La columna que se intenta actualizar no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
         return this.columnRepository.update(id, data);
 
     }
 
-    async delete(cardId: string): Promise<void>{
+    async delete(id: string, userId: string): Promise<void>{
+
+        const groupId = await this.columnRepository.getGroupIdByColumnId(id);
+         if(!groupId){
+            throw new AppError("La columna que se intenta eliminar no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
         
-        const eliminado =  await this.columnRepository.delete(cardId);
+        const eliminado =  await this.columnRepository.delete(id);
         if(!eliminado){
-            throw new AppError("La columna que se intenta elminar no existe", 404);
+            throw new AppError("La columna que se intenta eliminar no existe", 404);
         }
         
     }

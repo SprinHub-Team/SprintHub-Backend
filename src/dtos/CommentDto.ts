@@ -4,8 +4,8 @@ import { mongoIdSchema } from "../utils/idValidator";
 export const createCommentSchema = z.object({
   name: z.string().min(2),
   description: z.string().min(2),
-  cardId: z.string(),
-  createdFor: z.string(),
+  cardId: mongoIdSchema,
+  createdFor: mongoIdSchema,
 });
 
 export type CreateCommentDto = z.infer<typeof createCommentSchema>;

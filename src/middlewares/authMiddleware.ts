@@ -1,36 +1,39 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import env from '../config/env';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import env from "../config/env";
+import AppError from "../errors/AppError";
 
-// Extender la interfaz Request para incluir el usuario decodificado
-export interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    role: string;
-  };
-}
-
-export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-
-  if (!token) {
-    res.status(401).json({ message: 'Acceso denegado. No se proporcionó un token.' });
-    return;
-  }
-
+export const requireAuth = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const decoded = jwt.verify(token, env.jwtsecret || 'secret') as { userId: string; role: string };
-    req.user = decoded;
+    
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      throw new AppError("Token no proporcionado", 401);
+    }
+
+    const [type, token] = authHeader.split(" ");
+
+    if (type !== "Bearer" || !token) {
+      throw new AppError("Formato de token inválido", 401);
+    }
+
+    const decoded = jwt.verify(token, env.jwtsecret) as {
+      userId: string;
+      role: string;
+    };
+
+    req.user = {
+      userId: decoded.userId,
+      role: decoded.role,
+    };
+
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Token inválido o expirado.' });
+    next(error);
   }
-};
-
-export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  if (req.user?.role !== 'admin') {
-    res.status(403).json({ message: 'Acceso denegado. Se requieren permisos de administrador.' });
-    return;
-  }
-  next();
 };

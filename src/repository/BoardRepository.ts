@@ -11,6 +11,11 @@ BoardRepository {
     return BoardModel.findById(id).lean().exec();
   }
 
+  async getGroupIdByBoardId(id: string): Promise<string | null> {
+    const resultado = await BoardModel.findById(id).select('groupId').lean().exec();
+    return resultado?.groupId?.toString() || null;
+  }
+
   async create(data: Pick<IBoard,'description' | 'title'>&{groupId: string, ownerId: string}): Promise<IBoard> {
     
     const newBoard = await BoardModel.create(data);

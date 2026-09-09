@@ -6,6 +6,11 @@ export class CommentRepository {
     return CommentModel.find({ cardId }).lean().exec();
   }
 
+  async getCardIdByCommentId(id: string): Promise<string | null> {
+    const resultado = await CommentModel.findById(id).select('cardId').lean().exec();
+    return resultado?.cardId?.toString() || null;
+  }
+
   async existById(id: string){
 
     const existe = await CommentModel.exists({_id: id}).exec();

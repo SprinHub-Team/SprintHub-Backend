@@ -51,7 +51,7 @@ export class CardService{
 
     }
 
-    async create(data: CreateCardDto): Promise<ICard>{
+    async create(data: CreateCardDto, userId: string): Promise<ICard>{
         const columnExist = await this.columnRepository.existById(data.columnId);
         if(!columnExist){
             throw new AppError("La columna relacionada no existe", 404);
@@ -70,7 +70,7 @@ export class CardService{
             columnId: data.columnId,
             position: data.position ?? 0,
             assignedTo: data.assignedTo,
-            priority: data.priority as any,
+            priority: data.priority,
             tasks: data.tasks as any
         }); 
     }
