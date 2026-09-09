@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const cardDependency_1 = require("../dependencies/cardDependency");
+const uploadMiddleware_1 = require("../middlewares/uploadMiddleware");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.requireAuth);
 router.post('/', cardDependency_1.cardController.create.bind(cardDependency_1.cardController));
@@ -11,4 +12,6 @@ router.get('/board/:boardId', cardDependency_1.cardController.findByBoardId.bind
 router.get('/:id', cardDependency_1.cardController.getCardWhitDetails.bind(cardDependency_1.cardController));
 router.put('/:id', cardDependency_1.cardController.update.bind(cardDependency_1.cardController));
 router.delete('/:id', cardDependency_1.cardController.delete.bind(cardDependency_1.cardController));
+router.post('/:id/attachments', uploadMiddleware_1.uploadMiddleware.single('file'), cardDependency_1.cardController.uploadAttachment.bind(cardDependency_1.cardController));
+router.delete('/:id/attachments/:attachmentId', cardDependency_1.cardController.removeAttachment.bind(cardDependency_1.cardController));
 exports.default = router;

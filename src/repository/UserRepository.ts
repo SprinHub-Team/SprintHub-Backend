@@ -20,7 +20,7 @@ export class UserRepository {
   }
 
   async update(id: string, data: any) {
-    return await UserModel.findByIdAndUpdate(id, data, { new: true }).select('-password');
+    return await UserModel.findByIdAndUpdate(id, data, { new: true }).select('-password -passwordHash');
   }
 
   async delete(id: string) {

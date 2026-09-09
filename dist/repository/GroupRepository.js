@@ -30,6 +30,9 @@ class GroupRepository {
     async removeMember(groupId, userId) {
         return Group_1.GroupModel.findByIdAndUpdate(groupId, { $pull: { members: { user: userId } } }, { returnDocument: 'after' }).lean().exec();
     }
+    async updateMemberRole(groupId, userId, role) {
+        return Group_1.GroupModel.findOneAndUpdate({ _id: groupId, 'members.user': userId }, { $set: { 'members.$.role': role } }, { returnDocument: 'after', runValidators: true }).lean().exec();
+    }
     async isMember(groupId, userId) {
         const exists = await Group_1.GroupModel.exists({ _id: groupId, 'members.user': userId });
         return exists !== null;

@@ -95,5 +95,17 @@ class CardService {
             throw new AppError_1.default("La tarjeta que se intenta elminar no existe", 404);
         }
     }
+    async addAttachment(cardId, fileData) {
+        const exist = await this.cardRepository.existById(cardId);
+        if (!exist)
+            throw new AppError_1.default("Tarjeta no encontrada", 404);
+        return await this.cardRepository.addAttachment(cardId, fileData);
+    }
+    async removeAttachment(cardId, attachmentId) {
+        const exist = await this.cardRepository.existById(cardId);
+        if (!exist)
+            throw new AppError_1.default("Tarjeta no encontrada", 404);
+        return await this.cardRepository.removeAttachment(cardId, attachmentId);
+    }
 }
 exports.CardService = CardService;

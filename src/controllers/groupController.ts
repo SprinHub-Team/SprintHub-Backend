@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { GroupService } from "../service/groupService";
 import { UserRepository } from "../repository/userRepository";
@@ -64,16 +64,18 @@ export class GroupController {
         return;
       }
 
-      // Verify requester is admin or collaborator
-      const group = await this.groupService.getGroupById(groupId);
+      // Verify requester is owner, admin or collaborator
+      const group = await this.groupService.getGroupById(groupId as string);
+      const isOwner = group.ownerId.toString() === reqUserId || (group.ownerId as any)._id?.toString() === reqUserId;
       const requester = group.members.find(
         (m: any) =>
           m.user._id?.toString() === reqUserId ||
           m.user.toString() === reqUserId,
       );
       if (
-        !requester ||
-        (requester.role !== "admin" && requester.role !== "collaborator")
+        !isOwner &&
+        (!requester ||
+          (requester.role !== "admin" && requester.role !== "collaborator"))
       ) {
         throw new AppError(
           "Solo los administradores o colaboradores pueden agregar miembros al grupo",
@@ -89,7 +91,7 @@ export class GroupController {
       }
 
       const updatedGroup = await this.groupService.addMember(
-        groupId,
+        groupId as string,
         userToAdd._id.toString(),
         validation.data.role,
       );
@@ -152,12 +154,9 @@ export class GroupController {
     }
   }
 
-  async getGroupById(req: Request, res: Response) {
+  async getGroupById(req: AuthRequest, res: Response) {
     try {
-  
       const { id } = req.params;
-      
-
       const group = await this.groupService.getGroupById(id as string);
 
       if (!group) {
@@ -167,6 +166,59 @@ export class GroupController {
       return res.status(200).json(group);
     } catch (error: any) {
       return res.status(400).json({ message: error.message });
+    }
+  }
+
+  async updateMemberRole(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { id: groupId, userId: targetUserId } = req.params;
+      const { role } = req.body;
+      const reqUserId = req.user?.userId;
+      
+      if (!reqUserId) {
+        res.status(401).json({ message: "No autorizado" });
+        return;
+      }
+
+      const group = await this.groupService.getGroupById(groupId as string);
+      const requester = group.members.find(
+        (m: any) => m.user._id?.toString() === reqUserId || m.user.toString() === reqUserId
+      );
+      
+      if (!requester || (requester.role !== "admin" && group.ownerId.toString() !== reqUserId)) {
+        throw new AppError("Solo los administradores pueden modificar los permisos", 403);
+      }
+
+      const updatedGroup = await this.groupService.updateMemberRole(groupId as string, targetUserId as string, role);
+      res.json({ message: "Rol actualizado", group: updatedGroup });
+    } catch (error: any) {
+      res.status(error.statusCode || 500).json({ message: error.message || "Error al actualizar rol" });
+    }
+  }
+
+  async removeMember(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { id: groupId, userId: targetUserId } = req.params;
+      const reqUserId = req.user?.userId;
+      
+      if (!reqUserId) {
+        res.status(401).json({ message: "No autorizado" });
+        return;
+      }
+
+      const group = await this.groupService.getGroupById(groupId as string);
+      const requester = group.members.find(
+        (m: any) => m.user._id?.toString() === reqUserId || m.user.toString() === reqUserId
+      );
+      
+      if (!requester || (requester.role !== "admin" && group.ownerId.toString() !== reqUserId)) {
+        throw new AppError("Solo los administradores pueden revocar permisos", 403);
+      }
+
+      const updatedGroup = await this.groupService.removeMember(groupId as string, targetUserId as string);
+      res.json({ message: "Miembro revocado exitosamente", group: updatedGroup });
+    } catch (error: any) {
+      res.status(error.statusCode || 500).json({ message: error.message || "Error al revocar miembro" });
     }
   }
 }

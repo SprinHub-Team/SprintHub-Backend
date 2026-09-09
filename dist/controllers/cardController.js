@@ -81,5 +81,38 @@ class CardController {
             next(error);
         }
     }
+    async uploadAttachment(req, res, next) {
+        try {
+            const { id } = req.params;
+            const file = req.file;
+            const userId = req.user?.userId;
+            if (!file)
+                throw new Error('No se subió ningún archivo');
+            if (!userId)
+                throw new Error('No autorizado');
+            // The file URL will be accessible via /uploads/filename
+            const fileUrl = `/uploads/${file.filename}`;
+            const attachmentData = {
+                fileName: file.originalname,
+                fileUrl,
+                uploadedBy: userId
+            };
+            const updatedCard = await this.cardService.addAttachment(id, attachmentData);
+            res.status(200).json(updatedCard);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async removeAttachment(req, res, next) {
+        try {
+            const { id, attachmentId } = req.params;
+            const updatedCard = await this.cardService.removeAttachment(id, attachmentId);
+            res.status(200).json(updatedCard);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
 }
 exports.CardController = CardController;

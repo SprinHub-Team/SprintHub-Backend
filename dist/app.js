@@ -15,10 +15,13 @@ const commentRoutes_1 = __importDefault(require("./routes/commentRoutes"));
 const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
 const cardPBRoutes_1 = __importDefault(require("./routes/cardPBRoutes"));
 const sprintRoutes_1 = __importDefault(require("./routes/sprintRoutes"));
+const projectDocumentRoutes_1 = __importDefault(require("./routes/projectDocumentRoutes"));
 const errorMiddleware_1 = require("./middlewares/errorMiddleware");
 const app = (0, express_1.default)();
+const path_1 = __importDefault(require("path"));
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
 app.use("/api/auth", authRoutes_1.default);
 app.use("/api/users", userRoutes_1.default);
 app.use("/api/groups", groupRoutes_1.default);
@@ -29,6 +32,7 @@ app.use("/api/comment", commentRoutes_1.default);
 app.use("/api/reports", reportRoutes_1.default);
 app.use("/api/cardPB", cardPBRoutes_1.default);
 app.use("/api/sprints", sprintRoutes_1.default);
+app.use("/api/project-documents", projectDocumentRoutes_1.default);
 app.get("/api/health", (req, res) => {
     res.json({
         success: true,

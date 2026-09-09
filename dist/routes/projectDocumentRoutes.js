@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const uploadMiddleware_1 = require("../middlewares/uploadMiddleware");
+const projectDocumentDependency_1 = require("../dependencies/projectDocumentDependency");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.requireAuth);
+router.post('/:groupId', uploadMiddleware_1.uploadMiddleware.single('file'), projectDocumentDependency_1.projectDocumentController.upload.bind(projectDocumentDependency_1.projectDocumentController));
+router.get('/group/:groupId', projectDocumentDependency_1.projectDocumentController.getByGroup.bind(projectDocumentDependency_1.projectDocumentController));
+router.delete('/:id', projectDocumentDependency_1.projectDocumentController.delete.bind(projectDocumentDependency_1.projectDocumentController));
+exports.default = router;

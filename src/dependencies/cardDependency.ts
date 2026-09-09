@@ -1,5 +1,5 @@
 import { CardRepository } from '../repository/cardRepository';
-import { CardService } from '../service/cardService';
+import { CardService } from '../service/CardService';
 import { ColumnRepository } from '../repository/columnRepository';
 import { UserRepository } from '../repository/userRepository';
 import { CommentRepository } from '../repository/commentRepository';

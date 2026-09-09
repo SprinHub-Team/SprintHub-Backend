@@ -33,29 +33,13 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CardModel = void 0;
+exports.ProjectDocumentModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const Comment_1 = require("./Comment");
-const CardSchema = new mongoose_1.Schema({
+const ProjectDocumentSchema = new mongoose_1.Schema({
     title: { type: String, required: true },
-    description: { type: String },
-    columnId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Board', required: true }, // se coloco que este en false porque cuando se haga la validacion de la columna en el product backlog mongodb lanzaria un error de validacion y no se podria crear la tarjeta, ya que en el product backlog no hay columnas pero si se puede crear una tarjeta sin columna en pocas palabras no se debe de poner el true porque lanzaria error de validacion 
-    position: { type: Number, required: true, default: 0 },
-    assignedTo: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
-    dueDate: { type: Date },
-    priority: { type: String, enum: ['alta', 'media', 'baja'], default: 'media' },
-    tasks: [{ title: { type: String, required: true }, completed: { type: Boolean, default: false } }],
-    attachments: [{
-            fileName: { type: String, required: true },
-            fileUrl: { type: String, required: true },
-            uploadedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
-            uploadedAt: { type: Date, default: Date.now }
-        }]
-}, { timestamps: true,
-    versionKey: false
-});
-CardSchema.pre('findOneAndDelete', async function () {
-    const cardId = this.getQuery()._id;
-    await Comment_1.CommentModel.deleteMany({ cardId });
-});
-exports.CardModel = mongoose_1.default.model('Card', CardSchema);
+    fileName: { type: String, required: true },
+    fileUrl: { type: String, required: true },
+    groupId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Group', required: true },
+    uploadedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true }
+}, { timestamps: true, versionKey: false });
+exports.ProjectDocumentModel = mongoose_1.default.model('ProjectDocument', ProjectDocumentSchema);

@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.boardController = exports.boardService = exports.boardrepository = void 0;
-const boardRepository_1 = require("../repository/boardRepository");
+const BoardRepository_1 = require("../repository/BoardRepository");
 const boardService_1 = require("../service/boardService");
 const boardController_1 = require("../controllers/boardController");
 const userRepository_1 = require("../repository/userRepository");
 const groupRepository_1 = require("../repository/groupRepository");
 const columnRepository_1 = require("../repository/columnRepository");
-exports.boardrepository = new boardRepository_1.BoardRepository();
+exports.boardrepository = new BoardRepository_1.BoardRepository();
 exports.boardService = new boardService_1.BoardService(exports.boardrepository, new userRepository_1.UserRepository(), new groupRepository_1.GroupRepository(), new columnRepository_1.ColumnRepository());
 exports.boardController = new boardController_1.BoardController(exports.boardService);

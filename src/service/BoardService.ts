@@ -1,5 +1,5 @@
 import {CreateBoardDto, UpdateBoardDto } from "../dtos/BoardDto";
-import {BoardRepository} from "../repository/boardRepository";
+import {BoardRepository} from "../repository/BoardRepository";
 import AppError from "../errors/AppError";
 import {IBoard} from "../models/Board";
 import { UserRepository } from "../repository/userRepository";

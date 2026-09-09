@@ -18,7 +18,7 @@ class UserRepository {
         return await User_1.UserModel.findById(id).select('-password');
     }
     async update(id, data) {
-        return await User_1.UserModel.findByIdAndUpdate(id, data, { new: true }).select('-password');
+        return await User_1.UserModel.findByIdAndUpdate(id, data, { new: true }).select('-password -passwordHash');
     }
     async delete(id) {
         return await User_1.UserModel.findByIdAndDelete(id);

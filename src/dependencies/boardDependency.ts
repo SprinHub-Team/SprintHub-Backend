@@ -1,4 +1,4 @@
-import { BoardRepository } from '../repository/boardRepository';
+import { BoardRepository } from '../repository/BoardRepository';
 import { BoardService } from '../service/boardService';
 import { BoardController} from '../controllers/boardController';
 import { UserRepository } from '../repository/userRepository';

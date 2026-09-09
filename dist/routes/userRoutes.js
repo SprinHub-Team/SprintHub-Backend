@@ -16,5 +16,7 @@ router.get('/me', authMiddleware_1.requireAuth, (req, res) => {
     }
 });
 router.get('/:id', (req, res) => userDependency_1.userController.getUserById(req, res));
+router.put('/:id', authMiddleware_1.requireAuth, (req, res) => userDependency_1.userController.updateUser(req, res));
+router.delete('/:id', authMiddleware_1.requireAuth, (req, res) => userDependency_1.userController.deleteUser(req, res));
 router.post('/', (req, res) => userDependency_1.userController.createUser(req, res));
 exports.default = router;

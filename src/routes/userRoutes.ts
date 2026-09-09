@@ -15,6 +15,8 @@ router.get('/me', requireAuth, (req, res) => {
   }
 });
 router.get('/:id', (req, res) => userController.getUserById(req, res));
+router.put('/:id', requireAuth, (req, res) => userController.updateUser(req, res));
+router.delete('/:id', requireAuth, (req, res) => userController.deleteUser(req, res));
 router.post('/', (req, res) => userController.createUser(req, res));
 
 export default router;

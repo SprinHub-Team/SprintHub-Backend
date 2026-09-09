@@ -10,12 +10,15 @@ import commentRoutes from "./routes/commentRoutes";
 import reportRoutes from "./routes/reportRoutes";
 import cardPBRoutes from "./routes/cardPBRoutes";
 import sprintRoutes from "./routes/sprintRoutes";
+import projectDocumentRoutes from "./routes/projectDocumentRoutes";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
+import path from 'path';
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -28,6 +31,7 @@ app.use("/api/comment", commentRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/cardPB", cardPBRoutes);
 app.use("/api/sprints", sprintRoutes);
+app.use("/api/project-documents", projectDocumentRoutes);
 
 
 

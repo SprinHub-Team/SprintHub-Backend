@@ -35,5 +35,11 @@ class CardRepository {
         const conteo = await Card_1.CardModel.countDocuments({ _id: { $in: ids } }).exec();
         return conteo === ids.length;
     }
+    async addAttachment(cardId, attachment) {
+        return Card_1.CardModel.findByIdAndUpdate(cardId, { $push: { attachments: attachment } }, { new: true }).lean().exec();
+    }
+    async removeAttachment(cardId, attachmentId) {
+        return Card_1.CardModel.findByIdAndUpdate(cardId, { $pull: { attachments: { _id: attachmentId } } }, { new: true }).lean().exec();
+    }
 }
 exports.CardRepository = CardRepository;

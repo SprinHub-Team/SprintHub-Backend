@@ -62,12 +62,14 @@ class GroupController {
                 });
                 return;
             }
-            // Verify requester is admin or collaborator
+            // Verify requester is owner, admin or collaborator
             const group = await this.groupService.getGroupById(groupId);
+            const isOwner = group.ownerId.toString() === reqUserId || group.ownerId._id?.toString() === reqUserId;
             const requester = group.members.find((m) => m.user._id?.toString() === reqUserId ||
                 m.user.toString() === reqUserId);
-            if (!requester ||
-                (requester.role !== "admin" && requester.role !== "collaborator")) {
+            if (!isOwner &&
+                (!requester ||
+                    (requester.role !== "admin" && requester.role !== "collaborator"))) {
                 throw new AppError_1.default("Solo los administradores o colaboradores pueden agregar miembros al grupo", 403);
             }
             const userToAdd = await this.userRepository.findByEmail(validation.data.email);
@@ -136,6 +138,47 @@ class GroupController {
         }
         catch (error) {
             return res.status(400).json({ message: error.message });
+        }
+    }
+    async updateMemberRole(req, res) {
+        try {
+            const { id: groupId, userId: targetUserId } = req.params;
+            const { role } = req.body;
+            const reqUserId = req.user?.userId;
+            if (!reqUserId) {
+                res.status(401).json({ message: "No autorizado" });
+                return;
+            }
+            const group = await this.groupService.getGroupById(groupId);
+            const requester = group.members.find((m) => m.user._id?.toString() === reqUserId || m.user.toString() === reqUserId);
+            if (!requester || (requester.role !== "admin" && group.ownerId.toString() !== reqUserId)) {
+                throw new AppError_1.default("Solo los administradores pueden modificar los permisos", 403);
+            }
+            const updatedGroup = await this.groupService.updateMemberRole(groupId, targetUserId, role);
+            res.json({ message: "Rol actualizado", group: updatedGroup });
+        }
+        catch (error) {
+            res.status(error.statusCode || 500).json({ message: error.message || "Error al actualizar rol" });
+        }
+    }
+    async removeMember(req, res) {
+        try {
+            const { id: groupId, userId: targetUserId } = req.params;
+            const reqUserId = req.user?.userId;
+            if (!reqUserId) {
+                res.status(401).json({ message: "No autorizado" });
+                return;
+            }
+            const group = await this.groupService.getGroupById(groupId);
+            const requester = group.members.find((m) => m.user._id?.toString() === reqUserId || m.user.toString() === reqUserId);
+            if (!requester || (requester.role !== "admin" && group.ownerId.toString() !== reqUserId)) {
+                throw new AppError_1.default("Solo los administradores pueden revocar permisos", 403);
+            }
+            const updatedGroup = await this.groupService.removeMember(groupId, targetUserId);
+            res.json({ message: "Miembro revocado exitosamente", group: updatedGroup });
+        }
+        catch (error) {
+            res.status(error.statusCode || 500).json({ message: error.message || "Error al revocar miembro" });
         }
     }
 }

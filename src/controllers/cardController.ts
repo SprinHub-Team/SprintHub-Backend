@@ -1,7 +1,8 @@
 import {Request, Response, NextFunction} from 'express';
-import { CardService } from '../service/cardService';
+import { CardService } from '../service/CardService';
 import { cardSchemaOutId } from '../dtos/CardDto';
 import {mongoIdSchema} from '../utils/idValidator'
+import { AuthRequest } from '../middlewares/authMiddleware';
 
 export class CardController{
 
@@ -121,4 +122,37 @@ async delete(req: Request, res: Response, next: NextFunction){
 
 }
 
+  async uploadAttachment(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const file = req.file;
+      const userId = req.user?.userId;
+
+      if (!file) throw new Error('No se subió ningún archivo');
+      if (!userId) throw new Error('No autorizado');
+
+      // The file URL will be accessible via /uploads/filename
+      const fileUrl = `/uploads/${file.filename}`;
+      const attachmentData = {
+        fileName: file.originalname,
+        fileUrl,
+        uploadedBy: userId
+      };
+
+      const updatedCard = await this.cardService.addAttachment(id as string, attachmentData);
+      res.status(200).json(updatedCard);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async removeAttachment(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { id, attachmentId } = req.params;
+      const updatedCard = await this.cardService.removeAttachment(id as string, attachmentId as string);
+      res.status(200).json(updatedCard);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

@@ -4,8 +4,8 @@ exports.columnController = exports.columnService = exports.columnRepository = vo
 const columnRepository_1 = require("../repository/columnRepository");
 const columnService_1 = require("../service/columnService");
 const columnController_1 = require("../controllers/columnController");
-const boardRepository_1 = require("../repository/boardRepository");
+const BoardRepository_1 = require("../repository/BoardRepository");
 const cardRepository_1 = require("../repository/cardRepository");
 exports.columnRepository = new columnRepository_1.ColumnRepository();
-exports.columnService = new columnService_1.ColumnService(exports.columnRepository, new boardRepository_1.BoardRepository(), new cardRepository_1.CardRepository());
+exports.columnService = new columnService_1.ColumnService(exports.columnRepository, new BoardRepository_1.BoardRepository(), new cardRepository_1.CardRepository());
 exports.columnController = new columnController_1.ColumnController(exports.columnService);

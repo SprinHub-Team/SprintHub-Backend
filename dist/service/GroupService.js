@@ -52,6 +52,15 @@ class GroupService {
             throw new AppError_1.default('El usuario no pertenece al grupo', 404);
         return this.groupRepo.removeMember(groupId, userId);
     }
+    async updateMemberRole(groupId, userId, role) {
+        const groupExists = await this.groupRepo.existById(groupId);
+        if (!groupExists)
+            throw new AppError_1.default('Grupo no encontrado', 404);
+        const isMember = await this.groupRepo.isMember(groupId, userId);
+        if (!isMember)
+            throw new AppError_1.default('El usuario no pertenece al grupo', 404);
+        return this.groupRepo.updateMemberRole(groupId, userId, role);
+    }
     async deleteGroup(id) {
         const exists = await this.groupRepo.existById(id);
         if (!exists)

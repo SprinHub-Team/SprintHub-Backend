@@ -1,6 +1,6 @@
 import { CreateColumnDto } from "../dtos/ColumnDto";
 import { ColumnRepository } from "../repository/columnRepository";
-import { BoardRepository } from "../repository/boardRepository";
+import { BoardRepository } from "../repository/BoardRepository";
 import AppError from "../errors/AppError";
 import { IColumn } from "../models/Column";
 import { CardRepository } from "../repository/cardRepository";

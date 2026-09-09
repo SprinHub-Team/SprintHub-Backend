@@ -52,6 +52,16 @@ export class GroupService {
     return this.groupRepo.removeMember(groupId, userId);
   }
 
+  async updateMemberRole(groupId: string, userId: string, role: 'admin' | 'collaborator' | 'visitor') {
+    const groupExists = await this.groupRepo.existById(groupId);
+    if (!groupExists) throw new AppError('Grupo no encontrado', 404);
+
+    const isMember = await this.groupRepo.isMember(groupId, userId);
+    if (!isMember) throw new AppError('El usuario no pertenece al grupo', 404);
+
+    return this.groupRepo.updateMemberRole(groupId, userId, role);
+  }
+
   async deleteGroup(id: string) {
     const exists = await this.groupRepo.existById(id);
     if (!exists) throw new AppError('Grupo no encontrado', 404);

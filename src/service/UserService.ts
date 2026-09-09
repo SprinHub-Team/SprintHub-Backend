@@ -42,6 +42,13 @@ export class UserService {
     if (!id) {
       throw new Error('El ID del usuario es obligatorio');
     }
+    
+    if (updateData.password) {
+      const passwordHash = await bcrypt.hash(updateData.password, 10);
+      updateData.passwordHash = passwordHash;
+      updateData.password = passwordHash;
+    }
+
     const updatedUser = await this.userRepository.update(id, updateData);
     if (!updatedUser) {
       throw new Error('Usuario no encontrado para actualizar');
