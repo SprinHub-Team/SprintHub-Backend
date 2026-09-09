@@ -27,24 +27,6 @@ async findByGroupId(req: Request, res: Response, next: NextFunction){
 
 }
 
-async getBoardWhitDetails(req: Request, res: Response, next: NextFunction){
-
-  try{
-
-    const boardId = mongoIdSchema.parse(req.params.id);
-
-    const board = await this.boardService.getBoardWhitDetails(boardId);
-
-    return res.status(200).json({
-      data: board
-    });
-
-  }catch(error){
-    next(error);
-  }
-
-}
-
 async create(req: Request, res: Response, next: NextFunction){
 
   try{

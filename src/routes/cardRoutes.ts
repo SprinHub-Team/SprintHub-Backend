@@ -3,11 +3,11 @@ import { requireAuth } from '../middlewares/authMiddleware';
 import { cardController } from '../dependencies/cardDependency';
 import { uploadMiddleware } from '../middlewares/uploadMiddleware';
 
+const cardController = controllers.card;
 const router = Router();
 
 router.use(requireAuth);
 
-router.post('/', cardController.create.bind(cardController));
 router.get('/column/:column', cardController.findByColumnId.bind(cardController));
 router.get('/board/:boardId', cardController.findByBoardId.bind(cardController));
 router.get('/:id', cardController.getCardWhitDetails.bind(cardController));

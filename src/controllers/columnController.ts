@@ -1,6 +1,5 @@
 import {Request, Response, NextFunction} from 'express';
 import { ColumnService } from '../service/columnService';
-import { createColumnSchema, updateColumnSchema } from '../dtos/ColumnDto';
 import {mongoIdSchema} from '../utils/idValidator'
 
 export class ColumnController{
@@ -38,64 +37,6 @@ async getColumnWhitDetails(req: Request, res: Response, next: NextFunction){
     return res.status(200).json({
       data: column
     });
-
-  }catch(error){
-    next(error);
-  }
-
-}
-
-async create(req: Request, res: Response, next: NextFunction){
-
-  try{
-
-    const data = createColumnSchema.parse(req.body);
-
-    const column = await this.columnService.create(data);
-
-    return res.status(201).json({
-      message: "Columna creada correctamente",
-      data: column
-    });
-
-  }catch(error){
-    next(error);
-  }
-
-}
-
-async update(req: Request, res: Response, next: NextFunction){
-
-  try{
-
-    const data = updateColumnSchema.parse(req.body);
-
-    const columnId = mongoIdSchema.parse(req.params.id);
-
-    const column = await this.columnService.update(
-      columnId, data
-    );
-
-    return res.status(200).json({
-      message: "Columna actulizada correctamente",
-      data: column
-    });
-
-  }catch(error){
-    next(error);
-  }
-
-}
-
-async delete(req: Request, res: Response, next: NextFunction){
-
-  try{
-
-   const columnId = mongoIdSchema.parse(req.params.id);
-
-   await this.columnService.delete(columnId);
-
-   return res.status(204).send();
 
   }catch(error){
     next(error);

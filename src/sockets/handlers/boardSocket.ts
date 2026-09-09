@@ -1,32 +1,36 @@
 import { Server } from "socket.io";
 import { AuthSocket } from "../socketAuthMiddleware";
-import { boardService } from "../../dependencies/boardDependency";
-import { groupService } from "../../dependencies/groupDependency";
+import { services } from '../../dependencies/serviceDependency';
+import { mongoIdSchema } from "../../utils/idValidator";
 
-export function registrerBoardHandlers(io: Server, socket: AuthSocket){
+const { board: boardService, group: groupService } = services;
+
+export function registerBoardHandlers(io: Server, socket: AuthSocket){
 
     socket.on('board:join', async(boardId: string, callback) => {
         
         try{
 
-            const board = await boardService.getBoardWhitDetails(boardId);
+			const boardIdParsed = mongoIdSchema.parse(boardId);
 
-            const isMember = await groupService.isMember(board.groupId.toString(), socket.data.role);
+            const board = await boardService.getBoardWhitDetails(boardIdParsed);
+
+            const isMember = await groupService.isMember(board.groupId.toString(), socket.data.userId);
             if(!isMember){
-							return callback?.({ok: false, error: 'No tienes acceso a este tablero'});
+				return callback?.({ok: false, error: 'No tienes acceso a este tablero'});
             }
 
-						socket.join(`board:${boardId}`);
-						callback?.({ok: true, board});
+			socket.join(`board:${boardIdParsed}`);
+			callback?.({ok: true, board});
 
-					}catch(err: any){
-						callback?.({ok: false, error: err.message });
-					}
+		}catch(err: any){
+			callback?.({ok: false, error: err.message });
+		}
 
     });
 
-		socket.on('board:leave', (boardId: string) => {
-			socket.leave(`board:${boardId}`);
-		});
+	socket.on('board:leave', (boardIdParsed: string) => {
+		socket.leave(`board:${boardIdParsed}`);
+	});
 
 }
