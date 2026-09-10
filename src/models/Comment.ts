@@ -5,7 +5,7 @@ const CommentSchema = new Schema(
     name: { type: String, required: true },
     description: { type: String, required: true },
     cardId: { type: mongoose.Types.ObjectId, ref: "Card", required: true },
-    createdFor:{type:mongoose.Types.ObjectId, ref:"User", required:true}
+    createdBy:{type:mongoose.Types.ObjectId, ref:"User", required:true}
   },
   { timestamps: true,
     versionKey: false

@@ -1,4 +1,5 @@
 import mongoose, { Schema, InferSchemaType } from 'mongoose';
+import { BoardModel } from './Board';
 
 const GroupSchema = new Schema(
   {
@@ -14,6 +15,17 @@ const GroupSchema = new Schema(
   },
   { timestamps: true, versionKey: false }
 );
+
+GroupSchema.pre('findOneAndDelete', async function() {
+  
+  const groupId = this.getQuery()._id;
+  const boards = await BoardModel.find({groupId}).select('_id');
+
+  for(const board of boards){
+    await BoardModel.findByIdAndDelete(board._id);
+  }
+
+});
 
 export type IGroup = Omit<InferSchemaType<typeof GroupSchema>, 'members'> & {
   _id: mongoose.Types.ObjectId;

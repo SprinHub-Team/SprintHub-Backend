@@ -5,14 +5,12 @@ export const createCommentSchema = z.object({
   name: z.string().min(2),
   description: z.string().min(2),
   cardId: mongoIdSchema,
-  createdFor: mongoIdSchema,
 });
 
 export type CreateCommentDto = z.infer<typeof createCommentSchema>;
 
 export const updateCommentSchema = createCommentSchema.omit({
   cardId:true,
-  createdFor:true
 }).partial();
 
 export type UpdateCommentDto = z.infer<typeof updateCommentSchema>;

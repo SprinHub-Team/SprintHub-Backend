@@ -12,7 +12,7 @@ async findByColumnId(req: Request, res: Response, next: NextFunction){
 
   try{
 
-    const columnId = mongoIdSchema.parse(req.params.column || req.params.id);
+    const columnId = mongoIdSchema.parse(req.params.id);
 
     const cards = await this.cardService.findByColumnId(columnId);
 

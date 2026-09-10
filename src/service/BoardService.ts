@@ -2,7 +2,6 @@ import {CreateBoardDto, UpdateBoardDto } from "../dtos/BoardDto";
 import {BoardRepository} from "../repository/boardRepository";
 import AppError from "../errors/AppError";
 import {IBoard} from "../models/Board";
-import { UserRepository } from "../repository/userRepository";
 import { GroupRepository } from "../repository/groupRepository";
 import { ColumnRepository } from "../repository/columnRepository";
 
@@ -11,7 +10,6 @@ export class BoardService{
 
     constructor(
         private readonly boardRepository: BoardRepository,
-        private readonly userRepository: UserRepository,
         private readonly groupRepository: GroupRepository,
         private readonly columnRepository: ColumnRepository
     ){}
@@ -25,19 +23,12 @@ export class BoardService{
 
     async getBoardWhitDetails(boardId: string){
 
-        const board = await this.boardRepository.findById(boardId);
+        const board = await this.boardRepository.getBoardWhitDetails(boardId);
         if(!board){
-        throw new AppError("El tablero buscado no existe.", 404);
+            throw new AppError("El tablero buscado no existe", 404);
         }
-        
-        const [columns, owner, group] = await Promise.all([
-        this.columnRepository.findByBoardId(boardId),
-        this.userRepository.findById(board.ownerId.toString()),
-        this.groupRepository.findById(board.groupId.toString())
-        ]);
 
-        return {...board, columns, owner, group};
-
+        return board;
     }
 
 

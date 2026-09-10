@@ -12,7 +12,7 @@ async findByBoardId(req: Request, res: Response, next: NextFunction){
 
   try{
 
-    const boardId = mongoIdSchema.parse(req.params.boardId || req.params.id);
+    const boardId = mongoIdSchema.parse(req.params.boardId);
 
     const columns = await this.columnService.findByBoardId(boardId);
 

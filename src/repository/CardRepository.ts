@@ -2,6 +2,11 @@ import { IBoard } from "../models/Board";
 import {CardModel, ICard} from "../models/Card";
 import { IColumn } from "../models/Column";
 
+type CardWithGroup = {
+  columnId: Omit<IColumn, "boardId"> & {
+   boardId: IBoard };
+};
+
 export class CardRepository{
 
     async findByColumnId(columnId: string):Promise<ICard[]>{
@@ -19,7 +24,7 @@ export class CardRepository{
     async getGroupIdByCardId(id: string): Promise<string | null> {
         
         const resultado = await CardModel.findById(id)
-        .populate<{columnId: Omit<IColumn, 'boardId'> & { boardId: IBoard }}>({
+        .populate<CardWithGroup>({
           path: 'columnId',
           select: 'boardId',
           populate:{
