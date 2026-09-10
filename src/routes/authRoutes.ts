@@ -1,15 +1,9 @@
 import { Router } from 'express';
-import { register, login } from '../controllers/authController';
-import { requireAuth } from '../middlewares/authMiddleware';
+import { authController } from '../dependencies/authDependency';
 
 const router = Router();
 
-router.post('/register', register);
-router.post('/login', login);
-
-// Ejemplo de ruta protegida para obtener el perfil (opcional, pero útil)
-router.get('/me', requireAuth, (req, res) => {
-  res.json({ message: 'Ruta protegida', user: (req as any).user });
-});
+router.post('/login', (req, res) => authController.login(req, res));
+router.post('/register', (req, res) => authController.register(req, res));
 
 export default router;

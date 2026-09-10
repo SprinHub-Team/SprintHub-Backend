@@ -1,5 +1,6 @@
 import {Request, Response, NextFunction} from 'express';
 import { CommentService } from '../service/commentService';
+import { createCommentSchema, updateCommentSchema } from '../dtos/CommentDto';
 import {mongoIdSchema} from '../utils/idValidator'
 
 export class CommentController{

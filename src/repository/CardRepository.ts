@@ -67,4 +67,19 @@ export class CardRepository{
         return conteo === ids.length;
     }
 
+    async addAttachment(cardId: string, attachment: { fileName: string; fileUrl: string; uploadedBy: string }): Promise<ICard | null> {
+        return CardModel.findByIdAndUpdate(
+            cardId,
+            { $push: { attachments: attachment } },
+            { new: true }
+        ).lean().exec();
+    }
+
+    async removeAttachment(cardId: string, attachmentId: string): Promise<ICard | null> {
+        return CardModel.findByIdAndUpdate(
+            cardId,
+            { $pull: { attachments: { _id: attachmentId } } },
+            { new: true }
+        ).lean().exec();
+    }
 }

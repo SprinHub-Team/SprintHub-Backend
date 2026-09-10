@@ -1,10 +1,15 @@
 import { Request, Response } from 'express';
 import { createUserSchema, loginSchema } from '../dtos/UserDto';
-import { services } from '../dependencies/serviceDependency';
+import { UserService } from '../service/userService';
+import { AuthService } from '../service/authService';
 
-const userService = services.user;
 
-export const register = async (req: Request, res: Response): Promise<void> => {
+export class AuthController{
+
+  constructor(private readonly userService: UserService, private authService: AuthService) {}
+
+
+async register(req: Request, res: Response): Promise<void>  {
   try {
     const validation = createUserSchema.safeParse(req.body);
     if (!validation.success) {
@@ -12,14 +17,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    await userService.createUser(validation.data);
+    await this.userService.createUser(validation.data);
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al registrar usuario' });
   }
-};
+}
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+  async login (req: Request, res: Response): Promise<void> {
   try {
     const validation = loginSchema.safeParse(req.body);
     if (!validation.success) {
@@ -27,7 +32,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const result = await userService.loginUser(validation.data);
+    const result = await this.userService.loginUser(validation.data);
     res.json({
       message: 'Sesión iniciada correctamente',
       token: result.token,
@@ -36,4 +41,5 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al iniciar sesión' });
   }
-};
+}
+}

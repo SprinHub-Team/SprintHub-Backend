@@ -148,4 +148,15 @@ export class CardService{
 
     }
 
+    async addAttachment(cardId: string, fileData: { fileName: string; fileUrl: string; uploadedBy: string }) {
+        const exist = await this.cardRepository.existById(cardId);
+        if (!exist) throw new AppError("Tarjeta no encontrada", 404);
+        return await this.cardRepository.addAttachment(cardId, fileData);
+    }
+
+    async removeAttachment(cardId: string, attachmentId: string) {
+        const exist = await this.cardRepository.existById(cardId);
+        if (!exist) throw new AppError("Tarjeta no encontrada", 404);
+        return await this.cardRepository.removeAttachment(cardId, attachmentId);
+    }
 }
