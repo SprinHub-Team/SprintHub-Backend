@@ -1,10 +1,14 @@
 import {z} from 'zod';
+import { mongoIdSchema } from '../utils/idValidator';
 
 export const createBoardSchema = z.object({
-  title: z.string().min(2, "El título debe tener al menos 2 caracteres").max(150),
-  description: z.string().optional().default(''),
-  groupId: z.string(),
-  ownerId: z.string(),
+  title: z
+    .string()
+    .min(2, "El título debe tener al menos 2 caracteres")
+    .max(150),
+  description: z.string().optional().default(""),
+  groupId: mongoIdSchema,
+  ownerId: mongoIdSchema
 });
 
 export type CreateBoardDto = z.infer< typeof createBoardSchema>;

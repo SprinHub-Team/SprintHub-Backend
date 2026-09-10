@@ -1,7 +1,7 @@
 import mongoose, { Schema, InferSchemaType } from "mongoose";
 import { CardModel } from "./Card";
 
-const ColumnSchema: Schema = new Schema(
+const ColumnSchema = new Schema(
   {
     name:{ type: String, required:true},
     boardId:{type: Schema.Types.ObjectId, ref: 'Board', required: true}

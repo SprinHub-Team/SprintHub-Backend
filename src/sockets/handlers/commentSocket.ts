@@ -12,15 +12,15 @@ export function registerCommentHandlers(io: Server, socket: AuthSocket){
 
       try{
 
-				const {commentData, paramData} = createCommentRequest.parse(data);
+			const {commentData, paramData} = createCommentRequest.parse(data);
 
-				const comment = await commentService.create(commentData);
-				io.to(`board:${paramData.boardId}`).emit('comment:created', comment);
-				callback?.({ok: true, comment});
+			const comment = await commentService.create(commentData, socket.data.userId);
+			io.to(`board:${paramData.boardId}`).emit('comment:created', comment);
+			callback?.({ok: true, comment});
 
-			}catch(err: any){
-				callback?.({ok: false, error: err.message});
-			}
+		}catch(err: any){
+			callback?.({ok: false, error: err.message});
+		}
 
   });
 
@@ -30,7 +30,7 @@ export function registerCommentHandlers(io: Server, socket: AuthSocket){
 
 			const {commentData, paramData} = updateCommentRequest.parse(data);
 
-			const comment = await commentService.update(paramData.commentId, commentData);
+			const comment = await commentService.update(paramData.commentId, commentData, socket.data.userId);
 			socket.to(`board:${paramData.boardId}`).emit('comment:updated', comment);
 			callback?.({ok: true, comment });
 
@@ -46,7 +46,7 @@ export function registerCommentHandlers(io: Server, socket: AuthSocket){
 
 			const {boardId, commentId} = deleteCommentRequest.parse(data);
 
-			await commentService.delete(commentId);
+			await commentService.delete(commentId, socket.data.userId);
 			io.to(`board:${boardId}`).emit('comment:deleted', commentId);
 			callback?.({ok: true});
 
