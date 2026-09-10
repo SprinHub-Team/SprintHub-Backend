@@ -7,7 +7,7 @@ export const createBoardSchema = z.object({
     .min(2, "El título debe tener al menos 2 caracteres")
     .max(150),
   description: z.string().optional().default(""),
-  groupId: z.string(),
+  groupId: mongoIdSchema,
   ownerId: mongoIdSchema
 });
 

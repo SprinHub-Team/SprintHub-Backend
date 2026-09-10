@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { mongoIdSchema } from '../utils/idValidator';
 
 export const groupSchema = z.object({
-  id: z.string(),
+  id: mongoIdSchema,
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(100),
   description: z.string().optional(),
   ownerId: mongoIdSchema,

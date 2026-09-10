@@ -10,7 +10,7 @@ export const createCardSchema = z.object({
     dueDate: z.date().optional(),
     priority: z.enum(['alta', 'media', 'baja']).optional().default('media'),
     tasks: z.array(z.object({
-        _id: z.string().optional(),
+        _id: mongoIdSchema.optional(),
         title: z.string(),
         completed: z.boolean().default(false)
     })).optional().default([])
