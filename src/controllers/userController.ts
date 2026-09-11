@@ -5,15 +5,6 @@ import { mongoIdSchema } from '../utils/idValidator';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  async createUser(req: Request, res: Response) {
-    try {
-      const newUser = await this.userService.createUser(req.body);
-      return res.status(201).json(newUser);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
-    }
-  }
-
   async getAllUsers(req: Request, res: Response) {
     try {
       const users = await this.userService.getAllUsers();

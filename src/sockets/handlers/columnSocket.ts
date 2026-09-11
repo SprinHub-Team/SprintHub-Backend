@@ -46,7 +46,7 @@ export function registerColumnsHandlers(io: Server, socket: AuthSocket){
 
             const columnId = deleteColumnRequest.parse(data);
 
-            const boardId = await columnService.delete(columnId, socket.data.userId);
+            const {boardId} = await columnService.delete(columnId, socket.data.userId);
             io.to(`board:${boardId}`).emit('column:deleted', {columnId: columnId});
             callback?.({ok: true});
 

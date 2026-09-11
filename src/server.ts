@@ -12,7 +12,7 @@ async function startserver(): Promise<void> {
 
     httpServer.listen(env.port, () => {
         console.log(`Servidor HTTP y WebSockets escuchando en el puerto ${env.port}`);
-        console.log(`Ver estado del servidor: http://localhost:${env.port}/api/health`);
+        console.log(`Ver estado del servidor: ${env.serverUrl}/api/health`);
     });
 } 
 

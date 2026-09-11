@@ -46,7 +46,7 @@ export function registerCommentHandlers(io: Server, socket: AuthSocket){
 
 			const commentId = deleteCommentRequest.parse(data);
 
-			const boardId = await commentService.delete(commentId, socket.data.userId);
+			const {boardId} = await commentService.delete(commentId, socket.data.userId);
 			io.to(`board:${boardId}`).emit('comment:deleted', commentId);
 			callback?.({ok: true});
 
