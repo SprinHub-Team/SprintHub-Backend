@@ -1,8 +1,5 @@
 import { UserRepository } from '../repository/userRepository';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import env from '../config/env';
-import { LoginDto } from '../dtos/UserDto';
 export class UserService {
   constructor(private userRepository: UserRepository) {}
 

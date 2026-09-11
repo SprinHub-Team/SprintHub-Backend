@@ -45,7 +45,7 @@ export function registerCardHandlers(io: Server, socket: AuthSocket){
 
             const cardId =  deleteCardRequest.parse(data);
 
-            const boardId = await cardService.delete(cardId, socket.data.userId);
+            const {boardId} = await cardService.delete(cardId, socket.data.userId);
             io.to(`board:${boardId}`).emit('card:deleted', cardId);
             callback?.({ok: true});
             
