@@ -28,17 +28,17 @@ export class GroupService {
     return this.groupRepo.findByUserId(userId);
   }
 
-  async addMember(groupId: string, userId: string, role: 'admin' | 'collaborator' | 'visitor') {
+  async addMember(groupId: string, email: string, role: 'admin' | 'collaborator' | 'visitor') {
     const groupExists = await this.groupRepo.existById(groupId);
-    if (!groupExists) throw new AppError('Grupo no encontrado', 404);
+    if (!groupExists) throw new AppError('El grupo relacionado no existe', 404);
 
-    const userExists = await this.userRepo.existById(userId);
-    if (!userExists) throw new AppError('Usuario no encontrado', 404);
+    const user = await this.userRepo.findByEmail(email);
+    if (!user) throw new AppError('El usuario relacionado no existe', 404);
 
-    const alreadyMember = await this.groupRepo.isMember(groupId, userId);
+    const alreadyMember = await this.groupRepo.isMember(groupId, user._id.toString());
     if (alreadyMember) throw new AppError('El usuario ya pertenece al grupo', 409);
 
-    return this.groupRepo.addMember(groupId, userId, role);
+    return this.groupRepo.addMember(groupId, user._id.toString(), role);
   }
 
   async isMember(groupId: string, userId: string) {
