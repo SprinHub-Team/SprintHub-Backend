@@ -3,7 +3,7 @@ import { requireAuth } from '../middlewares/authMiddleware';
 import { cardController } from '../dependencies/cardDependency';
 import { uploadMiddleware } from '../middlewares/uploadMiddleware';
 
-const cardController = controllers.card;
+
 const router = Router();
 
 router.use(requireAuth);
