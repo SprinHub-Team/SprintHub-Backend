@@ -62,4 +62,38 @@ async getCardWhitDetails(req: Request, res: Response, next: NextFunction){
 
 }
 
+  async uploadAttachment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = mongoIdSchema.parse(req.params.id);
+      const file = req.file;
+      const userId = req.user.userId;
+
+      if (!file) throw new Error('No se subió ningún archivo');
+      if (!userId) throw new Error('No autorizado');
+
+      const fileUrl = `/uploads/${file.filename}`;
+      const attachmentData = {
+        fileName: file.originalname,
+        fileUrl,
+        uploadedBy: userId
+      };
+
+      const updatedCard = await this.cardService.addAttachment(id, attachmentData);
+      res.status(200).json(updatedCard);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async removeAttachment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const attachmentId = mongoIdSchema.parse(req.params.attachmentId);
+      const id = mongoIdSchema.parse(req.params.id);
+      const updatedCard = await this.cardService.removeAttachment(id, attachmentId);
+      res.status(200).json(updatedCard);
+    } catch (error) {
+      next(error);
+    }
+  }
+  
 }

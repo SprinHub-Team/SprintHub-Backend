@@ -1,10 +1,14 @@
 import { Request, Response } from 'express';
 import { createUserSchema, loginSchema } from '../dtos/UserDto';
-import { services } from '../dependencies/serviceDependency';
+import { AuthService } from '../service/authService';
 
-const userService = services.user;
 
-export const register = async (req: Request, res: Response): Promise<void> => {
+export class AuthController{
+
+  constructor(private readonly authService: AuthService) {}
+
+
+async register(req: Request, res: Response): Promise<void>  {
   try {
     const validation = createUserSchema.safeParse(req.body);
     if (!validation.success) {
@@ -12,14 +16,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    await userService.createUser(validation.data);
+    await this.authService.register(validation.data);
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al registrar usuario' });
   }
-};
+}
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+  async login (req: Request, res: Response): Promise<void> {
   try {
     const validation = loginSchema.safeParse(req.body);
     if (!validation.success) {
@@ -27,13 +31,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const result = await userService.loginUser(validation.data);
+    const result = await this.authService.login(validation.data);
     res.json({
       message: 'Sesión iniciada correctamente',
       token: result.token,
-      user: { id: result.user._id, name: result.user.name, email: result.user.email, role: result.user.role }
+      user: { id: result.user.id, name: result.user.name, email: result.user.email, role: result.user.role }
     });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al iniciar sesión' });
   }
-};
+}
+}

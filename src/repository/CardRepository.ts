@@ -21,7 +21,7 @@ export class CardRepository{
         return CardModel.findById(id).lean().exec();
     }
 
-    async getGroupIdByCardId(id: string): Promise<string | null> {
+    async getCardContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
         
         const resultado = await CardModel.findById(id)
         .populate<CardWithGroup>({
@@ -29,12 +29,20 @@ export class CardRepository{
           select: 'boardId',
           populate:{
           path: 'boardId',
-          select: 'groupId'
+          select: 'groupId _id'
           }
         }).lean().exec();
+
+        if(!resultado?.columnId?.boardId){
+            return null;
+        }
     
-        return resultado?.columnId?.boardId.groupId.toString() || null;
+        const groupId = resultado?.columnId?.boardId.groupId.toString();
+        const boardId = resultado?.columnId?.boardId._id.toString();
+
+        return {groupId, boardId};
     }
+
 
     async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate' | 'priority' | 'tasks'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
         const newCard = await CardModel.create(data);
@@ -67,4 +75,19 @@ export class CardRepository{
         return conteo === ids.length;
     }
 
+    async addAttachment(cardId: string, attachment: { fileName: string; fileUrl: string; uploadedBy: string }): Promise<ICard | null> {
+        return CardModel.findByIdAndUpdate(
+            cardId,
+            { $push: { attachments: attachment } },
+            { new: true }
+        ).lean().exec();
+    }
+
+    async removeAttachment(cardId: string, attachmentId: string): Promise<ICard | null> {
+        return CardModel.findByIdAndUpdate(
+            cardId,
+            { $pull: { attachments: { _id: attachmentId } } },
+            { new: true }
+        ).lean().exec();
+    }
 }

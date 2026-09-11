@@ -6,7 +6,7 @@ import { CommentModel, IComment } from "../models/Comment";
 type CommentWithGroup = {
   cardId: Omit<ICard, 'columnId'> & {
     columnId: Omit<IColumn, 'boardId'> & {
-      boardId: Pick<IBoard, 'groupId'>
+      boardId: Pick<IBoard, 'groupId' | '_id'>
     }
   }
 };
@@ -16,7 +16,7 @@ export class CommentRepository {
     return CommentModel.find({ cardId }).lean().exec();
   }
 
-  async getGroupIdByCommentId(id: string): Promise<string | null> {
+  async getCommentContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
     const resultado = await CommentModel.findById(id)
       .populate<CommentWithGroup>({
         path: "cardId",
@@ -26,12 +26,19 @@ export class CommentRepository {
           select: "boardId",
           populate: {
           path: "boardId",
-          select: "groupId",
+          select: "groupId _id",
         }
         } 
       }).lean().exec();
 
-    return resultado?.cardId?.columnId.boardId.groupId.toString() || null;
+      if(!resultado?.cardId?.columnId?.boardId){
+        return null;
+      }
+
+      const groupId = resultado?.cardId?.columnId.boardId.groupId.toString();
+      const boardId = resultado?.cardId?.columnId.boardId._id.toString();
+
+      return {groupId, boardId};
   }
 
   async existById(id: string) {

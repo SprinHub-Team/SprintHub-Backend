@@ -15,16 +15,23 @@ export class ColumnRepository {
     return ColumnModel.findById(id).lean().exec();
   }
 
-  async getGroupIdByColumnId(id: string): Promise<string | null> {
+  async getColumnContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
     
     const resultado = await ColumnModel.findById(id)
     .populate<ColumnWithGroup>({
       path: 'boardId',
-      select: 'groupId'
+      select: 'groupId _id'
     }).lean().exec();
 
-    return resultado?.boardId?.groupId.toString() || null;
-  }
+    if (!resultado?.boardId) {
+        return null;
+    }
+
+    const groupId = resultado?.boardId?.groupId.toString();
+    const boardId = resultado?.boardId?._id.toString();
+
+    return {groupId, boardId};
+  } 
 
   async create(data: Pick<IColumn, 'name'>&{boardId: string}): Promise<IColumn> {
     

@@ -1,103 +1,162 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middlewares/authMiddleware';
-import { GroupService } from '../service/groupService';
-import { GroupRepository } from '../repository/groupRepository';
-import { UserRepository } from '../repository/userRepository';
-import { createGroupSchema, addMemberSchema } from '../dtos/GroupDto';
-import AppError from '../errors/AppError';
+import { Request, Response, NextFunction } from "express";
 
-const groupService = new GroupService(new GroupRepository(), new UserRepository());
-const userRepo = new UserRepository();
+import { GroupService } from "../service/groupService";
+import { createGroupSchema, addMemberSchema } from "../dtos/GroupDto";
+import { mongoIdSchema } from "../utils/idValidator";
 
-export const createGroup = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      res.status(401).json({ message: 'No autorizado' });
-      return;
+export class GroupController {
+  constructor(
+    private readonly groupService: GroupService,
+  ) {}
+
+  async createGroup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const userId = req.user?.userId;
+
+      const data = createGroupSchema.parse(req.body);
+
+      const group = await this.groupService.createGroup({
+        ...data,
+        ownerId: userId,
+      });
+
+      return res.status(201).json({
+        data: group,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const validation = createGroupSchema.safeParse(req.body);
-    if (!validation.success) {
-      res.status(400).json({ message: 'Datos inválidos', errors: validation.error.format() });
-      return;
-    }
-
-    const newGroup = await groupService.createGroup({ ...validation.data, ownerId: userId });
-    res.status(201).json({ message: 'Grupo creado exitosamente', group: newGroup });
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message || 'Error al crear el grupo' });
   }
-};
 
-export const addMember = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const groupId = req.params.groupId as string;
-    const reqUserId = req.user?.userId;
-    if (!reqUserId) {
-      res.status(401).json({ message: 'No autorizado' });
-      return;
+  async addMember(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.groupId);
+      const data = addMemberSchema.parse(req.body);
+
+      const group = await this.groupService.addMember(
+        groupId,
+        data.email,
+        data.role,
+      );
+
+      return res.status(200).json({
+        data: group,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const validation = addMemberSchema.safeParse(req.body);
-    if (!validation.success) {
-      res.status(400).json({ message: 'Datos inválidos', errors: validation.error.format() });
-      return;
-    }
-
-    // Verify requester is admin or collaborator
-    const group = await groupService.getGroupById(groupId);
-    const requester = group.members.find((m: any) => m.user._id?.toString() === reqUserId || m.user.toString() === reqUserId);
-    if (!requester || (requester.role !== 'admin' && requester.role !== 'collaborator')) {
-      throw new AppError('Solo los administradores o colaboradores pueden agregar miembros al grupo', 403);
-    }
-
-    const userToAdd = await userRepo.findByEmail(validation.data.email);
-    if (!userToAdd) {
-      throw new AppError('Usuario a agregar no encontrado', 404);
-    }
-
-    const updatedGroup = await groupService.addMember(groupId, userToAdd._id.toString(), validation.data.role);
-    res.json({ message: 'Miembro agregado exitosamente', group: updatedGroup });
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message || 'Error al agregar miembro' });
   }
-};
 
-export const getMyGroups = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      res.status(401).json({ message: 'No autorizado' });
-      return;
+  async getMyGroups(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({
+          message: "No autorizado",
+        });
+      }
+
+      const groups = await this.groupService.getGroupsForUser(userId);
+
+      return res.status(200).json({
+        data: groups,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const groups = await groupService.getGroupsForUser(userId);
-    res.json(groups);
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message || 'Error al obtener grupos' });
   }
-};
 
-export const deleteGroup = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const groupId = req.params.groupId as string;
-    const userId = req.user?.userId;
-    if (!userId) {
-      res.status(401).json({ message: 'No autorizado' });
-      return;
+  async getGroupById(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+
+      const group = await this.groupService.getGroupById(groupId);
+
+      return res.status(200).json({
+        data: group,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    // Verify requester is admin
-    const group = await groupService.getGroupById(groupId);
-    const requester = group.members.find((m: any) => m.user._id?.toString() === userId || m.user.toString() === userId);
-    if (!requester || requester.role !== 'admin') {
-      throw new AppError('Solo los administradores pueden eliminar el grupo', 403);
-    }
-
-    await groupService.deleteGroup(groupId);
-    res.json({ message: 'Grupo eliminado exitosamente' });
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message || 'Error al eliminar el grupo' });
   }
-};
+
+  async updateMemberRole(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+      const userId = mongoIdSchema.parse(req.params.userId);
+
+      const updatedGroup = await this.groupService.updateMemberRole(
+        groupId,
+        userId,
+        req.body.role,
+      );
+
+      return res.status(200).json({
+        data: updatedGroup,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async removeMember(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+      const userId = mongoIdSchema.parse(req.params.userId);
+
+      const updatedGroup = await this.groupService.removeMember(
+        groupId,
+        userId,
+      );
+
+      return res.status(200).json({
+        data: updatedGroup,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteGroup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+
+      await this.groupService.deleteGroup(groupId);
+
+      return res.status(200).json({
+        message: "Grupo eliminado exitosamente",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+}

@@ -60,6 +60,14 @@ export class GroupRepository {
       .exec();
   }
 
+  async updateMemberRole(groupId: string, userId: string, role: 'admin' | 'collaborator' | 'visitor'): Promise<IGroup | null> {
+    return GroupModel.findOneAndUpdate(
+      { _id: groupId, 'members.user': userId },
+      { $set: { 'members.$.role': role } },
+      { returnDocument: 'after', runValidators: true }
+    ).lean().exec();
+  }
+
   async isMember(groupId: string, userId: string): Promise<boolean> {
     const exists = await GroupModel.exists({
       _id: groupId,

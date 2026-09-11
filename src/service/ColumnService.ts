@@ -35,7 +35,7 @@ export class ColumnService{
 
     }
 
-    async create(data: CreateColumnDto, userId: string): Promise<IColumn>{
+    async create(data: CreateColumnDto, userId: string): Promise<{column: Omit<IColumn, 'boardId'>} & {boardId: string}>{
 
         const groupId = await this.boardRepository.getGroupIdByBoardId(data.boardId);
          if(!groupId){
@@ -52,23 +52,25 @@ export class ColumnService{
             throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
-        return this.columnRepository.create({
+        const column = await this.columnRepository.create({
             name: data.name,
             boardId: data.boardId
         });
 
+        return {column, boardId: data.boardId}
+
     }
 
-    async update(id: string, data: UpdateColumnDto, userId: string): Promise<IColumn | null>{
+    async update(id: string, data: UpdateColumnDto, userId: string): Promise<{column: Omit<IColumn, 'boardId'> | null} & {boardId: string}>{
 
 
-        const groupId = await this.columnRepository.getGroupIdByColumnId(id);
-         if(!groupId){
+        const columnContext = await this.columnRepository.getColumnContext(id);
+         if(!columnContext){
             throw new AppError("La columna que se intenta actualizar no existe", 404);
         }
 
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          groupId,
+          columnContext.groupId,
           userId,
           ["admin", "collaborator"],
         );
@@ -77,31 +79,35 @@ export class ColumnService{
             throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
-        return this.columnRepository.update(id, data);
+        const column = await this.columnRepository.update(id, data);
+
+        return {column, boardId: columnContext.boardId};
 
     }
 
-    async delete(id: string, userId: string): Promise<void>{
+    async delete(id: string, userId: string): Promise<{boardId: string;}>{
 
-        const groupId = await this.columnRepository.getGroupIdByColumnId(id);
-         if(!groupId){
-            throw new AppError("La columna que se intenta eliminar no existe", 404);
+        const columnContext = await this.columnRepository.getColumnContext(id);
+         if(!columnContext){
+            throw new AppError("La columna que se intenta actualizar no existe", 404);
         }
 
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          groupId,
+          columnContext.groupId,
           userId,
           ["admin", "collaborator"],
         );
 
         if(!hasPermission){
             throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
-        }
+        };
         
         const eliminado =  await this.columnRepository.delete(id);
         if(!eliminado){
             throw new AppError("La columna que se intenta eliminar no existe", 404);
         }
+
+        return {boardId: columnContext.boardId};
         
     }
 }

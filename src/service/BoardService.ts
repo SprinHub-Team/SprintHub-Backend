@@ -33,11 +33,11 @@ export class BoardService{
 
 
 
-    async create(data: CreateBoardDto): Promise<IBoard>{
+    async create(data: CreateBoardDto, userId: string): Promise<IBoard>{
 
         const hasPermission  = await this.groupRepository.isMemberAndRoleValid(
           data.groupId,
-          data.ownerId,
+          userId,
           ["admin", "collaborator"]
         );
 
@@ -49,7 +49,7 @@ export class BoardService{
             title: data.title,
             description: data.description,
             groupId: data.groupId,
-            ownerId: data.ownerId,
+            ownerId: userId,
         });
 
         const boardIdStr = newBoard._id.toString();

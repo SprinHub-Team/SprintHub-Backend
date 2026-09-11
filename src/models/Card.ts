@@ -10,7 +10,13 @@ const CardSchema = new Schema(
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
     dueDate: { type: Date },
     priority: { type: String, enum: ['alta', 'media', 'baja'], default: 'media' },
-    tasks: [{ title: { type: String, required: true }, completed: { type: Boolean, default: false } }]
+    tasks: [{ title: { type: String, required: true }, completed: { type: Boolean, default: false } }],
+    attachments: [{
+      fileName: { type: String, required: true },
+      fileUrl: { type: String, required: true },
+      uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      uploadedAt: { type: Date, default: Date.now }
+    }]
   },
   { timestamps: true,
     versionKey: false

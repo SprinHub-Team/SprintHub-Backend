@@ -1,27 +1,71 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middlewares/authMiddleware';
+import { Request, Response } from 'express';
 import { UserService } from '../service/userService';
-import { services } from '../dependencies/serviceDependency';
+import { mongoIdSchema } from '../utils/idValidator';
 
-const userService = services.user;
+export class UserController {
+  constructor(private userService: UserService) {}
 
-export const getMyProfile = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId;
-    if (!userId) {
-      res.status(401).json({ message: 'No autorizado' });
-      return;
+  async createUser(req: Request, res: Response) {
+    try {
+      const newUser = await this.userService.createUser(req.body);
+      return res.status(201).json(newUser);
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
     }
-
-    const user = await userService.getUserById(userId);
-    res.json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      documentId: user.documentId,
-      role: user.role
-    });
-  } catch (error: any) {
-    res.status(error.statusCode || 500).json({ message: error.message || 'Error al obtener perfil' });
   }
-};
+
+  async getAllUsers(req: Request, res: Response) {
+    try {
+      const users = await this.userService.getAllUsers();
+      return res.status(200).json(users);
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
+
+  async getUserById(req: Request, res: Response) {
+    try {
+      const userId = mongoIdSchema.parse(req.params.id);
+
+      const user = await this.userService.getUserById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+
+      return res.status(200).json(user);
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
+
+  async updateUser(req: Request, res: Response) {
+    try {
+      const userId = mongoIdSchema.parse(req.params.id);
+
+      const updatedUser = await this.userService.updateUser(
+        userId,
+        req.body
+      );
+
+      return res.status(200).json(updatedUser);
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
+
+  async deleteUser(req: Request, res: Response) {
+    try {
+      const userId = mongoIdSchema.parse(req.params.id);
+
+      const deletedUser = await this.userService.deleteUser(userId);
+
+      return res.status(200).json({
+        message: 'Usuario eliminado',
+        data: deletedUser,
+      });
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
+}

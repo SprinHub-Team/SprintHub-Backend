@@ -22,11 +22,11 @@ export class BoardController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const ownerId = req.user.userId;
+      const userId = req.user.userId;
 
-      const data = createBoardSchema.parse({ ...req.body, ownerId });
+      const data = createBoardSchema.parse({ ...req.body});
 
-      const board = await this.boardService.create(data);
+      const board = await this.boardService.create(data, userId);
 
       return res.status(201).json({
         message: "Tablero creado correctamente",
