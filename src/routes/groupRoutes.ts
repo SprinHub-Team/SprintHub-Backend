@@ -1,18 +1,19 @@
 import { Router } from 'express';
-// ¡IMPORTANTE! Importar desde dependencias
-import { groupController } from '../dependencies/groupDependency'; 
+import { controllers } from '../dependencies/controllerDependency'; 
 import { requireAuth } from '../middlewares/authMiddleware';
+
+const groupController = controllers.group;
 
 const router = Router();
 
 router.use(requireAuth);
 
-router.post('/', (req, res) => groupController.createGroup(req, res));
-router.get('/', (req, res) => groupController.getMyGroups(req, res));
-router.get('/:id', (req, res) => groupController.getGroupById(req, res));
-router.post('/:groupId/members', (req, res) => groupController.addMember(req, res));
-router.put('/:id/members/:userId', (req, res) => groupController.updateMemberRole(req, res));
-router.delete('/:id/members/:userId', (req, res) => groupController.removeMember(req, res));
-router.delete('/:groupId', (req, res) => groupController.deleteGroup(req, res));
+router.post('/', groupController.createGroup.bind(groupController));
+router.get('/', groupController.getMyGroups.bind(groupController));
+router.get('/:id', groupController.getGroupById.bind(groupController));
+router.post('/:groupId/members', groupController.addMember.bind(groupController));
+router.put('/:id/members/:userId', groupController.updateMemberRole.bind(groupController));
+router.delete('/:id/members/:userId', groupController.removeMember.bind(groupController));
+router.delete('/:groupId', groupController.deleteGroup.bind(groupController));
 
 export default router;

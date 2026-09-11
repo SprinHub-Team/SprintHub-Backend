@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import { createUserSchema, loginSchema } from '../dtos/UserDto';
-import { UserService } from '../service/userService';
 import { AuthService } from '../service/authService';
 
 
 export class AuthController{
 
-  constructor(private readonly userService: UserService, private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
 
 async register(req: Request, res: Response): Promise<void>  {
@@ -17,7 +16,7 @@ async register(req: Request, res: Response): Promise<void>  {
       return;
     }
 
-    await this.userService.createUser(validation.data);
+    await this.authService.register(validation.data);
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al registrar usuario' });
@@ -32,11 +31,11 @@ async register(req: Request, res: Response): Promise<void>  {
       return;
     }
 
-    const result = await this.userService.loginUser(validation.data);
+    const result = await this.authService.login(validation.data);
     res.json({
       message: 'Sesión iniciada correctamente',
       token: result.token,
-      user: { id: result.user._id, name: result.user.name, email: result.user.email, role: result.user.role }
+      user: { id: result.user.id, name: result.user.name, email: result.user.email, role: result.user.role }
     });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al iniciar sesión' });

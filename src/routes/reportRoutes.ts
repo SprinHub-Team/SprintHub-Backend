@@ -1,12 +1,8 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { ReportRepository } from '../repository/reportRepository';
-import { ReportService } from '../service/reportService';
-import { ReportController } from '../controllers/reportController';
+import { controllers } from '../dependencies/controllerDependency';
 
-const reportRepository = new ReportRepository();
-const reportService = new ReportService(reportRepository);
-const reportController = new ReportController(reportService);
+const reportController = controllers.report;
 
 const router = Router();
 

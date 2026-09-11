@@ -1,32 +1,30 @@
-import { UserRepository } from '../repository/userRepository';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+
+import { UserRepository } from '../repository/userRepository';
+import env from '../config/env';
+import { CreateUserDto, LoginDto } from '../dtos/UserDto';
+import { JwtPayload } from '../dtos/JwtPayload';
 
 export class AuthService {
   constructor(private userRepository: UserRepository) {}
 
-  async register(data: any) {
-    const { name, email, password } = data;
+  async register(data: CreateUserDto) {
 
-    if (!name || !email || !password) {
-      throw new Error('Nombre, email y contraseña son obligatorios');
-    }
+    const existingUser = await this.userRepository.findByEmail(data.email);
 
-    const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
       throw new Error('El correo electrónico ya está registrado');
     }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const passwordHash = await bcrypt.hash(data.password, 10);
 
     const newUser = await this.userRepository.create({
-      name,
-      email,
-      documentId: data.documentId || String(Date.now()),
-      passwordHash: hashedPassword,
-      password: hashedPassword,
-    } as any);
+      name : data.name,
+      email: data.email,
+      documentId: data.documentId,
+      passwordHash,
+    });
 
     return {
       id: newUser._id,
@@ -35,41 +33,38 @@ export class AuthService {
     };
   }
 
-  async login(data: any) {
-    const { email, password } = data;
+  async login(data: LoginDto) {
 
-    if (!email || !password) {
-      throw new Error('Email y contraseña son obligatorios');
-    }
+    const user = await this.userRepository.findByEmail(data.email);
 
-    const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new Error('Credenciales inválidas');
     }
 
-    const hash = (user as any).passwordHash || (user as any).password;
-    if (!hash) {
-      throw new Error('Credenciales inválidas');
-    }
+    const isValidPassword = await bcrypt.compare(
+      data.password,
+      user.passwordHash
+    );
 
-    const isValidPassword = await bcrypt.compare(password, hash);
     if (!isValidPassword) {
       throw new Error('Credenciales inválidas');
     }
 
-    const env = require('../config/env').default;
-    const secret = env.jwtsecret || 'secret';
-    const token = jwt.sign(
-      { userId: user._id, role: (user as any).role || 'user' }, 
-      secret, 
-      { expiresIn: '1d' } // El token expira en 1 día
-    );
+    const payload: JwtPayload = {
+      userId: user._id.toString(),
+      role: user.role,
+    };
+
+    const token = jwt.sign(payload, env.jwtsecret, {
+      expiresIn: '1d',
+    });
 
     return {
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role
       },
       token,
     };

@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { authController } from '../dependencies/authDependency';
+import { controllers } from '../dependencies/controllerDependency';
+
+const authController = controllers.auth;
 
 const router = Router();
 
-router.post('/login', (req, res) => authController.login(req, res));
-router.post('/register', (req, res) => authController.register(req, res));
+router.post('/login', authController.login.bind(authController));
+router.post('/register', authController.register.bind(authController));
 
 export default router;

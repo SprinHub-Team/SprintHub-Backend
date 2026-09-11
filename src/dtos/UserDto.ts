@@ -1,8 +1,6 @@
 import { z } from 'zod';
-import { mongoIdSchema } from '../utils/idValidator';
 
 export const userSchema = z.object({
-  _id: mongoIdSchema.optional(),
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(100),
   email: z.string().email('Debe ser un correo válido'),
   documentId: z.string().min(5, 'El documento debe tener al menos 5 caracteres'),
@@ -12,10 +10,10 @@ export const userSchema = z.object({
 
 export type UserType = z.infer<typeof userSchema>;
 
-export const createUserSchema = userSchema.required({ password: true }).omit({ _id: true, role: true });
+export const createUserSchema = userSchema.required({ password: true }).omit({ role: true });
 export type CreateUserDto = z.infer<typeof createUserSchema>;
 
-export const updateUserSchema = userSchema.omit({ _id: true, password: true }).partial();
+export const updateUserSchema = userSchema.omit({ password: true }).partial();
 export type UpdateUserDto = z.infer<typeof updateUserSchema>;
 
 export const loginSchema = z.object({

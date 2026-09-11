@@ -3,6 +3,11 @@ import jwt from "jsonwebtoken";
 import env from "../config/env";
 import AppError from "../errors/AppError";
 
+interface JwtPayload {
+  userId: string;
+  role: string;
+}
+
 export const requireAuth = (
   req: Request,
   res: Response,
@@ -22,10 +27,7 @@ export const requireAuth = (
       throw new AppError("Formato de token inválido", 401);
     }
 
-    const decoded = jwt.verify(token, env.jwtsecret) as {
-      userId: string;
-      role: string;
-    };
+    const decoded = jwt.verify(token, env.jwtsecret) as JwtPayload;
 
     req.user = {
       userId: decoded.userId,

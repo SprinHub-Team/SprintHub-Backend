@@ -22,23 +22,17 @@ export const updateCardSchema = createCardSchema.partial();
 
 export type UpdateCardDto = z.infer<typeof updateCardSchema>;
 
-export const createCardRequest = z.object({
-	cardData: createCardSchema,
-	paramData: z.object({boardId: mongoIdSchema})
-});
+export const createCardRequest = createCardSchema;
 
 export type CreateCardRequest = z.infer<typeof createCardRequest>;
 
 export const updateCardRequest = z.object({
 	cardData: updateCardSchema,
-	paramData: z.object({boardId: mongoIdSchema, cardId: mongoIdSchema})
+	paramData: z.object({cardId: mongoIdSchema})
 });
 
 export type UpdateCardRequest = z.infer<typeof updateCardRequest>;
 
-export const deleteCardRequest = z.object({
-  boardId: mongoIdSchema,
-  cardId: mongoIdSchema
-});
+export const deleteCardRequest = mongoIdSchema;
 
 export type DeleteCardRequest = z.infer<typeof deleteCardRequest>;

@@ -40,15 +40,15 @@ export class CommentService{
 
     }
 
-    async create(data: CreateCommentDto, userId: string): Promise<IComment>{
+    async create(data: CreateCommentDto, userId: string): Promise<{comment: IComment}&{boardId: string}>{
 
-        const groupId = await this.cardRepository.getGroupIdByCardId(data.cardId);
-        if(!groupId){
+        const cardContext = await this.cardRepository.getCardContext(data.cardId);
+        if(!cardContext){
             throw new AppError("La tarjeta relacionada no existe", 404);
         }
         
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          groupId,
+          cardContext.groupId,
           userId,
           ["admin", "collaborator"],
         );
@@ -57,19 +57,21 @@ export class CommentService{
             throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
-        return this.commentRepository.create({...data, createdBy: userId});
+        const comment = await this.commentRepository.create({...data, createdBy: userId});
+        
+        return {comment, boardId: cardContext.boardId}
 
     }
 
-    async update(id: string, data: UpdateCommentDto, userId: string): Promise<IComment | null>{
+    async update(id: string, data: UpdateCommentDto, userId: string): Promise<{comment: IComment | null}&{boardId: string}>{
 
-        const groupId = await this.commentRepository.getGroupIdByCommentId(id);
-        if(!groupId){
+        const commentContext = await this.commentRepository.getCommentContext(id);
+        if(!commentContext){
             throw new AppError("El comentario que intenta actualizar no existe", 404);
         }
 
          const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          groupId,
+          commentContext.groupId,
           userId,
           ["admin", "collaborator"],
         );
@@ -78,19 +80,21 @@ export class CommentService{
             throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
-        return await this.commentRepository.update(id, data);
+        const comment = await this.commentRepository.update(id, data);
+
+        return {comment, boardId: commentContext.boardId};
 
     }
 
-    async delete(id: string, userId: string): Promise<void>{
+    async delete(id: string, userId: string): Promise<{ boardId: string; }>{
 
-        const groupId = await this.commentRepository.getGroupIdByCommentId(id);
-        if(!groupId){
-            throw new AppError("El comentario que intenta actualizar no existe", 404);
+        const commentContext = await this.commentRepository.getCommentContext(id);
+        if(!commentContext){
+            throw new AppError("El comentario que intenta eliminar no existe", 404);
         }
 
          const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          groupId,
+          commentContext.groupId,
           userId,
           ["admin", "collaborator"],
         );
@@ -103,6 +107,8 @@ export class CommentService{
         if(!eliminado){
             throw new AppError("El comentario que se intenta eliminar no existe", 404);
         }
+
+        return {boardId: commentContext.boardId};
 
     }
 

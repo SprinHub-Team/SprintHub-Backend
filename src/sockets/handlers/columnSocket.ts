@@ -12,10 +12,10 @@ export function registerColumnsHandlers(io: Server, socket: AuthSocket){
 
     try{
 
-        const {columnData, paramData} = createColumnRequest.parse(data);
-        const column = await columnService.create(columnData, socket.data.userId);
+        const columnData = createColumnRequest.parse(data);
+        const {column, boardId} = await columnService.create(columnData, socket.data.userId);
 
-        io.to(`board:${paramData.boardId}`).emit('column:created', column);
+        io.to(`board:${boardId}`).emit('column:created', column);
         callback?.({ok: true, column});
 
     }catch(err: any){
@@ -30,8 +30,8 @@ export function registerColumnsHandlers(io: Server, socket: AuthSocket){
         
             const {columnData, paramData} = updateColumnRequest.parse(data);
 
-            const column = await columnService.update(paramData.columnId, columnData, socket.data.userId);
-            socket.to(`board:${paramData.boardId}`).emit('column:updated', column);
+            const {column, boardId} = await columnService.update(paramData.columnId, columnData, socket.data.userId);
+            socket.to(`board:${boardId}`).emit('column:updated', column);
             callback?.({ok: true, column});
 
         }catch(err: any){
@@ -44,9 +44,9 @@ export function registerColumnsHandlers(io: Server, socket: AuthSocket){
 
         try{
 
-            const {boardId, columnId} = deleteColumnRequest.parse(data);
+            const columnId = deleteColumnRequest.parse(data);
 
-            await columnService.delete(columnId, socket.data.userId);
+            const boardId = await columnService.delete(columnId, socket.data.userId);
             io.to(`board:${boardId}`).emit('column:deleted', {columnId: columnId});
             callback?.({ok: true});
 

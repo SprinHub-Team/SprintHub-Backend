@@ -8,14 +8,12 @@ export const createBoardSchema = z.object({
     .max(150),
   description: z.string().optional().default(""),
   groupId: mongoIdSchema,
-  ownerId: mongoIdSchema
 });
 
 export type CreateBoardDto = z.infer< typeof createBoardSchema>;
 
 export const updateBoardSchema = createBoardSchema.omit({
   groupId: true,
-  ownerId: true
 }).partial();
 
 export type UpdateBoardDto = z.infer<typeof updateBoardSchema>;

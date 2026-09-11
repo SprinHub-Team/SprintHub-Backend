@@ -1,22 +1,18 @@
 import { Router } from 'express';
-// Asegúrate de importar la instancia desde userDependency, NO la clase desde controllers
-import { userController } from '../dependencies/userDependency';
+import { controllers } from '../dependencies/controllerDependency';
 import { requireAuth } from '../middlewares/authMiddleware';
 
+const userController = controllers.user;
 const router = Router();
 
-// Usa funciones flecha (req, res) => ... para cada ruta
-router.get('/', (req, res) => userController.getAllUsers(req, res));
-router.get('/me', requireAuth, (req, res) => {
-  if ((req as any).user) {
-    userController.getUserById({ ...req, params: { id: (req as any).user.userId } } as any, res);
-  } else {
-    res.status(401).json({ message: 'No autorizado' });
-  }
-});
-router.get('/:id', (req, res) => userController.getUserById(req, res));
-router.put('/:id', requireAuth, (req, res) => userController.updateUser(req, res));
-router.delete('/:id', requireAuth, (req, res) => userController.deleteUser(req, res));
-router.post('/', (req, res) => userController.createUser(req, res));
+router.use(requireAuth);
+
+
+router.get('/', userController.getAllUsers.bind(userController));
+router.get('/me', userController.getUserById.bind(userController));
+router.get('/:id', userController.getUserById.bind(userController));
+router.put('/:id', userController.updateUser.bind(userController));
+router.delete('/:id', userController.deleteUser.bind(userController));
+router.post('/', userController.createUser.bind(userController));
 
 export default router;

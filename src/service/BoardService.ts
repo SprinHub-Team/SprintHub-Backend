@@ -1,5 +1,5 @@
 import {CreateBoardDto, UpdateBoardDto } from "../dtos/BoardDto";
-import {BoardRepository} from "../repository/BoardRepository";
+import {BoardRepository} from "../repository/boardRepository";
 import AppError from "../errors/AppError";
 import {IBoard} from "../models/Board";
 import { GroupRepository } from "../repository/groupRepository";
@@ -33,11 +33,11 @@ export class BoardService{
 
 
 
-    async create(data: CreateBoardDto): Promise<IBoard>{
+    async create(data: CreateBoardDto, userId: string): Promise<IBoard>{
 
         const hasPermission  = await this.groupRepository.isMemberAndRoleValid(
           data.groupId,
-          data.ownerId,
+          userId,
           ["admin", "collaborator"]
         );
 
@@ -49,7 +49,7 @@ export class BoardService{
             title: data.title,
             description: data.description,
             groupId: data.groupId,
-            ownerId: data.ownerId,
+            ownerId: userId,
         });
 
         const boardIdStr = newBoard._id.toString();

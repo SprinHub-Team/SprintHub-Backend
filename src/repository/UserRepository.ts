@@ -3,20 +3,20 @@ import { UserModel } from '../models/User';
 
 export class UserRepository {
   async create(data: any) {
-    const newUser = new UserModel(data); // Cambia User por UserModel
+    const newUser = new UserModel(data); 
     return await newUser.save();
   }
 
   async findByEmail(email: string) {
-    return await UserModel.findOne({ email }); // Cambia User por UserModel
+    return await UserModel.findOne({ email }).lean().exec();
   }
 
   async findAll() {
-    return await UserModel.find().select('-password');
+    return await UserModel.find().select('-password').lean().exec();
   }
 
   async findById(id: string) {
-    return await UserModel.findById(id).select('-password');
+    return await UserModel.findById(id).select('-password').lean().exec();
   }
 
   async update(id: string, data: any) {
