@@ -12,7 +12,6 @@ export class ReportRepository {
     const columns = await ColumnModel.find({ boardId: { $in: boardIds } }).select('_id name').lean().exec();
     const columnIds = columns.map(c => c._id);
     
-    // Identificar columnas finales
     const finalColumnIds = columns
       .filter((c: any) => c.name.toLowerCase().includes('finalizad') || c.name.toLowerCase().includes('hecho') || c.name.toLowerCase().includes('done'))
       .map((c: any) => c._id);

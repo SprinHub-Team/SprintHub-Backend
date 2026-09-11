@@ -1,15 +1,17 @@
 import { Router } from "express";
-import { sprintController } from "../dependencies/sprintDependency";
+import { controllers } from "../dependencies/controllerDependency";
 import { requireAuth } from '../middlewares/authMiddleware';
 
-const router = Router();
 
+const sprintController = controllers.sprint;
+
+const router = Router();
 router.use(requireAuth);
 
-router.post('/', (req,res) => sprintController.create(req,res));
-router.get('/group/:groupId', (req,res) => sprintController.getByGroup(req,res));
-router.put('/cards/:cardId/move', (req,res) => sprintController.moveCard(req,res));
-router.get('/:sprintId/cards', (req,res) => sprintController.getSprintCards(req,res));
-router.post('/cards/:cardId/export', (req,res) => sprintController.exportToBoard(req,res));
+router.post('/', sprintController.create.bind(sprintController));
+router.get('/group/:groupId',sprintController.getByGroup.bind(sprintController));
+router.put('/cards/:cardId/move', sprintController.moveCard.bind(sprintController));
+router.get('/:sprintId/cards', sprintController.getSprintCards.bind(sprintController));
+router.post('/cards/:cardId/export', sprintController.exportToBoard.bind(sprintController));
 
 export default router;

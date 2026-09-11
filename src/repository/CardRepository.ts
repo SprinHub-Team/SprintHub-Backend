@@ -1,4 +1,11 @@
+import { IBoard } from "../models/Board";
 import {CardModel, ICard} from "../models/Card";
+import { IColumn } from "../models/Column";
+
+type CardWithGroup = {
+  columnId: Omit<IColumn, "boardId"> & {
+   boardId: IBoard };
+};
 
 export class CardRepository{
 
@@ -13,6 +20,29 @@ export class CardRepository{
     async findById(id: string):Promise<ICard | null>{
         return CardModel.findById(id).lean().exec();
     }
+
+    async getCardContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
+        
+        const resultado = await CardModel.findById(id)
+        .populate<CardWithGroup>({
+          path: 'columnId',
+          select: 'boardId',
+          populate:{
+          path: 'boardId',
+          select: 'groupId _id'
+          }
+        }).lean().exec();
+
+        if(!resultado?.columnId?.boardId){
+            return null;
+        }
+    
+        const groupId = resultado?.columnId?.boardId.groupId.toString();
+        const boardId = resultado?.columnId?.boardId._id.toString();
+
+        return {groupId, boardId};
+    }
+
 
     async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate' | 'priority' | 'tasks'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
         const newCard = await CardModel.create(data);

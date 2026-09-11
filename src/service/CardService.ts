@@ -5,6 +5,7 @@ import { UserRepository} from "../repository/userRepository";
 import AppError from "../errors/AppError";
 import { ICard } from "../models/Card";
 import { CommentRepository } from "../repository/commentRepository";
+import { GroupRepository } from "../repository/groupRepository";
 
 
 export class CardService{
@@ -13,7 +14,8 @@ export class CardService{
         private readonly cardRepository: CardRepository,
         private readonly columnRepository: ColumnRepository,
         private readonly userRepository: UserRepository,
-        private readonly commentRepository: CommentRepository
+        private readonly commentRepository: CommentRepository,
+        private readonly groupRepository: GroupRepository
     ){}
 
     async findByColumnId(columnId: string): Promise<ICard[]>{
@@ -51,41 +53,48 @@ export class CardService{
 
     }
 
-    async create(data: CreateCardDto): Promise<ICard>{
-        const columnExist = await this.columnRepository.existById(data.columnId);
-        if(!columnExist){
-            throw new AppError("La columna relacionada no existe", 404);
+    async create(data: CreateCardDto, userId: string): Promise<{card: ICard} & {boardId: string}>{
+
+        const columnContext = await this.columnRepository.getColumnContext(data.columnId);
+        if(!columnContext){
+            throw new AppError("la columna relacionada no existe", 404);
         }
 
-        if (data.assignedTo) {
-            const asignedToExist = await this.userRepository.existById(data.assignedTo);
-            if(!asignedToExist){
-                throw new AppError("El usuario asignado no existe", 404);
-            }
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          columnContext.groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
-        return this.cardRepository.create({
+        const card = await this.cardRepository.create({
             title: data.title,
             description: data.description,
             columnId: data.columnId,
             position: data.position ?? 0,
             assignedTo: data.assignedTo,
-            priority: data.priority as any,
+            priority: data.priority,
             tasks: data.tasks as any
         }); 
+
+        return {card, boardId: columnContext.boardId}
     }
 
-    async update(id: string, data: UpdateCardDto): Promise<ICard | null>{
-        const cardExist = await this.cardRepository.existById(id);
-        if(!cardExist){
-            throw new AppError("La tarjeta que se intenta actualizar no existe", 404);
+    async update(id: string, data: UpdateCardDto, userId: string): Promise<{card: ICard | null} & {boardId: string}>{
+
+        const cardContext = await this.cardRepository.getCardContext(id);
+        if(!cardContext){
+            throw new AppError("La card que se intenta actualizar no existe", 404);
         }
 
         if (data.assignedTo) {
-            const asignedToExist = await this.userRepository.existById(data.assignedTo);
-            if(!asignedToExist){
+        const asignedToExist = await this.userRepository.existById(data.assignedTo);
+        if(!asignedToExist){
                 throw new AppError("El usuario asignado no existe", 404);
-            }
+        }
         }
 
         if (data.columnId) {
@@ -94,8 +103,18 @@ export class CardService{
                 throw new AppError("La columna relacionada no existe", 404);
             }
         }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          cardContext.groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
         
-        return this.cardRepository.update(id, {
+        const card = await this.cardRepository.update(id, {
             description: data.description,
             title: data.title,
             position: data.position,
@@ -104,14 +123,33 @@ export class CardService{
             priority: data.priority as any,
             tasks: data.tasks as any
         });
+
+        return{card, boardId: cardContext.boardId};
     }
 
-    async delete(id: string): Promise<void>{
+    async delete(id: string, userId: string): Promise<{boardId: string;}>{
+
+        const cardContext = await this.cardRepository.getCardContext(id);
+        if(!cardContext){
+            throw new AppError("La card que se intenta eliminar no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          cardContext.groupId,
+          userId,
+          ["admin"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
         
         const eliminado = await this.cardRepository.delete(id);
         if(!eliminado){
             throw new AppError("La tarjeta que se intenta elminar no existe", 404);
         }
+
+        return {boardId: cardContext.boardId};
 
     }
 

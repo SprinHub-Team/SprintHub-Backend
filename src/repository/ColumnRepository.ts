@@ -1,4 +1,9 @@
+import { IBoard } from "../models/Board";
 import { ColumnModel, IColumn } from "../models/Column";
+
+type ColumnWithGroup = {
+boardId: IBoard
+}
 
 export class ColumnRepository {
 
@@ -9,6 +14,24 @@ export class ColumnRepository {
   async findById(id: string): Promise<IColumn | null> {
     return ColumnModel.findById(id).lean().exec();
   }
+
+  async getColumnContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
+    
+    const resultado = await ColumnModel.findById(id)
+    .populate<ColumnWithGroup>({
+      path: 'boardId',
+      select: 'groupId _id'
+    }).lean().exec();
+
+    if (!resultado?.boardId) {
+        return null;
+    }
+
+    const groupId = resultado?.boardId?.groupId.toString();
+    const boardId = resultado?.boardId?._id.toString();
+
+    return {groupId, boardId};
+  } 
 
   async create(data: Pick<IColumn, 'name'>&{boardId: string}): Promise<IColumn> {
     

@@ -11,10 +11,10 @@ export function registerCardHandlers(io: Server, socket: AuthSocket){
 
         try{
 
-            const {cardData, paramData} = createCardRequest.parse(data);
+            const cardData = createCardRequest.parse(data);
 
-            const card = await cardService.create(cardData);
-            io.to(`board:${paramData.boardId}`).emit('card:created', card);
+            const {card, boardId} = await cardService.create(cardData, socket.data.userId);
+            io.to(`board:${boardId}`).emit('card:created', card);
             callback?.({ok: true, card});
 
         }catch(err: any){
@@ -29,8 +29,8 @@ export function registerCardHandlers(io: Server, socket: AuthSocket){
 
             const {cardData, paramData} = updateCardRequest.parse(data);
 
-            const card = await cardService.update(paramData.cardId, cardData);
-            socket.to(`board:${paramData.boardId}`).emit('card:updated', card);
+            const {card, boardId} = await cardService.update(paramData.cardId, cardData, socket.data.userId);
+            socket.to(`board:${boardId}`).emit('card:updated', card);
             callback?.({ok: true, card});
 
         }catch(err: any){
@@ -43,9 +43,9 @@ export function registerCardHandlers(io: Server, socket: AuthSocket){
 
         try{
 
-            const {boardId, cardId} =  deleteCardRequest.parse(data);
+            const cardId =  deleteCardRequest.parse(data);
 
-            await cardService.delete(cardId);
+            const boardId = await cardService.delete(cardId, socket.data.userId);
             io.to(`board:${boardId}`).emit('card:deleted', cardId);
             callback?.({ok: true});
             

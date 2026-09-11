@@ -1,4 +1,3 @@
-import { IsAny } from 'mongoose';
 import { SprintModel, ISprint } from '../models/Sprint';
 
 export class SprintRepository {

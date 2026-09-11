@@ -1,4 +1,4 @@
-import { CardPBRepository } from '../repository/CardPBRepository';
+import { CardPBRepository } from '../repository/cardPBRepository';
 import { ICardPB } from '../models/CardPB';
 
 export class CardPBService {

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CardPBService } from '../service/CardPBService';
+import { CardPBService } from '../service/cardPBService';
 
 export class CardPBController {
   constructor(private cardPBService: CardPBService) {}

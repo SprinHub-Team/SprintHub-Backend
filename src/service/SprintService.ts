@@ -1,5 +1,5 @@
 import { SprintRepository } from "../repository/sprintRepository";
-import { CardPBRepository } from "../repository/CardPBRepository";
+import { CardPBRepository } from "../repository/cardPBRepository";
 import { CardRepository } from "../repository/cardRepository";
 import { ISprint } from "../models/Sprint";
 

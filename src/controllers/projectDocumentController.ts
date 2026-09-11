@@ -1,11 +1,10 @@
-import { Response, NextFunction } from 'express';
-import { AuthRequest } from '../middlewares/authMiddleware';
+import { Request, Response, NextFunction } from 'express';
 import { ProjectDocumentService } from '../service/projectDocumentService';
 
 export class ProjectDocumentController {
   constructor(private readonly docService: ProjectDocumentService) {}
 
-  async upload(req: AuthRequest, res: Response, next: NextFunction) {
+  async upload(req: Request, res: Response, next: NextFunction) {
     try {
       const { groupId } = req.params;
       const { title } = req.body;
@@ -31,7 +30,7 @@ export class ProjectDocumentController {
     }
   }
 
-  async getByGroup(req: AuthRequest, res: Response, next: NextFunction) {
+  async getByGroup(req: Request, res: Response, next: NextFunction) {
     try {
       const { groupId } = req.params;
       const userId = req.user?.userId;
@@ -45,7 +44,7 @@ export class ProjectDocumentController {
     }
   }
 
-  async delete(req: AuthRequest, res: Response, next: NextFunction) {
+  async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
