@@ -6,6 +6,8 @@ import { GroupRepository } from "../repository/groupRepository";
 import { ColumnRepository } from "../repository/columnRepository";
 
 
+import { BOARD_TEMPLATES } from "../utils/templates";
+
 export class BoardService{
 
     constructor(
@@ -53,12 +55,24 @@ export class BoardService{
         });
 
         const boardIdStr = newBoard._id.toString();
+        
+        let templateColumns = [
+            { name: 'Por hacer', boardId: boardIdStr },
+            { name: 'En proceso', boardId: boardIdStr },
+            { name: 'Hecho', boardId: boardIdStr }
+        ];
 
-        await Promise.all([
-        this.columnRepository.create({ name: 'Por hacer', boardId: boardIdStr }),
-        this.columnRepository.create({ name: 'En proceso', boardId: boardIdStr }),
-        this.columnRepository.create({ name: 'Hecho', boardId: boardIdStr })
-        ]);
+        if (data.templateId) {
+            const template = BOARD_TEMPLATES.find(t => t.id === data.templateId);
+            if (template) {
+                templateColumns = template.columns.map(c => ({
+                    name: c.title,
+                    boardId: boardIdStr
+                }));
+            }
+        }
+
+        await Promise.all(templateColumns.map(col => this.columnRepository.create(col)));
         
         return newBoard;
     }
@@ -109,6 +123,30 @@ export class BoardService{
         }
 
     }
+
+    async applyTemplate(boardId: string, templateId: string, userId: string): Promise<void> {
+        const board = await this.boardRepository.getBoardWhitDetails(boardId);
+        if (!board) throw new AppError("Tablero no encontrado", 404);
+
+        const groupId = board.groupId._id ? board.groupId._id.toString() : board.groupId.toString();
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+            groupId,
+            userId,
+            ["admin", "collaborator"]
+        );
+
+        if (!hasPermission) throw new AppError("Sin permisos", 403);
+
+        const template = BOARD_TEMPLATES.find(t => t.id === templateId);
+        if (!template) throw new AppError("Plantilla no encontrada", 404);
+
+        const newColumns = template.columns.map(c => ({
+            name: c.title,
+            boardId: boardId
+        }));
+
+        await Promise.all(newColumns.map(col => this.columnRepository.create(col)));
+    }
     
 }
-

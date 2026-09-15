@@ -71,4 +71,20 @@ export class BoardController {
     }
   }
 
+  async applyTemplate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user.userId;
+      const boardId = mongoIdSchema.parse(req.params.id);
+      const templateId = req.body.templateId;
+
+      await this.boardService.applyTemplate(boardId, templateId, userId);
+
+      return res.status(200).json({
+        message: "Plantilla aplicada correctamente",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
 }
