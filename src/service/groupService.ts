@@ -62,6 +62,12 @@ export class GroupService {
     return this.groupRepo.updateMemberRole(groupId, userId, role);
   }
 
+  async updateGroup(id: string, data: { name?: string; description?: string; visibility?: 'private' | 'public' }) {
+    const exists = await this.groupRepo.existById(id);
+    if (!exists) throw new AppError('Grupo no encontrado', 404);
+    return this.groupRepo.update(id, data);
+  }
+
   async deleteGroup(id: string) {
     const exists = await this.groupRepo.existById(id);
     if (!exists) throw new AppError('Grupo no encontrado', 404);

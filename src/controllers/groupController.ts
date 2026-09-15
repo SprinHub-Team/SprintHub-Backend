@@ -142,6 +142,25 @@ export class GroupController {
     }
   }
 
+  async updateGroup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+      const data = req.body;
+      const updatedGroup = await this.groupService.updateGroup(groupId, data);
+
+      return res.status(200).json({
+        data: updatedGroup,
+        message: "Grupo actualizado exitosamente",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async deleteGroup(
     req: Request,
     res: Response,
