@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { controllers } from '../dependencies/controllerDependency';
 import { requireAuth } from '../middlewares/authMiddleware';
+import { imageUploadMiddleware } from '../middlewares/imageUploadMiddleware';
 
 const userController = controllers.user;
 const router = Router();
@@ -12,6 +13,7 @@ router.get('/', userController.getAllUsers.bind(userController));
 router.get('/me', userController.getUserById.bind(userController));
 router.get('/:id', userController.getUserById.bind(userController));
 router.put('/:id', userController.updateUser.bind(userController));
+router.post('/:id/profile-picture', imageUploadMiddleware.single('file'), userController.uploadProfilePicture.bind(userController));
 router.delete('/:id', userController.deleteUser.bind(userController));
 
 export default router;

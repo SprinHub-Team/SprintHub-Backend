@@ -59,4 +59,20 @@ export class UserController {
       return res.status(400).json({ message: error.message });
     }
   }
+
+  async uploadProfilePicture(req: Request, res: Response) {
+    try {
+      const userId = mongoIdSchema.parse(req.params.id);
+      if (!req.file) {
+        return res.status(400).json({ message: 'No se subió ninguna imagen' });
+      }
+
+      const fileUrl = `/uploads/profiles/${req.file.filename}`;
+      const updatedUser = await this.userService.updateUser(userId, { profilePicture: fileUrl });
+
+      return res.status(200).json(updatedUser);
+    } catch (error: any) {
+      return res.status(400).json({ message: error.message });
+    }
+  }
 }

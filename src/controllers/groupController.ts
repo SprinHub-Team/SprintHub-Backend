@@ -178,4 +178,27 @@ export class GroupController {
       next(error);
     }
   }
+
+  async uploadProfilePicture(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+      if (!req.file) {
+        return res.status(400).json({ message: "No se subió ninguna imagen" });
+      }
+
+      const fileUrl = `/uploads/profiles/${req.file.filename}`;
+      const updatedGroup = await this.groupService.updateGroup(groupId, { profilePicture: fileUrl });
+
+      return res.status(200).json({
+        data: updatedGroup,
+        message: "Imagen de grupo actualizada",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
