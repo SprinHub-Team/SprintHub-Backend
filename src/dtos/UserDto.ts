@@ -17,7 +17,7 @@ export const updateUserSchema = userSchema.omit({ password: true }).partial();
 export type UpdateUserDto = z.infer<typeof updateUserSchema>;
 
 export const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(1)
 });
 export type LoginDto = z.infer<typeof loginSchema>;
