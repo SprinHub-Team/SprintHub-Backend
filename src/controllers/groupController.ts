@@ -142,6 +142,25 @@ export class GroupController {
     }
   }
 
+  async updateGroup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+      const data = req.body;
+      const updatedGroup = await this.groupService.updateGroup(groupId, data);
+
+      return res.status(200).json({
+        data: updatedGroup,
+        message: "Grupo actualizado exitosamente",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async deleteGroup(
     req: Request,
     res: Response,
@@ -154,6 +173,29 @@ export class GroupController {
 
       return res.status(200).json({
         message: "Grupo eliminado exitosamente",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async uploadProfilePicture(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+      if (!req.file) {
+        return res.status(400).json({ message: "No se subió ninguna imagen" });
+      }
+
+      const fileUrl = `/uploads/profiles/${req.file.filename}`;
+      const updatedGroup = await this.groupService.updateGroup(groupId, { profilePicture: fileUrl });
+
+      return res.status(200).json({
+        data: updatedGroup,
+        message: "Imagen de grupo actualizada",
       });
     } catch (error) {
       next(error);

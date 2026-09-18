@@ -17,7 +17,7 @@ export class SprintController{
 
     async getByGroup(req: Request, res: Response){
         try{
-            const groupId = mongoIdSchema.parse(req.params.id);
+            const groupId = mongoIdSchema.parse(req.params.groupId);
             const sprints = await this.sprintService.getSprintsByGroup(groupId);
             return res.status(200).json(sprints);
         } catch (error: any){
@@ -27,9 +27,10 @@ export class SprintController{
 
     async moveCard(req: Request, res: Response){
         try{
-            const sprintId  = mongoIdSchema.parse(req.params.id);
-            const cards = await this.sprintService.getCardsInSprint(sprintId);
-            return res.status(200).json(cards);
+            const cardId = mongoIdSchema.parse(req.params.cardId);
+            const sprintId = req.body.sprintId ? mongoIdSchema.parse(req.body.sprintId) : null;
+            const card = await this.sprintService.moveCardToSprint(cardId, sprintId);
+            return res.status(200).json(card);
         } catch (error: any){
             return res.status(400).json({message: error.message});
         }
@@ -37,7 +38,7 @@ export class SprintController{
 
     async getSprintCards(req: Request, res: Response){
         try{
-            const sprintId  = mongoIdSchema.parse(req.params.id);
+            const sprintId = mongoIdSchema.parse(req.params.sprintId);
             const cards = await this.sprintService.getCardsInSprint(sprintId);
             return res.status(200).json(cards);
         } catch (error: any) {
@@ -48,7 +49,7 @@ export class SprintController{
     async exportToBoard(req: Request, res: Response){
         try{
             const cardId  = mongoIdSchema.parse(req.params.cardId);
-            const columnId  = mongoIdSchema.parse(req.params.columnId);
+            const columnId  = mongoIdSchema.parse(req.body.columnId);
 
             if(!columnId){
                 return res.status(400).json({message: "el columnId es obligatorio"});

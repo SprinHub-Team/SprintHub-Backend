@@ -10,6 +10,7 @@ router.use(requireAuth);
 router.get('/group/:groupId', boardController.findByGroupId.bind(boardController) );
 router.post('/', boardController.create.bind(boardController));
 router.put('/:id', boardController.update.bind(boardController));
+router.post('/:id/apply-template', boardController.applyTemplate.bind(boardController));
 router.delete('/:id', boardController.delete.bind(boardController));
 
 export default router;
