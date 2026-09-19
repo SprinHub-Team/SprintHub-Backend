@@ -13,10 +13,6 @@ export class CardRepository{
         return CardModel.find({ columnId }).lean().exec();
     }
 
-    async findByColumnIds(columnIds: string[]): Promise<ICard[]> {
-        return CardModel.find({ columnId: { $in: columnIds } }).lean().exec();
-    }
-
     async findById(id: string):Promise<ICard | null>{
         return CardModel.findById(id).lean().exec();
     }
@@ -44,12 +40,12 @@ export class CardRepository{
     }
 
 
-    async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate' | 'priority' | 'tasks'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
+    async create(data: Pick<ICard, 'title' | 'description' | 'dueDate' | 'priority'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
         const newCard = await CardModel.create(data);
         return newCard.toObject();
     }
 
-    async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'position' | 'priority' | 'tasks'>>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
+    async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'priority' >>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
         const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
             returnDocument: 'after',
             runValidators: true
@@ -62,17 +58,6 @@ export class CardRepository{
         const resultado = await CardModel.findByIdAndDelete(idEliminar).exec();
         return resultado !== null;
         
-    }
-
-    async existById(id: string){
-
-        const existe = await CardModel.exists({_id: id}).exec();
-        return existe !== null;
-    }
-
-    async existManyByIds(ids: string[]): Promise<boolean>{
-        const conteo = await CardModel.countDocuments({_id:{$in: ids}}).exec();
-        return conteo === ids.length;
     }
 
     async addAttachment(cardId: string, attachment: { fileName: string; fileUrl: string; uploadedBy: string }): Promise<ICard | null> {

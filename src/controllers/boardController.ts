@@ -8,13 +8,14 @@ export class BoardController {
 
   async findByGroupId(req: Request, res: Response, next: NextFunction) {
     try {
+
+      const userId = req.user.userId;
+
       const groupId = mongoIdSchema.parse(req.params.groupId);
 
-      const boards = await this.boardService.findByGroupId(groupId);
+      const boards = await this.boardService.findByGroupId(groupId, userId);
 
-      return res.status(200).json({
-        data: boards,
-      });
+      return res.status(200).json(boards);
     } catch (error) {
       next(error);
     }

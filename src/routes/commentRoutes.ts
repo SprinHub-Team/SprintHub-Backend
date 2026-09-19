@@ -7,7 +7,7 @@ const router = Router();
 
 router.use(requireAuth);
 
-router.get('/card/:card', commentController.findByCardId.bind(commentController));
+router.get('/card/:id', commentController.findByCardId.bind(commentController));
 router.get('/:id', commentController.getCommentWhitDetails.bind(commentController));
 
 export default router;

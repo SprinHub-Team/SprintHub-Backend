@@ -15,11 +15,21 @@ export class CommentService{
         private readonly groupRepository: GroupRepository
     ){}
 
-    async findByCardId(cardId: string) : Promise<IComment[]>{
+    async findByCardId(cardId: string, userId: string) : Promise<IComment[]>{
 
-        const cardExist = await this.cardRepository.existById(cardId);
-        if(!cardExist){
-            throw new AppError("La card relacionada no existe.", 404);
+        const cardContext = await this.cardRepository.getCardContext(cardId);
+        if(!cardContext){
+            throw new AppError("La tarjeta relacionada no existe", 404);
+        }
+        
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          cardContext.groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
         const comments = await this.commentRepository.findByCardId(cardId);
@@ -27,7 +37,22 @@ export class CommentService{
 
     }
 
-    async getCommentWhitDetails(commentId: string){
+    async getCommentWhitDetails(commentId: string, userId: string){
+
+        const commentContext = await this.commentRepository.getCommentContext(commentId);
+        if(!commentContext){
+            throw new AppError("El comentario que intenta obtener no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+        commentContext.groupId,
+        userId,
+        ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
 
         const comment = await this.commentRepository.findById(commentId);
         if(!comment){

@@ -21,7 +21,7 @@ export function registerBoardHandlers(io: Server, socket: AuthSocket){
             }
 
 			socket.join(`board:${boardIdParsed}`);
-			callback?.({ok: true, board: board});
+			callback?.({ok: true, board});
 
 		}catch(err: any){
 			callback?.({ok: false, error: err.message });

@@ -12,31 +12,13 @@ async findByColumnId(req: Request, res: Response, next: NextFunction){
 
   try{
 
+    const userId = req.user.userId;
+
     const columnId = mongoIdSchema.parse(req.params.id);
 
-    const cards = await this.cardService.findByColumnId(columnId);
+    const cards = await this.cardService.findByColumnId(columnId, userId);
 
-    return res.status(200).json({
-      data: cards
-    });
-
-  }catch(error){
-    next(error);
-  }
-
-}
-
-async findByBoardId(req: Request, res: Response, next: NextFunction){
-
-  try{
-
-    const boardId = mongoIdSchema.parse(req.params.boardId);
-
-    const cards = await this.cardService.findByBoardId(boardId);
-
-    return res.status(200).json({
-      data: cards
-    });
+    return res.status(200).json(cards);
 
   }catch(error){
     next(error);
@@ -48,13 +30,13 @@ async getCardWhitDetails(req: Request, res: Response, next: NextFunction){
 
   try{
 
+    const userId = req.user.userId;
+
     const cardId = mongoIdSchema.parse(req.params.id);
 
-    const card = await this.cardService.getCardWhitDetails(cardId);
+    const card = await this.cardService.getCardWhitDetails(cardId, userId);
 
-    return res.status(200).json({
-      data: card
-    });
+    return res.status(200).json(card);
 
   }catch(error){
     next(error);
@@ -69,7 +51,6 @@ async getCardWhitDetails(req: Request, res: Response, next: NextFunction){
       const userId = req.user.userId;
 
       if (!file) throw new Error('No se subió ningún archivo');
-      if (!userId) throw new Error('No autorizado');
 
       const fileUrl = `/uploads/${file.filename}`;
       const attachmentData = {
@@ -78,7 +59,7 @@ async getCardWhitDetails(req: Request, res: Response, next: NextFunction){
         uploadedBy: userId
       };
 
-      const updatedCard = await this.cardService.addAttachment(id, attachmentData);
+      const updatedCard = await this.cardService.addAttachment(id, attachmentData, userId);
       res.status(200).json(updatedCard);
     } catch (error) {
       next(error);
@@ -87,9 +68,10 @@ async getCardWhitDetails(req: Request, res: Response, next: NextFunction){
 
   async removeAttachment(req: Request, res: Response, next: NextFunction) {
     try {
+      const userId = req.user.userId;
       const attachmentId = mongoIdSchema.parse(req.params.attachmentId);
       const id = mongoIdSchema.parse(req.params.id);
-      const updatedCard = await this.cardService.removeAttachment(id, attachmentId);
+      const updatedCard = await this.cardService.removeAttachment(id, attachmentId, userId);
       res.status(200).json(updatedCard);
     } catch (error) {
       next(error);
