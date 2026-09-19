@@ -11,6 +11,7 @@ import reportRoutes from "./routes/reportRoutes";
 import cardPBRoutes from "./routes/cardPBRoutes";
 import sprintRoutes from "./routes/sprintRoutes";
 import projectDocumentRoutes from "./routes/projectDocumentRoutes";
+import templateRoutes from "./routes/templateRoutes";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -34,6 +35,8 @@ app.use("/api/sprints", sprintRoutes);
 app.use("/api/project-documents", projectDocumentRoutes);
 
 
+
+app.use("/api/templates", templateRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({

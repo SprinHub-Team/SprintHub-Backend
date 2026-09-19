@@ -26,7 +26,7 @@ export class GroupRepository {
 
   async update(
     id: string,
-    data: Partial<Pick<IGroup, "name" | "description">>,
+    data: Partial<Pick<IGroup, "name" | "description" | "visibility">>,
   ): Promise<IGroup | null> {
     return GroupModel.findByIdAndUpdate(id, data, {
       returnDocument: "after",

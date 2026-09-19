@@ -8,6 +8,7 @@ const UserSchema = new Schema(
     documentId: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ['admin', 'user'], default: 'user' },
+    profilePicture: { type: String, default: '' },
   },
   { timestamps: true, versionKey: false }
 );

@@ -35,7 +35,7 @@ async register(req: Request, res: Response): Promise<void>  {
     res.json({
       message: 'Sesión iniciada correctamente',
       token: result.token,
-      user: { id: result.user.id, name: result.user.name, email: result.user.email, role: result.user.role }
+      user: { id: result.user.id, name: result.user.name, email: result.user.email, role: result.user.role, profilePicture: (result.user as any).profilePicture }
     });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al iniciar sesión' });

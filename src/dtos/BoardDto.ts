@@ -8,6 +8,7 @@ export const createBoardSchema = z.object({
     .max(150),
   description: z.string().optional().default(""),
   groupId: mongoIdSchema,
+  templateId: z.string().optional(),
 });
 
 export type CreateBoardDto = z.infer< typeof createBoardSchema>;

@@ -6,6 +6,8 @@ const GroupSchema = new Schema(
     name: { type: String, required: true },
     description: { type: String },
     ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    visibility: { type: String, enum: ['private', 'public'], default: 'private' },
+    profilePicture: { type: String, default: '' },
     members: [
       {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
