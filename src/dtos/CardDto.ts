@@ -5,15 +5,9 @@ export const createCardSchema = z.object({
     title: z.string().min(2, {error: "El título debe tener al menos 2 caracteres"}),
     description: z.string().optional(),
     columnId: mongoIdSchema,
-    position: z.number().optional().default(0),
     assignedTo: mongoIdSchema,
     dueDate: z.date().optional(),
     priority: z.enum(['alta', 'media', 'baja']).optional().default('media'),
-    tasks: z.array(z.object({
-        _id: mongoIdSchema.optional(),
-        title: z.string(),
-        completed: z.boolean().default(false)
-    })).optional().default([])
 });
 
 export type CreateCardDto = z.infer<typeof createCardSchema>;

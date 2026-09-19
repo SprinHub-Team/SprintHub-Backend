@@ -5,9 +5,9 @@ import { IColumn } from "../models/Column";
 import { IComment } from "../models/Comment";
 
 type BoardAggregateresult = IBoard & {
-  columnas: (IColumn & {
-    tarjetas: (ICard & {
-      comentarios: IComment[];
+  columns: (IColumn & {
+    cards: (ICard & {
+      comments: IComment[];
     })[];
   })[];
 };
@@ -25,7 +25,7 @@ export class BoardRepository {
           from: "columns",          
           localField: "_id",
           foreignField: "boardId",
-          as: "columnas",
+          as: "columns",
           
           pipeline: [
             {
@@ -33,7 +33,7 @@ export class BoardRepository {
                 from: "cards",      
                 localField: "_id",
                 foreignField: "columnId",
-                as: "tarjetas",
+                as: "cards",
                 
                 pipeline: [
                   {
@@ -41,7 +41,7 @@ export class BoardRepository {
                       from: "comments",    
                       localField: "_id",
                       foreignField: "cardId",
-                      as: "comentarios"
+                      as: "comments"
                     }
                   }
                 ]

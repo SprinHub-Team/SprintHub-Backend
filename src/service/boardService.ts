@@ -14,7 +14,17 @@ export class BoardService{
         private readonly columnRepository: ColumnRepository
     ){}
 
-    async findByGroupId(groupId: string): Promise<IBoard[]>{
+    async findByGroupId(groupId: string, userId: string): Promise<IBoard[]>{
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción o el grupo no existe", 403);
+        }
 
         const boards = await this.boardRepository.findByGroupId(groupId);
         return boards;

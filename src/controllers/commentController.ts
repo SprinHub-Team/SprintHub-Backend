@@ -12,13 +12,13 @@ async findByCardId(req: Request, res: Response, next: NextFunction){
 
   try{
 
-    const cardId = mongoIdSchema.parse(req.params.card || req.params.id);
+    const userId = req.user.userId;
 
-    const comments = await this.commentService.findByCardId(cardId);
+    const cardId = mongoIdSchema.parse(req.params.id);
 
-    return res.status(200).json({
-      data: comments
-    });
+    const comments = await this.commentService.findByCardId(cardId, userId);
+
+    return res.status(200).json(comments);
 
   }catch(error){
     next(error);
@@ -30,13 +30,13 @@ async getCommentWhitDetails(req: Request, res: Response, next: NextFunction){
 
   try{
 
+    const userId = req.user.userId;
+
     const commentId = mongoIdSchema.parse(req.params.id);
 
-    const comment = await this.commentService.getCommentWhitDetails(commentId);
+    const comment = await this.commentService.getCommentWhitDetails(commentId, userId);
 
-    return res.status(200).json({
-      data: comment
-    });
+    return res.status(200).json(comment);
 
   }catch(error){
     next(error);

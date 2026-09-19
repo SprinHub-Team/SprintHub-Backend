@@ -18,26 +18,47 @@ export class CardService{
         private readonly groupRepository: GroupRepository
     ){}
 
-    async findByColumnId(columnId: string): Promise<ICard[]>{
-        const columnExist = await this.columnRepository.existById(columnId);
-        if(!columnExist){
-            throw new AppError("La columna relacionada no existe", 404);
-        } 
+    async findByColumnId(columnId: string, userId: string): Promise<ICard[]>{
+
+        const columnContext = await this.columnRepository.getColumnContext(columnId);
+        if(!columnContext){
+            throw new AppError("la columna relacionada no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          columnContext.groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción o la columna no existe", 403);
+        }
+
         const cards = await this.cardRepository.findByColumnId(columnId);
         return cards;
     }
 
-    async findByBoardId(boardId: string): Promise<ICard[]> {
-        const columns = await this.columnRepository.findByBoardId(boardId);
-        const columnIds = columns.map(c => c._id.toString());
-        return this.cardRepository.findByColumnIds(columnIds);
-    }
+    async getCardWhitDetails(cardId: string, userId: string){
 
-    async getCardWhitDetails(cardId: string){
+        const cardContext = await this.cardRepository.getCardContext(cardId);
+        if(!cardContext){
+            throw new AppError("La card buscada no existe.", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          cardContext.groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
 
         const card = await this.cardRepository.findById(cardId);
         if(!card){
-        throw new AppError("El tablero buscado no existe.", 404);
+        throw new AppError("La card buscada no existe.", 404);
         }
         
         const comments = await this.commentRepository.findByCardId(cardId);
@@ -61,9 +82,9 @@ export class CardService{
         }
 
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          columnContext.groupId,
-          userId,
-          ["admin", "collaborator"],
+        columnContext.groupId,
+        userId,
+        ["admin", "collaborator"],
         );
 
         if(!hasPermission){
@@ -74,10 +95,8 @@ export class CardService{
             title: data.title,
             description: data.description,
             columnId: data.columnId,
-            position: data.position ?? 0,
             assignedTo: data.assignedTo,
-            priority: data.priority,
-            tasks: data.tasks as any
+            priority: data.priority
         }); 
 
         return {card, boardId: columnContext.boardId}
@@ -88,6 +107,16 @@ export class CardService{
         const cardContext = await this.cardRepository.getCardContext(id);
         if(!cardContext){
             throw new AppError("La card que se intenta actualizar no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+        cardContext.groupId,
+        userId,
+        ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
         }
 
         if (data.assignedTo) {
@@ -103,25 +132,13 @@ export class CardService{
                 throw new AppError("La columna relacionada no existe", 404);
             }
         }
-
-        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          cardContext.groupId,
-          userId,
-          ["admin", "collaborator"],
-        );
-
-        if(!hasPermission){
-            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
-        }
         
         const card = await this.cardRepository.update(id, {
             description: data.description,
             title: data.title,
-            position: data.position,
             columnId: data.columnId,
             assignedTo: data.assignedTo,
-            priority: data.priority as any,
-            tasks: data.tasks as any
+            priority: data.priority,
         });
 
         return{card, boardId: cardContext.boardId};
@@ -135,9 +152,9 @@ export class CardService{
         }
 
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          cardContext.groupId,
-          userId,
-          ["admin"],
+        cardContext.groupId,
+        userId,
+        ["admin"],
         );
 
         if(!hasPermission){
@@ -153,15 +170,42 @@ export class CardService{
 
     }
 
-    async addAttachment(cardId: string, fileData: { fileName: string; fileUrl: string; uploadedBy: string }) {
-        const exist = await this.cardRepository.existById(cardId);
-        if (!exist) throw new AppError("Tarjeta no encontrada", 404);
+    async addAttachment(cardId: string, fileData: { fileName: string; fileUrl: string; uploadedBy: string }, userId: string) {
+        
+        const cardContext = await this.cardRepository.getCardContext(cardId);
+        if(!cardContext){
+            throw new AppError("La card a la que se intenta adjuntar un archivo no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+        cardContext.groupId,
+        userId,
+        ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
+        
         return await this.cardRepository.addAttachment(cardId, fileData);
     }
 
-    async removeAttachment(cardId: string, attachmentId: string) {
-        const exist = await this.cardRepository.existById(cardId);
-        if (!exist) throw new AppError("Tarjeta no encontrada", 404);
+    async removeAttachment(cardId: string, attachmentId: string, userId: string) {
+        const cardContext = await this.cardRepository.getCardContext(cardId);
+        if(!cardContext){
+            throw new AppError("La card a la que se eliminar un archivo no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+        cardContext.groupId,
+        userId,
+        ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
+
         return await this.cardRepository.removeAttachment(cardId, attachmentId);
     }
 }

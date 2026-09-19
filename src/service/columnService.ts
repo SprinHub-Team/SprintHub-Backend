@@ -15,14 +15,44 @@ export class ColumnService{
         private readonly groupRepository: GroupRepository
     ){}
 
-    async findByBoardId(boardId: string): Promise<IColumn[]>{
+    async findByBoardId(boardId: string, userId: string): Promise<IColumn[]>{
+
+        const groupId = await this.boardRepository.getGroupIdByBoardId(boardId);
+         if(!groupId){
+            throw new AppError("El tablero relacionado no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
 
         const columns = await this.columnRepository.findByBoardId(boardId);
         return columns;
 
     }
 
-    async getColumnWhitDetails(columnId: string){
+    async getColumnWhitDetails(columnId: string, userId: string){
+
+        const columnContext = await this.columnRepository.getColumnContext(columnId);
+         if(!columnContext){
+            throw new AppError("La columna que se intenta obtener no existe", 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          columnContext.groupId,
+          userId,
+          ["admin", "collaborator"],
+        );
+
+        if(!hasPermission){
+            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+        }
 
         const column = await this.columnRepository.findById(columnId);
         if(!column){
@@ -88,14 +118,14 @@ export class ColumnService{
     async delete(id: string, userId: string): Promise<{boardId: string;}>{
 
         const columnContext = await this.columnRepository.getColumnContext(id);
-         if(!columnContext){
+        if(!columnContext){
             throw new AppError("La columna que se intenta actualizar no existe", 404);
         }
 
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          columnContext.groupId,
-          userId,
-          ["admin", "collaborator"],
+        columnContext.groupId,
+        userId,
+        ["admin", "collaborator"],
         );
 
         if(!hasPermission){
