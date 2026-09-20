@@ -1,7 +1,7 @@
-import { IBoard } from "../models/Board";
-import { ICard } from "../models/Card";
-import { IColumn } from "../models/Column";
-import { CommentModel, IComment } from "../models/Comment";
+import { IBoard } from '../models/Board';
+import { ICard } from '../models/Card';
+import { IColumn } from '../models/Column';
+import { CommentModel, IComment } from '../models/Comment';
 
 type CommentWithGroup = {
   cardId: Omit<ICard, 'columnId'> & {
@@ -19,14 +19,14 @@ export class CommentRepository {
   async getCommentContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
     const resultado = await CommentModel.findById(id)
       .populate<CommentWithGroup>({
-        path: "cardId",
-        select: "columnId",
+        path: 'cardId',
+        select: 'columnId',
         populate: {
-          path: "columnId",
-          select: "boardId",
+          path: 'columnId',
+          select: 'boardId',
           populate: {
-          path: "boardId",
-          select: "groupId _id",
+          path: 'boardId',
+          select: 'groupId _id',
         }
         } 
       }).lean().exec();
@@ -51,7 +51,7 @@ export class CommentRepository {
   }
 
   async create(
-    data: Pick<IComment, "name" | "description"> & {
+    data: Pick<IComment, 'name' | 'description'> & {
       cardId: string;
       createdBy: string;
     },
@@ -62,13 +62,13 @@ export class CommentRepository {
 
   async update(
     idActualizar: string,
-    data: Partial<Pick<IComment, "name" | "description">>,
+    data: Partial<Pick<IComment, 'name' | 'description'>>,
   ): Promise<IComment | null> {
     const updateComment = await CommentModel.findByIdAndUpdate(
       idActualizar,
       data,
       {
-        returnDocument: "after",
+        returnDocument: 'after',
         runValidators: true,
       },
     ).exec();

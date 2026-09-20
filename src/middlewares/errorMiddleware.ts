@@ -1,6 +1,7 @@
-import {ZodError} from "zod";
-import{Request,Response,NextFunction} from "express";
-import AppError from "../errors/AppError";
+import {ZodError} from 'zod';
+import{Request,Response,NextFunction} from 'express';
+import AppError from '../errors/AppError';
+import ValidationError from '../errors/ValidationError';
 
 export const errorMiddleware = (
     error: unknown,
@@ -10,7 +11,7 @@ export const errorMiddleware = (
 )=>{
     if(error instanceof ZodError){
         res.status(400).json({
-            message: "Datos invalidos",
+            message: 'Datos invalidos',
             errors: error.issues
         });
         return;
@@ -23,8 +24,15 @@ export const errorMiddleware = (
         return;
     }
 
+    if(error instanceof ValidationError){
+        res.status(500).json({
+            message: error.message
+        });
+        return;
+    }
+
     console.error(error);
     res.status(500).json({
-        message: "Error insterno del servidor"
+        message: 'Error insterno del servidor'
     });
 };

@@ -52,13 +52,13 @@ export class SprintController{
             const columnId  = mongoIdSchema.parse(req.body.columnId);
 
             if(!columnId){
-                return res.status(400).json({message: "el columnId es obligatorio"});
+                return res.status(400).json({message: 'el columnId es obligatorio'});
             }
             const newCard = await this.sprintService.exportToBoard(
                 cardId,
                 columnId
             );
-            return res.status(200).json({message: "actividad exportada correctamente al tablero exitosamente", data: newCard});
+            return res.status(200).json({message: 'actividad exportada correctamente al tablero exitosamente', data: newCard});
             
         } catch (error: any){
             return res.status(400).json({message: error.message});

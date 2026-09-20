@@ -1,12 +1,13 @@
-import { Request, Response, NextFunction } from "express";
-
-import { GroupService } from "../service/groupService";
-import { createGroupSchema, addMemberSchema } from "../dtos/GroupDto";
-import { mongoIdSchema } from "../utils/idValidator";
+import { Request, Response, NextFunction } from 'express';
+import { GroupService } from '../service/groupService';
+import { createGroupSchema, addMemberSchema } from '../dtos/GroupDto';
+import { mongoIdSchema } from '../utils/idValidator';
+import CloudinaryStorageService from '../service/storage/cloudinaryStorageService';
 
 export class GroupController {
   constructor(
     private readonly groupService: GroupService,
+    private readonly cloudinaryService: CloudinaryStorageService
   ) {}
 
   async createGroup(
@@ -65,7 +66,7 @@ export class GroupController {
 
       if (!userId) {
         return res.status(401).json({
-          message: "No autorizado",
+          message: 'No autorizado',
         });
       }
 
@@ -154,7 +155,7 @@ export class GroupController {
 
       return res.status(200).json({
         data: updatedGroup,
-        message: "Grupo actualizado exitosamente",
+        message: 'Grupo actualizado exitosamente',
       });
     } catch (error) {
       next(error);
@@ -172,7 +173,7 @@ export class GroupController {
       await this.groupService.deleteGroup(groupId);
 
       return res.status(200).json({
-        message: "Grupo eliminado exitosamente",
+        message: 'Grupo eliminado exitosamente',
       });
     } catch (error) {
       next(error);
@@ -187,15 +188,18 @@ export class GroupController {
     try {
       const groupId = mongoIdSchema.parse(req.params.id);
       if (!req.file) {
-        return res.status(400).json({ message: "No se subió ninguna imagen" });
+        return res.status(400).json({ message: 'No se subió ninguna imagen' });
       }
 
-      const fileUrl = `/uploads/profiles/${req.file.filename}`;
-      const updatedGroup = await this.groupService.updateGroup(groupId, { profilePicture: fileUrl });
+      const file = req.file;
+
+      const fileResult = await this.cloudinaryService.upload({buffer: file.buffer,fileName: file.filename, mimeType: file.mimetype, path: 'GroupPhotos' });
+
+      const updatedGroup = await this.groupService.updateGroup(groupId, { profilePicture: fileResult.url });
 
       return res.status(200).json({
         data: updatedGroup,
-        message: "Imagen de grupo actualizada",
+        message: 'Imagen de grupo actualizada',
       });
     } catch (error) {
       next(error);

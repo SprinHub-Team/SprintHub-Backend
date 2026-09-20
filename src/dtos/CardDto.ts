@@ -1,8 +1,9 @@
-import z from 'zod';
+import z, { string } from 'zod';
 import { mongoIdSchema } from '../utils/idValidator';
+import { uploadFileInputRequestSchema } from './FileDto';
 
 export const createCardSchema = z.object({
-    title: z.string().min(2, {error: "El título debe tener al menos 2 caracteres"}),
+    title: z.string().min(2, {error: 'El título debe tener al menos 2 caracteres'}),
     description: z.string().optional(),
     columnId: mongoIdSchema,
     assignedTo: mongoIdSchema,
@@ -30,3 +31,18 @@ export type UpdateCardRequest = z.infer<typeof updateCardRequest>;
 export const deleteCardRequest = mongoIdSchema;
 
 export type DeleteCardRequest = z.infer<typeof deleteCardRequest>;
+
+export const addFileSchema = z.object({
+    cardId: mongoIdSchema,
+    fileData: uploadFileInputRequestSchema
+});
+
+export type AddFileDto = z.infer<typeof addFileSchema>;
+
+export const removeFileSchema = z.object({
+    cardId: mongoIdSchema,
+    filePath: string()
+});
+
+export type RemoveFileDto = z.infer<typeof removeFileSchema>;
+

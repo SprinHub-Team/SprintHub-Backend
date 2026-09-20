@@ -30,7 +30,7 @@ export class BoardController {
       const board = await this.boardService.create(data, userId);
 
       return res.status(201).json({
-        message: "Tablero creado correctamente",
+        message: 'Tablero creado correctamente',
         data: board,
       });
     } catch (error) {
@@ -49,7 +49,7 @@ export class BoardController {
       const board = await this.boardService.update(boardId, data, userId);
 
       return res.status(200).json({
-        message: "Tablero actulizado correctamente",
+        message: 'Tablero actulizado correctamente',
         data: board,
       });
     } catch (error) {
@@ -81,7 +81,7 @@ export class BoardController {
       await this.boardService.applyTemplate(boardId, templateId, userId);
 
       return res.status(200).json({
-        message: "Plantilla aplicada correctamente",
+        message: 'Plantilla aplicada correctamente',
       });
     } catch (error) {
       next(error);

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { uploadMiddleware } from '../middlewares/uploadMiddleware';
 import { controllers } from '../dependencies/controllerDependency';
+import { uploadMiddleware } from '../middlewares/uploadMiddleware';
 
 const projectDocumentController = controllers.projectDd;
 

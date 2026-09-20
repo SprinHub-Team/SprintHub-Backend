@@ -1,13 +1,13 @@
-import { BoardRepository } from "../repository/boardRepository";
-import { CardPBRepository } from "../repository/cardPBRepository";
-import { CardRepository } from "../repository/cardRepository";
-import { ColumnRepository } from "../repository/columnRepository";
-import { CommentRepository } from "../repository/commentRepository";
-import { GroupRepository } from "../repository/groupRepository";
-import { ProjectDocumentRepository } from "../repository/projectDocumentRepository";
-import { ReportRepository } from "../repository/reportRepository";
-import { SprintRepository } from "../repository/sprintRepository";
-import { UserRepository } from "../repository/userRepository";
+import { BoardRepository } from '../repository/boardRepository';
+import { CardPBRepository } from '../repository/cardPBRepository';
+import { CardRepository } from '../repository/cardRepository';
+import { ColumnRepository } from '../repository/columnRepository';
+import { CommentRepository } from '../repository/commentRepository';
+import { GroupRepository } from '../repository/groupRepository';
+import { ProjectDocumentRepository } from '../repository/projectDocumentRepository';
+import { ReportRepository } from '../repository/reportRepository';
+import { SprintRepository } from '../repository/sprintRepository';
+import { UserRepository } from '../repository/userRepository';
 
 export const repositories = {
     user: new UserRepository(),

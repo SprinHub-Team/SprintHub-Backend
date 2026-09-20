@@ -31,11 +31,11 @@ export class CardPBService {
     const header = 'Titulo,Descripcion,Prioridad,Asignado,Fecha de Vencimiento\n';
 
     const rows = cards.map(card => {
-        const title = `"${card.title || ''}"`;
-        const desc = `"${card.description || ''}"`;
-        const priority = `"${card.priority || 'media'}"`;
-        const assignedTo = card.assignedTo ? `"${(card.assignedTo as any).name || 'Desconocido'}"` : '"Sin asignar"';
-        const dueDate = card.dueDate ? `"${card.dueDate.toISOString().split('T')[0]}"` : '""';
+        const title = `'${card.title || ''}'`;
+        const desc = `'${card.description || ''}'`;
+        const priority = `${card.priority || 'media'}`;
+        const assignedTo = card.assignedTo ? `'${(card.assignedTo as any).name || 'Desconocido'}'` : 'Sin asignar';
+        const dueDate = card.dueDate ? `'${card.dueDate.toISOString().split('T')[0]}'` : '';
 
         return `${title},${desc},${priority},${assignedTo},${dueDate}`;
     });

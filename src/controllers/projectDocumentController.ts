@@ -1,8 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProjectDocumentService } from '../service/projectDocumentService';
+import SupabaseStorageService from '../service/storage/supabaseStorageService';
 
 export class ProjectDocumentController {
-  constructor(private readonly docService: ProjectDocumentService) {}
+  constructor(
+    private readonly docService: ProjectDocumentService,
+    private readonly supabaseService: SupabaseStorageService
+  ) {}
 
   async upload(req: Request, res: Response, next: NextFunction) {
     try {
@@ -15,11 +19,12 @@ export class ProjectDocumentController {
       if (!userId) throw new Error('No autorizado');
       if (!title) throw new Error('El título es requerido');
 
-      const fileUrl = `/uploads/${file.filename}`;
+      const fileResult = await this.supabaseService.upload({ buffer: file.buffer, fileName: file.filename, mimeType: file.mimetype, path: 'ProjectsDocuments'});
+
       const doc = await this.docService.createDocument({
         title,
         fileName: file.originalname,
-        fileUrl,
+        fileUrl: fileResult.url,
         groupId: groupId as string,
         uploadedBy: userId
       });

@@ -1,5 +1,5 @@
-import { Router } from "express";
-import { controllers } from "../dependencies/controllerDependency";
+import { Router } from 'express';
+import { controllers } from '../dependencies/controllerDependency';
 import { requireAuth } from '../middlewares/authMiddleware';
 
 

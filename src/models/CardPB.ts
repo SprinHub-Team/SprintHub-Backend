@@ -9,12 +9,6 @@ export const CardPbSchema = new Schema(
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     dueDate: { type: Date },
     priority: { type: String, enum: ['alta', 'media', 'baja'], default: 'media' },
-    tasks: [
-      {
-        title: { type: String, required: true },
-        completed: { type: Boolean, default: false }
-      }
-    ]
   },
   {
     timestamps: true,

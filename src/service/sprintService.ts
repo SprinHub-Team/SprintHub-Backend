@@ -1,7 +1,7 @@
-import { SprintRepository } from "../repository/sprintRepository";
-import { CardPBRepository } from "../repository/cardPBRepository";
-import { CardRepository } from "../repository/cardRepository";
-import { ISprint } from "../models/Sprint";
+import { SprintRepository } from '../repository/sprintRepository';
+import { CardPBRepository } from '../repository/cardPBRepository';
+import { CardRepository } from '../repository/cardRepository';
+import { ISprint } from '../models/Sprint';
 
 
 export class SprintService {
@@ -49,7 +49,6 @@ export class SprintService {
             assignedTo: cardPb.assignedTo,
             dueDate: cardPb.dueDate,
             priority: cardPb.priority,
-            tasks: cardPb.tasks
         };
         const newCard = await this.cardRepository.create(newCardData as any);
         await this.cardPBRepository.delete(cardPbId);
