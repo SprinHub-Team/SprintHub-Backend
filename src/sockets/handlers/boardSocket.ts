@@ -1,7 +1,7 @@
-import { Server } from "socket.io";
-import { AuthSocket } from "../socketAuthMiddleware";
+import { Server } from 'socket.io';
+import { AuthSocket } from '../socketAuthMiddleware';
 import { services } from '../../dependencies/serviceDependency';
-import { mongoIdSchema } from "../../utils/idValidator";
+import { mongoIdSchema } from '../../utils/idValidator';
 
 const { board: boardService, group: groupService } = services;
 

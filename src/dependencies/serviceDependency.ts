@@ -10,13 +10,20 @@ import { CardPBService } from '../service/cardPBService';
 import { ProjectDocumentService } from '../service/projectDocumentService';
 import { SprintService } from '../service/sprintService';
 import { ReportService } from '../service/reportService';
+import SupabaseStorageService from '../service/storage/supabaseStorageService';
+import CloudinaryStorageService from '../service/storage/cloudinaryStorageService';
+
+const supabase = new SupabaseStorageService(); 
+const cloudinary = new CloudinaryStorageService(); 
 
 export const services = {
+  supabase,
+  cloudinary,
   user: new UserService(r.user),
   group: new GroupService(r.group, r.user),
-  board: new BoardService(r.board, r.group, r.column),
-  column: new ColumnService(r.column, r.board, r.card, r.group),
-  card: new CardService(r.card, r.column, r.user, r.comment, r.group),
+  board: new BoardService(r.board, r.group, r.column, r.card, supabase),
+  column: new ColumnService(r.column, r.board, r.card, r.group, supabase),
+  card: new CardService(r.card, r.column, r.user, r.comment, r.group, supabase),
   comment: new CommentService(r.comment, r.card, r.user, r.group),
   auth: new AuthService(r.user),
   cardPb: new CardPBService(r.cardPb),

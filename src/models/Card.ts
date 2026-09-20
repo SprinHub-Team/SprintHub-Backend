@@ -9,11 +9,10 @@ const CardSchema = new Schema(
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
     dueDate: { type: Date },
     priority: { type: String, enum: ['alta', 'media', 'baja'], default: 'media' },
-    attachments: [{
-      fileName: { type: String, required: true },
-      fileUrl: { type: String, required: true },
-      uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-      uploadedAt: { type: Date, default: Date.now }
+    files: [{
+      path:{ type: String, required: true},
+      fileName: { type: String, required:true},
+      url: { type: String, required: true},
     }]
   },
   { timestamps: true,

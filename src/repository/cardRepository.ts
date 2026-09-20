@@ -1,9 +1,11 @@
-import { IBoard } from "../models/Board";
-import {CardModel, ICard} from "../models/Card";
-import { IColumn } from "../models/Column";
+import { RemoveFileDto } from '../dtos/CardDto';
+import { UploadFileResultDto } from '../dtos/FileDto';
+import { IBoard } from '../models/Board';
+import {CardModel, ICard} from '../models/Card';
+import { IColumn } from '../models/Column';
 
 type CardWithGroup = {
-  columnId: Omit<IColumn, "boardId"> & {
+  columnId: Omit<IColumn, 'boardId'> & {
    boardId: IBoard };
 };
 
@@ -60,19 +62,35 @@ export class CardRepository{
         
     }
 
-    async addAttachment(cardId: string, attachment: { fileName: string; fileUrl: string; uploadedBy: string }): Promise<ICard | null> {
+    async addFile(cardId: string, file: UploadFileResultDto): Promise<ICard | null> {
+
         return CardModel.findByIdAndUpdate(
             cardId,
-            { $push: { attachments: attachment } },
+            { $push: { files: file } },
             { new: true }
         ).lean().exec();
+        
     }
 
-    async removeAttachment(cardId: string, attachmentId: string): Promise<ICard | null> {
-        return CardModel.findByIdAndUpdate(
-            cardId,
-            { $pull: { attachments: { _id: attachmentId } } },
-            { new: true }
-        ).lean().exec();
-    }
+async removeFile(data: RemoveFileDto): Promise<ICard | null> { 
+
+    return CardModel.findByIdAndUpdate( 
+        data.cardId, 
+        { $pull: { files: { path: data.filePath } } }, 
+        { new: true } 
+    ).lean().exec(); 
+
+}
+
+async getFilesByCardId(cardId: string) {
+  const card = await CardModel.findById(cardId).select('files -_id').lean().exec();
+  return card ? card.files.map(file => file.path) : null;
+}
+
+async getFilesByColumnId(columnId: string) {
+    const cards = await CardModel.find({ columnId }).select('files -_id').lean().exec();
+    return cards ? cards.map(card => card.files).flatMap(files => files.map(file => file.path)) : null;
+
+}
+
 }

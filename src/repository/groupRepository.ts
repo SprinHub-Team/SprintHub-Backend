@@ -3,22 +3,22 @@ import { GroupModel, IGroup } from '../models/Group';
 export class GroupRepository {
   async findById(id: string): Promise<IGroup | null> {
     return GroupModel.findById(id)
-      .populate("ownerId", "name email")
-      .populate("members.user", "name email")
+      .populate('ownerId', 'name email')
+      .populate('members.user', 'name email')
       .lean()
       .exec();
   }
 
   async findByUserId(userId: string): Promise<IGroup[]> {
-    return GroupModel.find({ "members.user": userId })
-      .populate("ownerId", "name email")
-      .populate("members.user", "name email")
+    return GroupModel.find({ 'members.user': userId })
+      .populate('ownerId', 'name email')
+      .populate('members.user', 'name email')
       .lean()
       .exec();
   }
 
   async create(
-    data: Pick<IGroup, "name" | "description"> & { ownerId: string },
+    data: Pick<IGroup, 'name' | 'description'> & { ownerId: string },
   ): Promise<IGroup> {
     const group = await GroupModel.create({ ...data, members: [] });
     return group.toObject();
@@ -26,10 +26,10 @@ export class GroupRepository {
 
   async update(
     id: string,
-    data: Partial<Pick<IGroup, "name" | "description" | "visibility">>,
+    data: Partial<Pick<IGroup, 'name' | 'description' | 'visibility'>>,
   ): Promise<IGroup | null> {
     return GroupModel.findByIdAndUpdate(id, data, {
-      returnDocument: "after",
+      returnDocument: 'after',
       runValidators: true,
     })
       .lean()
@@ -39,12 +39,12 @@ export class GroupRepository {
   async addMember(
     groupId: string,
     userId: string,
-    role: "admin" | "collaborator" | "visitor",
+    role: 'admin' | 'collaborator' | 'visitor',
   ): Promise<IGroup | null> {
     return GroupModel.findByIdAndUpdate(
       groupId,
       { $addToSet: { members: { user: userId, role } } },
-      { returnDocument: "after", runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     )
       .lean()
       .exec();
@@ -54,7 +54,7 @@ export class GroupRepository {
     return GroupModel.findByIdAndUpdate(
       groupId,
       { $pull: { members: { user: userId } } },
-      { returnDocument: "after" },
+      { returnDocument: 'after' },
     )
       .lean()
       .exec();
@@ -71,7 +71,7 @@ export class GroupRepository {
   async isMember(groupId: string, userId: string): Promise<boolean> {
     const exists = await GroupModel.exists({
       _id: groupId,
-      "members.user": userId,
+      'members.user': userId,
     });
     return exists !== null;
   }
@@ -94,4 +94,5 @@ export class GroupRepository {
   async existById(id: string): Promise<boolean> {
     return (await GroupModel.exists({ _id: id })) !== null;
   }
+  
 }

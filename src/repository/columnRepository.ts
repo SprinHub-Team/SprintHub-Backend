@@ -1,5 +1,5 @@
-import { IBoard } from "../models/Board";
-import { ColumnModel, IColumn } from "../models/Column";
+import { IBoard } from '../models/Board';
+import { ColumnModel, IColumn } from '../models/Column';
 
 type ColumnWithGroup = {
 boardId: IBoard
