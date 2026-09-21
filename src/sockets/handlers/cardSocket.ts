@@ -59,7 +59,7 @@ export function registerCardHandlers(io: Server, socket: AuthSocket){
 
         try{
 
-            const {fileData, cardId} = addFileSchema.parse(data);
+            const {fileData, cardId} = await addFileSchema.parseAsync(data);
 
             const {card, boardId} = await cardService.addFile(cardId, fileData, socket.data.userId);
             socket.to(`board:${boardId}`).emit('card:fileAdded', card);

@@ -21,7 +21,7 @@ export const createGroupSchema = groupSchema.pick({
 export type CreateGroupDto = z.infer<typeof createGroupSchema>;
 
 export const addMemberSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   role: z.enum(['admin', 'collaborator', 'visitor'])
 });
 export type AddMemberDto = z.infer<typeof addMemberSchema>;

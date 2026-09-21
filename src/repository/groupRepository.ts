@@ -1,6 +1,7 @@
 import { GroupModel, IGroup } from '../models/Group';
 
 export class GroupRepository {
+  
   async findById(id: string): Promise<IGroup | null> {
     return GroupModel.findById(id)
       .populate('ownerId', 'name email')
