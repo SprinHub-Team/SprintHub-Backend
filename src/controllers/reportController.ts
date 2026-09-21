@@ -11,7 +11,7 @@ export class ReportController {
       const data = await this.reportService.getGroupPerformance(groupId);
 
       return res.status(200).json({
-        message: "Rendimiento del grupo consultado correctamente",
+        message: 'Rendimiento del grupo consultado correctamente',
         data
       });
     } catch (error) {
@@ -31,7 +31,7 @@ export class ReportController {
       );
 
       return res.status(200).json({
-        message: "Rendimiento del usuario consultado correctamente",
+        message: 'Rendimiento del usuario consultado correctamente',
         data
       });
     } catch (error) {
@@ -45,7 +45,7 @@ export class ReportController {
       const data = await this.reportService.getCompletedActivities(groupId);
 
       return res.status(200).json({
-        message: "Actividades finalizadas consultadas correctamente",
+        message: 'Actividades finalizadas consultadas correctamente',
         data
       });
     } catch (error) {

@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
 import { AuthSocket } from '../socketAuthMiddleware';
-import { createCardRequest, CreateCardRequest, deleteCardRequest, DeleteCardRequest, updateCardRequest, UpdateCardRequest } from '../../dtos/CardDto';
+import { AddFileDto, addFileSchema, createCardRequest, CreateCardRequest, deleteCardRequest, DeleteCardRequest, RemoveFileDto, removeFileSchema, updateCardRequest, UpdateCardRequest } from '../../dtos/CardDto';
 import { services } from '../../dependencies/serviceDependency';
 
 const cardService = services.card;
@@ -49,6 +49,38 @@ export function registerCardHandlers(io: Server, socket: AuthSocket){
             io.to(`board:${boardId}`).emit('card:deleted', cardId);
             callback?.({ok: true});
             
+        }catch(err: any){
+            callback?.({ok: false, error: err.message});
+        }
+
+    });
+
+    socket.on('card:fileAdd', async(data: AddFileDto, callback) =>{
+
+        try{
+
+            const {fileData, cardId} = addFileSchema.parse(data);
+
+            const {card, boardId} = await cardService.addFile(cardId, fileData, socket.data.userId);
+            socket.to(`board:${boardId}`).emit('card:fileAdded', card);
+            callback?.({ok: true, card});
+
+        }catch(err: any){
+            callback?.({ok: false, error: err.message});
+        }
+
+    });
+
+    socket.on('card:fileRemove', async(data: RemoveFileDto, callback) =>{
+
+        try{
+
+            const { cardId, filePath } = removeFileSchema.parse(data);
+
+            const {card, boardId} = await cardService.removeFile({filePath, cardId}, socket.data.userId);
+            socket.to(`board:${boardId}`).emit('card:fileRemoved', card);
+            callback?.({ok: true, card});
+
         }catch(err: any){
             callback?.({ok: false, error: err.message});
         }

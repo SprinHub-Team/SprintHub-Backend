@@ -2,6 +2,7 @@ import {Socket} from 'socket.io';
 import jwt from 'jsonwebtoken';
 import env from '../config/env';
 import { JwtPayload } from '../dtos/JwtPayload';
+import ValidationError from '../errors/ValidationError';
 
 export interface AuthSocket extends Socket{
     data:{
@@ -15,7 +16,7 @@ export function socketAuthMiddleware(socket: Socket, next:(err?: Error) => void)
 	const token = socket.handshake.auth?.token as string | undefined;
 	if(!token){
 
-		return next(new Error('No se proporciono token de autentificacion'));
+		return next(new ValidationError('No se proporciono token de autentificacion'));
 	
 	}
 
@@ -26,7 +27,7 @@ export function socketAuthMiddleware(socket: Socket, next:(err?: Error) => void)
 		socket.data.role = decoded.role;
 		next();
 	}catch(err){
-		next(new Error('Token inavlido para sesion de Sockets'));
+		next(new ValidationError('Token inavlido para sesion de Sockets'));
 	}
 
 }

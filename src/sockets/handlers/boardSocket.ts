@@ -1,7 +1,7 @@
-import { Server } from "socket.io";
-import { AuthSocket } from "../socketAuthMiddleware";
+import { Server } from 'socket.io';
+import { AuthSocket } from '../socketAuthMiddleware';
 import { services } from '../../dependencies/serviceDependency';
-import { mongoIdSchema } from "../../utils/idValidator";
+import { mongoIdSchema } from '../../utils/idValidator';
 
 const { board: boardService, group: groupService } = services;
 
@@ -21,7 +21,7 @@ export function registerBoardHandlers(io: Server, socket: AuthSocket){
             }
 
 			socket.join(`board:${boardIdParsed}`);
-			callback?.({ok: true, board: board});
+			callback?.({ok: true, board});
 
 		}catch(err: any){
 			callback?.({ok: false, error: err.message });

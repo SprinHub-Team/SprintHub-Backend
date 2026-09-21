@@ -1,13 +1,13 @@
-import { Types } from "mongoose";
-import { BoardModel, IBoard } from "../models/Board";
-import { ICard } from "../models/Card";
-import { IColumn } from "../models/Column";
-import { IComment } from "../models/Comment";
+import { Types } from 'mongoose';
+import { BoardModel, IBoard } from '../models/Board';
+import { ICard } from '../models/Card';
+import { IColumn } from '../models/Column';
+import { IComment } from '../models/Comment';
 
 type BoardAggregateresult = IBoard & {
-  columnas: (IColumn & {
-    tarjetas: (ICard & {
-      comentarios: IComment[];
+  columns: (IColumn & {
+    cards: (ICard & {
+      comments: IComment[];
     })[];
   })[];
 };
@@ -22,26 +22,26 @@ export class BoardRepository {
 
       {
         $lookup: {
-          from: "columns",          
-          localField: "_id",
-          foreignField: "boardId",
-          as: "columnas",
+          from: 'columns',          
+          localField: '_id',
+          foreignField: 'boardId',
+          as: 'columns',
           
           pipeline: [
             {
               $lookup: {
-                from: "cards",      
-                localField: "_id",
-                foreignField: "columnId",
-                as: "tarjetas",
+                from: 'cards',      
+                localField: '_id',
+                foreignField: 'columnId',
+                as: 'cards',
                 
                 pipeline: [
                   {
                     $lookup: {
-                      from: "comments",    
-                      localField: "_id",
-                      foreignField: "cardId",
-                      as: "comentarios"
+                      from: 'comments',    
+                      localField: '_id',
+                      foreignField: 'cardId',
+                      as: 'comments'
                     }
                   }
                 ]

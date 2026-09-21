@@ -1,9 +1,13 @@
 import { Request, Response } from 'express';
 import { UserService } from '../service/userService';
 import { mongoIdSchema } from '../utils/idValidator';
+import CloudinaryStorageService from '../service/storage/cloudinaryStorageService';
 
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly cloudinaryService: CloudinaryStorageService
+  ) {}
 
   async getAllUsers(req: Request, res: Response) {
     try {
@@ -67,8 +71,11 @@ export class UserController {
         return res.status(400).json({ message: 'No se subió ninguna imagen' });
       }
 
-      const fileUrl = `/uploads/profiles/${req.file.filename}`;
-      const updatedUser = await this.userService.updateUser(userId, { profilePicture: fileUrl });
+      const file = req.file;
+
+      const fileResult = await this.cloudinaryService.upload({ buffer: file.buffer, fileName: file.filename, mimeType: file.mimetype, path: 'UserPhotos'});
+
+      const updatedUser = await this.userService.updateUser(userId, { profilePicture: fileResult.url });
 
       return res.status(200).json(updatedUser);
     } catch (error: any) {

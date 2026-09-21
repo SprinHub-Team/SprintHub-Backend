@@ -1,7 +1,7 @@
-import { Types } from "mongoose";
-import { BoardModel } from "../models/Board";
-import { ColumnModel } from "../models/Column";
-import { CardModel } from "../models/Card";
+import { Types } from 'mongoose';
+import { BoardModel } from '../models/Board';
+import { ColumnModel } from '../models/Column';
+import { CardModel } from '../models/Card';
 
 export class ReportRepository {
   

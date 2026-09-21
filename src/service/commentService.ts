@@ -1,10 +1,11 @@
-import { CreateCommentDto, UpdateCommentDto } from "../dtos/CommentDto";
-import AppError from "../errors/AppError";
-import { IComment } from "../models/Comment";
-import { CardRepository } from "../repository/cardRepository";
-import { CommentRepository } from "../repository/commentRepository";
-import { GroupRepository } from "../repository/groupRepository";
-import { UserRepository } from "../repository/userRepository";
+import { CreateCommentDto, UpdateCommentDto } from '../dtos/CommentDto';
+import AppError from '../errors/AppError';
+import ValidationError from '../errors/ValidationError';
+import { IComment } from '../models/Comment';
+import { CardRepository } from '../repository/cardRepository';
+import { CommentRepository } from '../repository/commentRepository';
+import { GroupRepository } from '../repository/groupRepository';
+import { UserRepository } from '../repository/userRepository';
 
 export class CommentService{
 
@@ -15,11 +16,21 @@ export class CommentService{
         private readonly groupRepository: GroupRepository
     ){}
 
-    async findByCardId(cardId: string) : Promise<IComment[]>{
+    async findByCardId(cardId: string, userId: string) : Promise<IComment[]>{
 
-        const cardExist = await this.cardRepository.existById(cardId);
-        if(!cardExist){
-            throw new AppError("La card relacionada no existe.", 404);
+        const cardContext = await this.cardRepository.getCardContext(cardId);
+        if(!cardContext){
+            throw new AppError('La tarjeta relacionada no existe', 404);
+        }
+        
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          cardContext.groupId,
+          userId,
+          ['admin', 'collaborator'],
+        );
+
+        if(!hasPermission){
+            throw new AppError('El usuario no tiene permiso para realizar esta acción', 403);
         }
 
         const comments = await this.commentRepository.findByCardId(cardId);
@@ -27,11 +38,26 @@ export class CommentService{
 
     }
 
-    async getCommentWhitDetails(commentId: string){
+    async getCommentWhitDetails(commentId: string, userId: string){
+
+        const commentContext = await this.commentRepository.getCommentContext(commentId);
+        if(!commentContext){
+            throw new AppError('El comentario que intenta obtener no existe', 404);
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+        commentContext.groupId,
+        userId,
+        ['admin', 'collaborator'],
+        );
+
+        if(!hasPermission){
+            throw new AppError('El usuario no tiene permiso para realizar esta acción', 403);
+        }
 
         const comment = await this.commentRepository.findById(commentId);
         if(!comment){
-            throw new AppError("El comentario buscado no existe.", 404);
+            throw new AppError('El comentario buscado no existe.', 404);
         }
 
         const createFor = await this.userRepository.findById(comment.createdBy.toString());
@@ -44,17 +70,17 @@ export class CommentService{
 
         const cardContext = await this.cardRepository.getCardContext(data.cardId);
         if(!cardContext){
-            throw new AppError("La tarjeta relacionada no existe", 404);
+            throw new ValidationError('La tarjeta relacionada no existe');
         }
         
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
           cardContext.groupId,
           userId,
-          ["admin", "collaborator"],
+          ['admin', 'collaborator'],
         );
 
         if(!hasPermission){
-            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+            throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
         const comment = await this.commentRepository.create({...data, createdBy: userId});
@@ -63,24 +89,28 @@ export class CommentService{
 
     }
 
-    async update(id: string, data: UpdateCommentDto, userId: string): Promise<{comment: IComment | null}&{boardId: string}>{
+    async update(id: string, data: UpdateCommentDto, userId: string): Promise<{comment: IComment}&{boardId: string}>{
 
         const commentContext = await this.commentRepository.getCommentContext(id);
         if(!commentContext){
-            throw new AppError("El comentario que intenta actualizar no existe", 404);
+            throw new ValidationError('El comentario que intenta actualizar no existe');
         }
 
-         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
           commentContext.groupId,
           userId,
-          ["admin", "collaborator"],
+          ['admin', 'collaborator'],
         );
 
         if(!hasPermission){
-            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+            throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
         const comment = await this.commentRepository.update(id, data);
+
+        if(!comment){
+            throw new ValidationError('El comentario no se ha podido actualizar.')
+        }
 
         return {comment, boardId: commentContext.boardId};
 
@@ -90,22 +120,22 @@ export class CommentService{
 
         const commentContext = await this.commentRepository.getCommentContext(id);
         if(!commentContext){
-            throw new AppError("El comentario que intenta eliminar no existe", 404);
+            throw new ValidationError('El comentario que intenta eliminar no existe');
         }
 
-         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
           commentContext.groupId,
           userId,
-          ["admin", "collaborator"],
+          ['admin', 'collaborator'],
         );
 
         if(!hasPermission){
-            throw new AppError("El usuario no tiene permiso para realizar esta acción", 403);
+            throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
         const eliminado = await this.commentRepository.delete(id);
         if(!eliminado){
-            throw new AppError("El comentario que se intenta eliminar no existe", 404);
+            throw new ValidationError('El comentario que se intenta eliminar no existe');
         }
 
         return {boardId: commentContext.boardId};

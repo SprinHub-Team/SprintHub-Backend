@@ -1,5 +1,5 @@
-import z from "zod";
-import { mongoIdSchema } from "../utils/idValidator";
+import z from 'zod';
+import { mongoIdSchema } from '../utils/idValidator';
 
 export const createCommentSchema = z.object({
   name: z.string().min(2),

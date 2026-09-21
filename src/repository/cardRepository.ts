@@ -1,9 +1,11 @@
-import { IBoard } from "../models/Board";
-import {CardModel, ICard} from "../models/Card";
-import { IColumn } from "../models/Column";
+import { RemoveFileDto } from '../dtos/CardDto';
+import { UploadFileResultDto } from '../dtos/FileDto';
+import { IBoard } from '../models/Board';
+import {CardModel, ICard} from '../models/Card';
+import { IColumn } from '../models/Column';
 
 type CardWithGroup = {
-  columnId: Omit<IColumn, "boardId"> & {
+  columnId: Omit<IColumn, 'boardId'> & {
    boardId: IBoard };
 };
 
@@ -11,10 +13,6 @@ export class CardRepository{
 
     async findByColumnId(columnId: string):Promise<ICard[]>{
         return CardModel.find({ columnId }).lean().exec();
-    }
-
-    async findByColumnIds(columnIds: string[]): Promise<ICard[]> {
-        return CardModel.find({ columnId: { $in: columnIds } }).lean().exec();
     }
 
     async findById(id: string):Promise<ICard | null>{
@@ -44,12 +42,12 @@ export class CardRepository{
     }
 
 
-    async create(data: Pick<ICard, 'title' | 'description' | 'position' | 'dueDate' | 'priority' | 'tasks'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
+    async create(data: Pick<ICard, 'title' | 'description' | 'dueDate' | 'priority'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
         const newCard = await CardModel.create(data);
         return newCard.toObject();
     }
 
-    async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'position' | 'priority' | 'tasks'>>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
+    async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'priority' >>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
         const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
             returnDocument: 'after',
             runValidators: true
@@ -64,30 +62,35 @@ export class CardRepository{
         
     }
 
-    async existById(id: string){
+    async addFile(cardId: string, file: UploadFileResultDto): Promise<ICard | null> {
 
-        const existe = await CardModel.exists({_id: id}).exec();
-        return existe !== null;
-    }
-
-    async existManyByIds(ids: string[]): Promise<boolean>{
-        const conteo = await CardModel.countDocuments({_id:{$in: ids}}).exec();
-        return conteo === ids.length;
-    }
-
-    async addAttachment(cardId: string, attachment: { fileName: string; fileUrl: string; uploadedBy: string }): Promise<ICard | null> {
         return CardModel.findByIdAndUpdate(
             cardId,
-            { $push: { attachments: attachment } },
+            { $push: { files: file } },
             { new: true }
         ).lean().exec();
+        
     }
 
-    async removeAttachment(cardId: string, attachmentId: string): Promise<ICard | null> {
-        return CardModel.findByIdAndUpdate(
-            cardId,
-            { $pull: { attachments: { _id: attachmentId } } },
-            { new: true }
-        ).lean().exec();
-    }
+async removeFile(data: RemoveFileDto): Promise<ICard | null> { 
+
+    return CardModel.findByIdAndUpdate( 
+        data.cardId, 
+        { $pull: { files: { path: data.filePath } } }, 
+        { new: true } 
+    ).lean().exec(); 
+
+}
+
+async getFilesByCardId(cardId: string) {
+  const card = await CardModel.findById(cardId).select('files -_id').lean().exec();
+  return card ? card.files.map(file => file.path) : null;
+}
+
+async getFilesByColumnId(columnId: string) {
+    const cards = await CardModel.find({ columnId }).select('files -_id').lean().exec();
+    return cards ? cards.map(card => card.files).flatMap(files => files.map(file => file.path)) : null;
+
+}
+
 }

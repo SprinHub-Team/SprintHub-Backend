@@ -1,6 +1,6 @@
-import { GroupRepository } from "../repository/groupRepository";
-import { UserRepository } from "../repository/userRepository";
-import AppError from "../errors/AppError";
+import { GroupRepository } from '../repository/groupRepository';
+import { UserRepository } from '../repository/userRepository';
+import AppError from '../errors/AppError';
 
 export class GroupService {
   constructor(
@@ -15,45 +15,45 @@ export class GroupService {
   }) {
     const ownerExists = await this.userRepo.existById(data.ownerId);
     if (!ownerExists)
-      throw new AppError("El usuario propietario no existe", 400);
+      throw new AppError('El usuario propietario no existe', 400);
 
     const group = await this.groupRepo.create(data);
     return this.groupRepo.addMember(
       group._id.toString(),
       data.ownerId,
-      "admin",
+      'admin',
     );
   }
 
   async getGroupById(id: string) {
     const group = await this.groupRepo.findById(id);
-    if (!group) throw new AppError("Grupo no encontrado", 404);
+    if (!group) throw new AppError('Grupo no encontrado', 404);
     return group;
   }
 
   async getGroupsForUser(userId: string) {
     const userExists = await this.userRepo.existById(userId);
-    if (!userExists) throw new AppError("Usuario no encontrado", 404);
+    if (!userExists) throw new AppError('Usuario no encontrado', 404);
     return this.groupRepo.findByUserId(userId);
   }
 
   async addMember(
     groupId: string,
     email: string,
-    role: "admin" | "collaborator" | "visitor",
+    role: 'admin' | 'collaborator' | 'visitor',
   ) {
     const groupExists = await this.groupRepo.existById(groupId);
-    if (!groupExists) throw new AppError("El grupo relacionado no existe", 404);
+    if (!groupExists) throw new AppError('El grupo relacionado no existe', 404);
 
     const user = await this.userRepo.findByEmail(email);
-    if (!user) throw new AppError("El usuario relacionado no existe", 404);
+    if (!user) throw new AppError('El usuario relacionado no existe', 404);
 
     const alreadyMember = await this.groupRepo.isMember(
       groupId,
       user._id.toString(),
     );
     if (alreadyMember)
-      throw new AppError("El usuario ya pertenece al grupo", 409);
+      throw new AppError('El usuario ya pertenece al grupo', 409);
 
     return this.groupRepo.addMember(groupId, user._id.toString(), role);
   }
@@ -64,7 +64,7 @@ export class GroupService {
 
   async removeMember(groupId: string, userId: string) {
     const isMember = await this.groupRepo.isMember(groupId, userId);
-    if (!isMember) throw new AppError("El usuario no pertenece al grupo", 404);
+    if (!isMember) throw new AppError('El usuario no pertenece al grupo', 404);
 
     return this.groupRepo.removeMember(groupId, userId);
   }
@@ -72,13 +72,13 @@ export class GroupService {
   async updateMemberRole(
     groupId: string,
     userId: string,
-    role: "admin" | "collaborator" | "visitor",
+    role: 'admin' | 'collaborator' | 'visitor',
   ) {
     const groupExists = await this.groupRepo.existById(groupId);
-    if (!groupExists) throw new AppError("Grupo no encontrado", 404);
+    if (!groupExists) throw new AppError('Grupo no encontrado', 404);
 
     const isMember = await this.groupRepo.isMember(groupId, userId);
-    if (!isMember) throw new AppError("El usuario no pertenece al grupo", 404);
+    if (!isMember) throw new AppError('El usuario no pertenece al grupo', 404);
 
     return this.groupRepo.updateMemberRole(groupId, userId, role);
   }
@@ -88,18 +88,18 @@ export class GroupService {
     data: {
       name?: string;
       description?: string;
-      visibility?: "private" | "public";
+      visibility?: 'private' | 'public';
       profilePicture?: string | undefined;
     },
   ) {
     const exists = await this.groupRepo.existById(id);
-    if (!exists) throw new AppError("Grupo no encontrado", 404);
+    if (!exists) throw new AppError('Grupo no encontrado', 404);
     return this.groupRepo.update(id, data);
   }
 
   async deleteGroup(id: string) {
     const exists = await this.groupRepo.existById(id);
-    if (!exists) throw new AppError("Grupo no encontrado", 404);
+    if (!exists) throw new AppError('Grupo no encontrado', 404);
     return this.groupRepo.delete(id);
   }
 }

@@ -1,5 +1,5 @@
-import mongoose, { Schema, InferSchemaType } from "mongoose";
-import { CardModel } from "./Card";
+import mongoose, { Schema, InferSchemaType } from 'mongoose';
+import { CardModel } from './Card';
 
 const ColumnSchema = new Schema(
   {
