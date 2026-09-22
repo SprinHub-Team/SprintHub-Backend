@@ -14,7 +14,7 @@ try {
     corsOrigin: process.env.CORS_ORIGIN,
     serverUrl: process.env.SERVER_URL,
     supabaseUrl: process.env.SUPABASE_URL,
-    supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    supabaseKey: process.env.SUPABASE_SECRET_KEY,
     cloudinaryName: process.env.CLOUDINARY_CLOUD_NAME,
     cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
     cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,

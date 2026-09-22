@@ -7,7 +7,7 @@ export const envSchema = z.object({
   corsOrigin: z.string().min(1, { error: 'CORS_ORIGIN es requerido' }),
   serverUrl: z.string().min(1, { error: 'SERVER_URL es requerida' }),
   supabaseUrl: z.string().min(1, { error: 'SUPABASE_URL es requerida' }),
-  supabaseKey: z.string().min(1, { error: 'SUPABASE_SERVICE_ROLE_KEY es requerida' }),
+  supabaseKey: z.string().min(1, { error: 'SUPABASE_SECRET_KEY es requerida' }),
   cloudinaryName: z.string().min(1, { error: 'CLOUDINARY_CLOUD_NAME es requerida' }),
   cloudinaryApiKey: z.string().min(1, { error: 'CLOUDINARY_API_KEY es requerida' }),
   cloudinaryApiSecret: z.string().min(1, { error: 'CLOUDINARY_API_SECRET es requerida' }),
