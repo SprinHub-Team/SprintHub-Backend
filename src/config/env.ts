@@ -1,6 +1,6 @@
 import AppError from '../errors/AppError';
 import dotenv from 'dotenv';
-import { EnvDto, envSchema } from '../dtos/EnvDto';
+import { EnvDto, envSchema } from '../utils/EnvDto';
 dotenv.config();
 
 let env: EnvDto;

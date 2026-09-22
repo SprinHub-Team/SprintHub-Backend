@@ -1,6 +1,8 @@
-import { CreateCommentDto, UpdateCommentDto } from '../dtos/CommentDto';
+import { CreateCommentInput, UpdateCommentInput } from '../dtos/input/commentInputDto';
+import { CommentDetailsResponse, CommentResponse } from '../dtos/response/commentResponseDto';
 import AppError from '../errors/AppError';
 import ValidationError from '../errors/ValidationError';
+import { CommentMapper } from '../mappers/commentMapper';
 import { IComment } from '../models/Comment';
 import { CardRepository } from '../repository/cardRepository';
 import { CommentRepository } from '../repository/commentRepository';
@@ -16,7 +18,7 @@ export class CommentService{
         private readonly groupRepository: GroupRepository
     ){}
 
-    async findByCardId(cardId: string, userId: string) : Promise<IComment[]>{
+    async findByCardId(cardId: string, userId: string) : Promise<CommentResponse[]>{
 
         const cardContext = await this.cardRepository.getCardContext(cardId);
         if(!cardContext){
@@ -34,11 +36,12 @@ export class CommentService{
         }
 
         const comments = await this.commentRepository.findByCardId(cardId);
-        return comments;
+        
+        return comments.map(comment => CommentMapper.toResponse(comment));
 
     }
 
-    async getCommentWhitDetails(commentId: string, userId: string){
+    async getCommentWhitDetails(commentId: string, userId: string): Promise<CommentDetailsResponse> {
 
         const commentContext = await this.commentRepository.getCommentContext(commentId);
         if(!commentContext){
@@ -60,13 +63,17 @@ export class CommentService{
             throw new AppError('El comentario buscado no existe.', 404);
         }
 
-        const createFor = await this.userRepository.findById(comment.createdBy.toString());
+        const createdBy = await this.userRepository.findById(comment.createdBy.toString());
 
-        return {...comment, createFor};
+        if(!createdBy){
+            throw new ValidationError('El usuario relacionado no existe');
+        }
+
+        return CommentMapper.toDetailsResponse({...comment, createdBy});
 
     }
 
-    async create(data: CreateCommentDto, userId: string): Promise<{comment: IComment}&{boardId: string}>{
+    async create(data: CreateCommentInput, userId: string): Promise<{comment: CommentResponse}&{boardId: string}>{
 
         const cardContext = await this.cardRepository.getCardContext(data.cardId);
         if(!cardContext){
@@ -85,13 +92,13 @@ export class CommentService{
 
         const comment = await this.commentRepository.create({...data, createdBy: userId});
         
-        return {comment, boardId: cardContext.boardId}
+        return {comment: CommentMapper.toResponse(comment), boardId: cardContext.boardId}
 
     }
 
-    async update(id: string, data: UpdateCommentDto, userId: string): Promise<{comment: IComment}&{boardId: string}>{
+    async update(data: UpdateCommentInput, userId: string): Promise<{comment: CommentResponse}&{boardId: string}>{
 
-        const commentContext = await this.commentRepository.getCommentContext(id);
+        const commentContext = await this.commentRepository.getCommentContext(data.commentId);
         if(!commentContext){
             throw new ValidationError('El comentario que intenta actualizar no existe');
         }
@@ -106,17 +113,17 @@ export class CommentService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
-        const comment = await this.commentRepository.update(id, data);
+        const comment = await this.commentRepository.update(data.commentId, data);
 
         if(!comment){
             throw new ValidationError('El comentario no se ha podido actualizar.')
         }
 
-        return {comment, boardId: commentContext.boardId};
+        return {comment: CommentMapper.toResponse(comment), boardId: commentContext.boardId};
 
     }
 
-    async delete(id: string, userId: string): Promise<{ boardId: string; }>{
+    async delete(id: string, userId: string): Promise<string>{
 
         const commentContext = await this.commentRepository.getCommentContext(id);
         if(!commentContext){
@@ -138,7 +145,7 @@ export class CommentService{
             throw new ValidationError('El comentario que se intenta eliminar no existe');
         }
 
-        return {boardId: commentContext.boardId};
+        return commentContext.boardId;
 
     }
 

@@ -1,15 +1,17 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-
+import { AuthLoginResponse, AuthRegisterResponse } from '../dtos/response/authResponseDto';
+import { LoginInput, RegisterInput } from '../dtos/input/authInputDto';
 import { UserRepository } from '../repository/userRepository';
+import { JwtPayload } from '../utils/JwtPayload';
+import { AuthMapper } from '../mappers/authMapper';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import env from '../config/env';
-import { CreateUserDto, LoginDto } from '../dtos/UserDto';
-import { JwtPayload } from '../dtos/JwtPayload';
+
 
 export class AuthService {
   constructor(private userRepository: UserRepository) {}
 
-  async register(data: CreateUserDto) {
+  async register(data: RegisterInput): Promise<AuthRegisterResponse> {
 
     const existingUser = await this.userRepository.findByEmail(data.email);
 
@@ -26,14 +28,10 @@ export class AuthService {
       passwordHash,
     });
 
-    return {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-    };
+    return AuthMapper.toAuthRegisterResponse(newUser);
   }
 
-  async login(data: LoginDto) {
+  async login(data: LoginInput): Promise<AuthLoginResponse> {
 
     const user = await this.userRepository.findByEmail(data.email);
 
@@ -59,15 +57,7 @@ export class AuthService {
       expiresIn: '1d',
     });
 
-    return {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profilePicture: user.profilePicture
-      },
-      token,
-    };
+    return AuthMapper.toAuthLoginResponse(user, token);
+
   }
 }

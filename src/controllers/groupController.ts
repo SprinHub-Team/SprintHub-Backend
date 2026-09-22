@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { GroupService } from '../service/groupService';
-import { createGroupSchema, addMemberSchema } from '../dtos/GroupDto';
 import { mongoIdSchema } from '../utils/idValidator';
 import CloudinaryStorageService from '../service/storage/cloudinaryStorageService';
+import { addGroupMemberInputSchema, createGroupInputSchema } from '../dtos/input/groupInputDto';
 
 export class GroupController {
   constructor(
@@ -18,7 +18,7 @@ export class GroupController {
     try {
       const userId = req.user?.userId;
 
-      const data = createGroupSchema.parse(req.body);
+      const data = createGroupInputSchema.parse(req.body);
 
       const group = await this.groupService.createGroup({
         ...data,
@@ -40,7 +40,7 @@ export class GroupController {
   ) {
     try {
       const groupId = mongoIdSchema.parse(req.params.groupId);
-      const data = addMemberSchema.parse(req.body);
+      const data = addGroupMemberInputSchema.parse(req.body);
 
       const group = await this.groupService.addMember(
         groupId,

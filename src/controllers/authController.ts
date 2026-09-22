@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { createUserSchema, loginSchema } from '../dtos/UserDto';
 import { AuthService } from '../service/authService';
+import { loginInputSchema, registerInputSchema } from '../dtos/input/authInputDto';
 
 
 export class AuthController{
@@ -10,7 +10,7 @@ export class AuthController{
 
 async register(req: Request, res: Response): Promise<void>  {
   try {
-    const validation = createUserSchema.safeParse(req.body);
+    const validation = registerInputSchema.safeParse(req.body);
     if (!validation.success) {
       res.status(400).json({ message: 'Errores de validación', errors: validation.error.format() });
       return;
@@ -25,7 +25,7 @@ async register(req: Request, res: Response): Promise<void>  {
 
   async login (req: Request, res: Response): Promise<void> {
   try {
-    const validation = loginSchema.safeParse(req.body);
+    const validation = loginInputSchema.safeParse(req.body);
     if (!validation.success) {
       res.status(400).json({ message: 'Credenciales inválidas', errors: validation.error.format() });
       return;
