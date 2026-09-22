@@ -1,14 +1,16 @@
-import { CreateCardDto, RemoveFileDto, UpdateCardDto } from '../dtos/CardDto';
-import { CardRepository } from '../repository/cardRepository';
-import { ColumnRepository } from '../repository/columnRepository';
-import { UserRepository} from '../repository/userRepository';
-import { ICard } from '../models/Card';
-import AppError from '../errors/AppError';
-import ValidationError from '../errors/ValidationError';
+import { CardDetailsResponse, CardResponse } from '../dtos/response/cardResponseDto';
+import { CreateCardInput, RemoveCardFileInput, UpdateCardInput } from '../dtos/input/cardInputDto';
 import { CommentRepository } from '../repository/commentRepository';
-import { GroupRepository } from '../repository/groupRepository';
-import { UploadFileInputRequest } from '../dtos/FileDto';
 import SupabaseStorageService from './storage/supabaseStorageService';
+import { UploadFileInputRequest } from '../utils/FileDto';
+import { ColumnRepository } from '../repository/columnRepository';
+import { GroupRepository } from '../repository/groupRepository';
+import { CardRepository } from '../repository/cardRepository';
+import { UserRepository} from '../repository/userRepository';
+import ValidationError from '../errors/ValidationError';
+import { CardMapper } from '../mappers/cardMapper';
+import AppError from '../errors/AppError';
+
 
 
 export class CardService{
@@ -22,7 +24,7 @@ export class CardService{
         private readonly supabaseStorageService: SupabaseStorageService,
     ){}
 
-    async findByColumnId(columnId: string, userId: string): Promise<ICard[]>{
+    async findByColumnId(columnId: string, userId: string): Promise<CardResponse[]>{
 
         const columnContext = await this.columnRepository.getColumnContext(columnId);
         if(!columnContext){
@@ -40,10 +42,10 @@ export class CardService{
         }
 
         const cards = await this.cardRepository.findByColumnId(columnId);
-        return cards;
+        return cards.map(card => CardMapper.toResponse(card));
     }
 
-    async getCardWhitDetails(cardId: string, userId: string){
+    async getCardWhitDetails(cardId: string, userId: string): Promise<CardDetailsResponse> {
 
         const cardContext = await this.cardRepository.getCardContext(cardId);
         if(!cardContext){
@@ -73,12 +75,11 @@ export class CardService{
         assignedTo = await this.userRepository.findById(card.assignedTo.toString());
         }
 
-
-        return {...card, comments, assignedTo};
+        return CardMapper.toDetailsResponse({...card, comments, assignedTo});
 
     }
 
-    async create(data: CreateCardDto, userId: string): Promise<{card: ICard} & {boardId: string}>{
+    async create(data: CreateCardInput, userId: string): Promise<{card: CardResponse, boardId: string}>{
 
         const columnContext = await this.columnRepository.getColumnContext(data.columnId);
         if(!columnContext){
@@ -103,12 +104,12 @@ export class CardService{
             priority: data.priority
         }); 
 
-        return {card, boardId: columnContext.boardId}
+        return {card: CardMapper.toResponse(card), boardId: columnContext.boardId}
     }
 
-    async update(id: string, data: UpdateCardDto, userId: string): Promise<{card: ICard} & {boardId: string}>{
+    async update(data: UpdateCardInput, userId: string): Promise<{card: CardResponse, boardId: string}>{
 
-        const cardContext = await this.cardRepository.getCardContext(id);
+        const cardContext = await this.cardRepository.getCardContext(data.cardId);
         if(!cardContext){
             throw new ValidationError('La card que se intenta actualizar no existe');
         }
@@ -137,7 +138,7 @@ export class CardService{
             }
         }
         
-        const card = await this.cardRepository.update(id, {
+        const card = await this.cardRepository.update(data.cardId, {
             description: data.description,
             title: data.title,
             columnId: data.columnId,
@@ -149,10 +150,10 @@ export class CardService{
             throw new ValidationError('No se ha podido actualizar la card.')
         }
 
-        return{card, boardId: cardContext.boardId};
+        return{card: CardMapper.toResponse(card), boardId: cardContext.boardId};
     }
 
-    async delete(id: string, userId: string): Promise<{boardId: string;}>{
+    async delete(id: string, userId: string): Promise<string>{
 
         const cardContext = await this.cardRepository.getCardContext(id);
         if(!cardContext){
@@ -182,11 +183,11 @@ export class CardService{
 
         }
 
-        return {boardId: cardContext.boardId};
+        return cardContext.boardId;
 
     }
 
-    async addFile(cardId: string, fileData: UploadFileInputRequest, userId: string): Promise<{card: ICard} & {boardId: string}> {
+    async addFile(cardId: string, fileData: UploadFileInputRequest, userId: string): Promise<{card: CardResponse, boardId: string}> {
         
         const cardContext = await this.cardRepository.getCardContext(cardId);
         if(!cardContext){
@@ -212,10 +213,10 @@ export class CardService{
 
         }
 
-        return {card, boardId: cardContext.boardId}
+        return {card: CardMapper.toResponse(card), boardId: cardContext.boardId}
     }
 
-    async removeFile(data: RemoveFileDto, userId: string): Promise<{card: ICard } & {boardId: string}> {
+    async removeFile(data: RemoveCardFileInput, userId: string): Promise<{card: CardResponse, boardId: string}> {
 
         const cardContext = await this.cardRepository.getCardContext(data.cardId);
         if(!cardContext){
@@ -239,6 +240,6 @@ export class CardService{
 
         this.supabaseStorageService.delete(data.filePath);
 
-        return {card, boardId: cardContext.boardId}
+        return {card: CardMapper.toResponse(card), boardId: cardContext.boardId}
     }
 }

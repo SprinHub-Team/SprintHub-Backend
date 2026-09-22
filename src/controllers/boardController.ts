@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from 'express';
 import { BoardService } from '../service/boardService';
-import { createBoardSchema, updateBoardSchema } from '../dtos/BoardDto';
 import {mongoIdSchema} from '../utils/idValidator'
+import { createBoardInputSchema, updateBoardInputSchema } from '../dtos/input/boardInputDto';
 
 export class BoardController {
   constructor(private boardService: BoardService) {}
@@ -25,7 +25,7 @@ export class BoardController {
     try {
       const userId = req.user.userId;
 
-      const data = createBoardSchema.parse({ ...req.body});
+      const data = createBoardInputSchema.parse({ ...req.body});
 
       const board = await this.boardService.create(data, userId);
 
@@ -42,7 +42,7 @@ export class BoardController {
     try {
       const userId = req.user.userId;
 
-      const data = updateBoardSchema.parse(req.body);
+      const data = updateBoardInputSchema.parse(req.body);
 
       const boardId = mongoIdSchema.parse(req.params.id);
 

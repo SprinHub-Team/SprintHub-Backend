@@ -33,6 +33,6 @@ export const errorMiddleware = (
 
     console.error(error);
     res.status(500).json({
-        message: 'Error insterno del servidor'
+        message: 'Error interno del servidor'
     });
 };

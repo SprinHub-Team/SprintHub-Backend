@@ -1,5 +1,5 @@
 import cloudinary from '../../config/cloudinary';
-import { UploadFileInputDto, UploadFileResultDto } from '../../dtos/FileDto';
+import { UploadFileInputDto, UploadFileResultDto } from '../../utils/FileDto';
 import ValidationError from '../../errors/ValidationError';
 
 class CloudinaryStorageService {

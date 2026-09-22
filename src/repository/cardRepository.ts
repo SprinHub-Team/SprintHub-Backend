@@ -1,5 +1,5 @@
-import { RemoveFileDto } from '../dtos/CardDto';
-import { UploadFileResultDto } from '../dtos/FileDto';
+import { RemoveCardFileInput } from '../dtos/input/cardInputDto';
+import { UploadFileResultDto } from '../utils/FileDto';
 import { IBoard } from '../models/Board';
 import {CardModel, ICard} from '../models/Card';
 import { IColumn } from '../models/Column';
@@ -72,7 +72,7 @@ export class CardRepository{
         
     }
 
-async removeFile(data: RemoveFileDto): Promise<ICard | null> { 
+async removeFile(data: RemoveCardFileInput): Promise<ICard | null> { 
 
     return CardModel.findByIdAndUpdate( 
         data.cardId, 

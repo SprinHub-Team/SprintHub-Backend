@@ -3,13 +3,13 @@ import { BoardController } from '../controllers/boardController';
 import { ColumnController } from '../controllers/columnController';
 import { CardController } from '../controllers/cardController';
 import { CommentController } from '../controllers/commentController';
-import { AuthController } from '../controllers/authController';
 import { CardPBController } from '../controllers/cardPBController';
 import { ProjectDocumentController } from '../controllers/projectDocumentController';
 import { SprintController } from '../controllers/SprintController';
 import { UserController } from '../controllers/userController';
 import { GroupController } from '../controllers/groupController';
 import { ReportController } from '../controllers/reportController';
+import { AuthController } from '../controllers/authController';
 
 export const controllers = {
   board: new BoardController(s.board),

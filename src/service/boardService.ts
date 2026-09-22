@@ -1,13 +1,15 @@
-import {CreateBoardDto, UpdateBoardDto } from '../dtos/BoardDto';
-import {BoardRepository} from '../repository/boardRepository';
-import AppError from '../errors/AppError';
-import {IBoard} from '../models/Board';
-import { GroupRepository } from '../repository/groupRepository';
-import { ColumnRepository } from '../repository/columnRepository';
-import { BOARD_TEMPLATES } from '../utils/templates';
-import ValidationError from '../errors/ValidationError';
-import { CardRepository } from '../repository/cardRepository';
+import { BoardDetailsResponse, BoardResponse } from '../dtos/response/boardResponseDto';
+import { CreateBoardInput, UpdateBoardInput } from '../dtos/input/boardInputDto';
 import SupabaseStorageService from './storage/supabaseStorageService';
+import { ColumnRepository } from '../repository/columnRepository';
+import { BoardRepository} from '../repository/boardRepository';
+import { GroupRepository } from '../repository/groupRepository';
+import { CardRepository } from '../repository/cardRepository';
+import ValidationError from '../errors/ValidationError';
+import { BOARD_TEMPLATES } from '../utils/templates';
+import { BoardMapper } from '../mappers/boardMapper';
+import AppError from '../errors/AppError';
+
 
 export class BoardService{
 
@@ -19,7 +21,7 @@ export class BoardService{
         private readonly supabaseStorageService: SupabaseStorageService
     ){}
 
-    async findByGroupId(groupId: string, userId: string): Promise<IBoard[]>{
+    async findByGroupId(groupId: string, userId: string): Promise<BoardResponse[]>{
 
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
           groupId,
@@ -32,23 +34,24 @@ export class BoardService{
         }
 
         const boards = await this.boardRepository.findByGroupId(groupId);
-        return boards;
+        
+        return boards.map(board => BoardMapper.toResponse(board));
 
     }
 
-    async getBoardWhitDetails(boardId: string){
+    async getBoardWhitDetails(boardId: string): Promise<BoardDetailsResponse> {
 
         const board = await this.boardRepository.getBoardWhitDetails(boardId);
         if(!board){
             throw new ValidationError('El tablero buscado no existe');
         }
 
-        return board;
+        return BoardMapper.toDetailsResponse(board);
     }
 
 
 
-    async create(data: CreateBoardDto, userId: string): Promise<IBoard>{
+    async create(data: CreateBoardInput, userId: string): Promise<BoardResponse>{
 
         const hasPermission  = await this.groupRepository.isMemberAndRoleValid(
           data.groupId,
@@ -87,10 +90,10 @@ export class BoardService{
 
         await Promise.all(templateColumns.map(col => this.columnRepository.create(col)));
         
-        return newBoard;
+        return BoardMapper.toResponse(newBoard);
     }
 
-    async update(id: string, data: UpdateBoardDto, userId: string): Promise<IBoard>{
+    async update(id: string, data: UpdateBoardInput, userId: string): Promise<BoardResponse>{
 
         const groupId = await this.boardRepository.getGroupIdByBoardId(id);
         if(!groupId){
@@ -116,7 +119,7 @@ export class BoardService{
             throw new AppError('El tablero no se ha podido actualizar.', 500);
         }
 
-        return board;
+        return BoardMapper.toResponse(board);
     }
 
     async delete(id: string, userId: string): Promise<void>{
