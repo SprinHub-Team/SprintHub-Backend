@@ -1,4 +1,3 @@
-import { CreateColumnDto, UpdateColumnDto } from '../dtos/ColumnDto';
 import { ColumnRepository } from '../repository/columnRepository';
 import { BoardRepository } from '../repository/boardRepository';
 import { IColumn } from '../models/Column';
@@ -7,6 +6,9 @@ import { GroupRepository } from '../repository/groupRepository';
 import AppError from '../errors/AppError';
 import ValidationError from '../errors/ValidationError';
 import SupabaseStorageService from './storage/supabaseStorageService';
+import { CreateColumnInput, UpdateColumnInput } from '../dtos/input/columnInputDto';
+import { ColumnDetailsResponse, ColumnResponse } from '../dtos/response/columnResponseDto';
+import { ColumnMapper } from '../mappers/columnMapper';
 
 export class ColumnService{
 
@@ -18,7 +20,7 @@ export class ColumnService{
         private readonly supabaseStorageService: SupabaseStorageService
     ){}
 
-    async findByBoardId(boardId: string, userId: string): Promise<IColumn[]>{
+    async findByBoardId(boardId: string, userId: string): Promise<ColumnResponse[]>{
 
         const groupId = await this.boardRepository.getGroupIdByBoardId(boardId);
          if(!groupId){
@@ -36,11 +38,12 @@ export class ColumnService{
         }
 
         const columns = await this.columnRepository.findByBoardId(boardId);
-        return columns;
+
+        return columns.map(column => ColumnMapper.toResponse(column));
 
     }
 
-    async getColumnWhitDetails(columnId: string, userId: string){
+    async getColumnWhitDetails(columnId: string, userId: string): Promise<ColumnDetailsResponse>{
 
         const columnContext = await this.columnRepository.getColumnContext(columnId);
          if(!columnContext){
@@ -64,11 +67,11 @@ export class ColumnService{
         
         const cards = await this.cardRepository.findByColumnId(columnId);
 
-        return {...column, cards};
+        return ColumnMapper.toDetailsResponse({...column, cards});
 
     }
 
-    async create(data: CreateColumnDto, userId: string): Promise<{column: Omit<IColumn, 'boardId'>} & {boardId: string}>{
+    async create(data: CreateColumnInput, userId: string): Promise<ColumnResponse>{
 
         const groupId = await this.boardRepository.getGroupIdByBoardId(data.boardId);
          if(!groupId){
@@ -85,19 +88,16 @@ export class ColumnService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
-        const column = await this.columnRepository.create({
-            name: data.name,
-            boardId: data.boardId
-        });
+        const column = await this.columnRepository.create(data);
 
-        return {column, boardId: data.boardId}
+        return ColumnMapper.toResponse(column);
 
     }
 
-    async update(id: string, data: UpdateColumnDto, userId: string): Promise<{column: Omit<IColumn, 'boardId'>} & {boardId: string}>{
+    async update(data: UpdateColumnInput, userId: string): Promise<ColumnResponse> {
 
 
-        const columnContext = await this.columnRepository.getColumnContext(id);
+        const columnContext = await this.columnRepository.getColumnContext(data.columnId);
          if(!columnContext){
             throw new ValidationError('La columna que se intenta actualizar no existe');
         }
@@ -112,17 +112,17 @@ export class ColumnService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
-        const column = await this.columnRepository.update(id, data);
+        const column = await this.columnRepository.update(data.columnId, data);
 
          if(!column){
             throw new ValidationError('La columna no se ha podido actualizar.')
         }
 
-        return {column, boardId: columnContext.boardId};
+        return ColumnMapper.toResponse(column);
 
     }
 
-    async delete(id: string, userId: string): Promise<{boardId: string;}>{
+    async delete(id: string, userId: string): Promise<string>{
 
         const columnContext = await this.columnRepository.getColumnContext(id);
         if(!columnContext){
@@ -152,7 +152,7 @@ export class ColumnService{
         
         }
 
-        return {boardId: columnContext.boardId};
+        return columnContext.boardId;
         
     }
 }

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { controllers } from '../dependencies/controllerDependency';
 import { requireAuth } from '../middlewares/authMiddleware';
-import { uploadMiddleware } from '../middlewares/uploadMiddleware';
+import { uploadToCloudinary } from '../middlewares/uploadMiddleware';
 
 
 const userController = controllers.user;
@@ -14,7 +14,7 @@ router.get('/', userController.getAllUsers.bind(userController));
 router.get('/me', userController.getUserById.bind(userController));
 router.get('/:id', userController.getUserById.bind(userController));
 router.put('/:id', userController.updateUser.bind(userController));
-router.post('/:id/profile-picture', uploadMiddleware.single('file'), userController.uploadProfilePicture.bind(userController));
+router.post('/:id/profile-picture', uploadToCloudinary.single('file'), userController.uploadProfilePicture.bind(userController));
 router.delete('/:id', userController.deleteUser.bind(userController));
 
 export default router;

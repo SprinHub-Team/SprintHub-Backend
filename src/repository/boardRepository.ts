@@ -4,7 +4,7 @@ import { ICard } from '../models/Card';
 import { IColumn } from '../models/Column';
 import { IComment } from '../models/Comment';
 
-type BoardAggregateresult = IBoard & {
+export type BoardWhitDetails = IBoard & {
   columns: (IColumn & {
     cards: (ICard & {
       comments: IComment[];
@@ -13,11 +13,11 @@ type BoardAggregateresult = IBoard & {
 };
 export class BoardRepository {
 
-   async getBoardWhitDetails(boardId: string): Promise<BoardAggregateresult | null> {
+   async getBoardWhitDetails(boardId: string): Promise<BoardWhitDetails | null> {
 
     const boardObjectId = new Types.ObjectId(boardId);
 
-    const resultado = await BoardModel.aggregate<BoardAggregateresult>([
+    const resultado = await BoardModel.aggregate<BoardWhitDetails>([
       { $match: { _id: boardObjectId } },
 
       {

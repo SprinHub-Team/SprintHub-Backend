@@ -12,6 +12,7 @@ type CommentWithGroup = {
 };
 
 export class CommentRepository {
+  
   async findByCardId(cardId: string): Promise<IComment[]> {
     return CommentModel.find({ cardId }).lean().exec();
   }
