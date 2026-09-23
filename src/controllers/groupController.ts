@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { GroupService } from '../service/groupService';
 import { mongoIdSchema } from '../utils/idValidator';
 import CloudinaryStorageService from '../service/storage/cloudinaryStorageService';
-import { addGroupMemberInputSchema, createGroupInputSchema } from '../dtos/input/groupInputDto';
+import { addGroupMemberInputSchema, createGroupInputSchema, updateGroupInputSchema } from '../dtos/input/groupInputDto';
 
 export class GroupController {
   constructor(
@@ -10,53 +10,7 @@ export class GroupController {
     private readonly cloudinaryService: CloudinaryStorageService
   ) {}
 
-  async createGroup(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-
-      const userId = req.user.userId;
-
-      const data = createGroupInputSchema.parse(req.body);
-
-      const group = await this.groupService.createGroup(
-        data,
-        userId
-      );
-
-      return res.status(201).json({
-        data: group,
-      });
-
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async addMember(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-
-      const groupId = mongoIdSchema.parse(req.params.groupId);
-      const data = addGroupMemberInputSchema.parse(req.body);
-      const userId = req.user.userId;
-
-      const group = await this.groupService.addMember({groupId, email: data.email, role: data.role}, userId);
-
-      return res.status(200).json({
-        data: group,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getMyGroups(
+    async getMyGroups(
     req: Request,
     res: Response,
     next: NextFunction,
@@ -86,6 +40,94 @@ export class GroupController {
       const userId = req.user.userId;
 
       const group = await this.groupService.getGroupById(groupId, userId);
+
+      return res.status(200).json({
+        data: group,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createGroup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+
+      const userId = req.user.userId;
+
+      const data = await createGroupInputSchema.parseAsync({...req.body,filePicture: req.file} );
+
+      const group = await this.groupService.createGroup(
+        data,
+        userId
+      );
+
+      return res.status(201).json({
+        data: group,
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  }
+  
+  async updateGroup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.id);
+      const userId = req.user.userId;
+      const data = await updateGroupInputSchema.parseAsync({...req.body, id: groupId, filePicture: req.file});
+      const updatedGroup = await this.groupService.updateGroup(data, userId);
+
+      return res.status(200).json({
+        data: updatedGroup,
+        message: 'Grupo actualizado exitosamente',
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteGroup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+
+      const groupId = mongoIdSchema.parse(req.params.id);
+      const userId = req.user.userId;
+
+      await this.groupService.deleteGroup(groupId, userId);
+
+      return res.status(200).json({
+        message: 'Grupo eliminado exitosamente',
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async addMember(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+
+      const groupId = mongoIdSchema.parse(req.params.groupId);
+      const data = addGroupMemberInputSchema.parse(req.body);
+      const userId = req.user.userId;
+
+      const group = await this.groupService.addMember({groupId, email: data.email, role: data.role}, userId);
 
       return res.status(200).json({
         data: group,
@@ -139,73 +181,5 @@ export class GroupController {
       next(error);
     }
   }
-
-  async updateGroup(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-      const groupId = mongoIdSchema.parse(req.params.id);
-      const data = req.body;
-      const userId = req.user.userId;
-
-      const updatedGroup = await this.groupService.updateGroup({id: groupId, ...data},userId);
-
-      return res.status(200).json({
-        data: updatedGroup,
-        message: 'Grupo actualizado exitosamente',
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async deleteGroup(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-
-      const groupId = mongoIdSchema.parse(req.params.id);
-      const userId = req.user.userId;
-
-      await this.groupService.deleteGroup(groupId, userId);
-
-      return res.status(200).json({
-        message: 'Grupo eliminado exitosamente',
-      });
-
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // async uploadProfilePicture(
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction,
-  // ) {
-  //   try {
-  //     const groupId = mongoIdSchema.parse(req.params.id);
-  //     if (!req.file) {
-  //       return res.status(400).json({ message: 'No se subió ninguna imagen' });
-  //     }
-
-  //     const file = req.file;
-
-  //     const fileResult = await this.cloudinaryService.upload({buffer: file.buffer,fileName: file.filename, mimeType: file.mimetype, path: 'GroupPhotos' });
-
-  //     const updatedGroup = await this.groupService.updateGroup(groupId, { profilePicture: fileResult.url });
-
-  //     return res.status(200).json({
-  //       data: updatedGroup,
-  //       message: 'Imagen de grupo actualizada',
-  //     });
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // }
 
 }

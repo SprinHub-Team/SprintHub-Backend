@@ -9,7 +9,6 @@ export type BoardResponse = {
 export type BoardDetailsResponse = Omit<BoardResponse, 'ownerId'> & {
   columns: {
     id: string;
-    name: string;
     cards: {
       id: string;
       title: string;

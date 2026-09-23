@@ -4,7 +4,6 @@ import SupabaseStorageService from './storage/supabaseStorageService';
 import { ColumnRepository } from '../repository/columnRepository';
 import { BoardRepository} from '../repository/boardRepository';
 import { GroupRepository } from '../repository/groupRepository';
-import { CardRepository } from '../repository/cardRepository';
 import ValidationError from '../errors/ValidationError';
 import { BOARD_TEMPLATES } from '../utils/templates';
 import { BoardMapper } from '../mappers/boardMapper';
@@ -17,7 +16,6 @@ export class BoardService{
         private readonly boardRepository: BoardRepository,
         private readonly groupRepository: GroupRepository,
         private readonly columnRepository: ColumnRepository,
-        private readonly cardRepository: CardRepository,
         private readonly supabaseStorageService: SupabaseStorageService
     ){}
 
@@ -154,25 +152,16 @@ export class BoardService{
             throw new AppError('El usuario no tiene permiso para realizar esta acción', 403);
         }
 
-        const columns = await this.columnRepository.findByBoardId(id);
-        
+        const cardsfilePaths = await this.columnRepository.getCardFilesPathByBoardId(id);
+
         const eliminado = await this.boardRepository.delete(id);
+
         if(!eliminado){
             throw new AppError('El tablero que se intenta eliminar no existe', 404);
         }
 
-        const filesPromises = columns.map(column => this.cardRepository.getFilesByColumnId(column._id.toString()));
-        const filesArray = await Promise.all(filesPromises);
-
-        if (filesArray && filesArray.length > 0) {
-            
-            const filesRemove: string[] = filesArray
-            .flatMap(filesPerColumn => filesPerColumn || [])
-            .filter((path): path is string => path !== null);
-
-            if (filesRemove.length > 0) {
-                await this.supabaseStorageService.deleteMany(filesRemove);
-            }
+        if(cardsfilePaths.length > 0){
+        await this.supabaseStorageService.deleteMany(cardsfilePaths);
         }
 
     }

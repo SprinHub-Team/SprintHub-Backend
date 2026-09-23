@@ -13,7 +13,7 @@ export type BoardWhitDetails = IBoard & {
 };
 export class BoardRepository {
 
-   async getBoardWhitDetails(boardId: string): Promise<BoardWhitDetails | null> {
+  async getBoardWhitDetails(boardId: string): Promise<BoardWhitDetails | null> {
 
     const boardObjectId = new Types.ObjectId(boardId);
 
@@ -53,6 +53,70 @@ export class BoardRepository {
     ]).exec();
 
     return resultado[0] || null;
+  }
+
+  async getCardFilesPathByGroupId(groupId: string): Promise<string[]> {
+    interface AggregateResult {
+      paths: string[];
+    }
+
+    const results = await BoardModel.aggregate<AggregateResult>([
+      { 
+        $match: { groupId: new Types.ObjectId(groupId) } 
+      },
+      {
+        $lookup: {
+          from: 'columns',
+          localField: '_id',
+          foreignField: 'boardId',
+          as: 'columns'
+        }
+      },
+      {
+        $lookup: {
+          from: 'cards',
+          let: { columnIds: '$columns._id' },
+          pipeline: [
+            { 
+              $match: { 
+                $expr: { $in: ['$columnId', '$$columnIds'] },
+                files: { $exists: true, $not: { $size: 0 } }
+              } 
+            },
+            { $unwind: '$files' },
+            {
+              $match: {
+                'files.path': { $ne: null, $exists: true }
+              }
+            },
+            {
+              $project: {
+                _id: 0,
+                path: '$files.path'
+              }
+            }
+          ],
+          as: 'cards'
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          paths: {
+            $reduce: {
+              input: '$cards.path',
+              initialValue: [],
+              in: { $setUnion: ['$$value', ['$$this']] }
+            }
+          }
+        }
+      }
+    ]);
+
+    if (!results || results.length === 0) return [];
+    
+    const allPaths = results.flatMap(r => r.paths);
+    return [...new Set(allPaths)];
   }
 
   async findByGroupId(groupId: string): Promise<IBoard[]> {

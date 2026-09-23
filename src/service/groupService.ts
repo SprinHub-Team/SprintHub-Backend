@@ -1,32 +1,23 @@
 import { GroupRepository } from '../repository/groupRepository';
 import { UserRepository } from '../repository/userRepository';
 import AppError from '../errors/AppError';
-import { IGroup } from '../models/Group';
 import { GroupResponse } from '../dtos/response/groupResponseDto';
 import { GroupMapper } from '../mappers/groupMapper';
 import { AddGroupMemberInput, CreateGroupInput, RemoveGroupMemberInput, UpdateGroupInput, UpdateGroupMemberRoleInput } from '../dtos/input/groupInputDto';
+import CloudinaryStorageService from './storage/cloudinaryStorageService';
+import { BoardRepository } from '../repository/boardRepository';
 
 export class GroupService {
   constructor(
     private readonly groupRepository: GroupRepository,
-    private readonly userRepo: UserRepository,
+    private readonly userRepository: UserRepository,
+    private readonly boardRepository: BoardRepository,
+    private readonly cloudinaryService: CloudinaryStorageService
   ) {}
 
-  async createGroup(data: CreateGroupInput, userId: string) {
-
-    const group = await this.groupRepository.create({...data, ownerId: userId});
-    
-    return this.groupRepository.addMember(
-      group._id.toString(),
-      userId,
-      'admin',
-    );
-
-  }
-
-  async getGroupsForUser(userId: string): Promise<GroupResponse[]> {
+    async getGroupsForUser(userId: string): Promise<GroupResponse[]> {
       
-    const userExists = await this.userRepo.existById(userId);
+    const userExists = await this.userRepository.existById(userId);
     if (!userExists) throw new AppError('Usuario no encontrado', 404);
 
     const groups = await this.groupRepository.findByUserId(userId);
@@ -54,7 +45,117 @@ export class GroupService {
 
   }
 
-  
+  async createGroup(data: CreateGroupInput, userId: string): Promise<GroupResponse> {
+
+    let profilePicture;
+
+    if(data.filePicture){
+      
+      profilePicture = await this.cloudinaryService.upload({...data.filePicture, path: 'GroupImages' });
+
+    }
+
+      const group = await this.groupRepository.create({name: data.name, description: data.description, profilePicture, ownerId: userId});
+      const result = await this.groupRepository.addMember(group._id.toString(), userId, 'admin');
+
+      if(!result){
+
+        if(profilePicture){
+          await this.cloudinaryService.delete(profilePicture.path);
+        }
+
+        await this.groupRepository.delete(group._id.toString());
+
+        throw new AppError('No se ha podido crear el grupo.', 400);
+      }
+
+      return GroupMapper.toResponse(result);
+
+  }
+
+  async updateGroup(data: UpdateGroupInput, userId: string): Promise<GroupResponse> {
+
+    const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+      data.groupId,
+      userId,
+      ['admin'],
+      );
+
+    if(!hasPermission){
+          throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo no existe', 403);
+    }
+
+
+    if(data.filePicture){
+      
+      const profilePicture = await this.cloudinaryService.upload({...data.filePicture, path: 'GroupImages' });
+
+      const currentGroup = await this.groupRepository.findById(data.groupId);
+      const currentPhotoPath = currentGroup?.profilePicture?.path;
+
+      const group = await this.groupRepository.update(data.groupId, {name: data.name, description: data.description, profilePicture});
+      
+      if(!group){
+
+        if(profilePicture){
+        await this.cloudinaryService.delete(profilePicture.path);
+        }
+
+        throw new AppError('No se ha podido actualizar el grupo o el grupo no existe', 404);
+      
+      }
+
+      if(currentPhotoPath){
+         await this.cloudinaryService.delete(currentPhotoPath);
+      }
+
+      return GroupMapper.toResponse(group);
+
+    }
+
+    const group = await this.groupRepository.update(data.groupId, {name: data.name, description: data.description}); 
+
+    if(!group){
+      
+        throw new AppError('No se ha podido actualizar el grupo o el grupo no existe', 404);
+      
+      }
+
+    return GroupMapper.toResponse(group);
+
+  }
+
+  async deleteGroup(groupId: string, userId: string): Promise<void> {
+
+    const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+      groupId,
+      userId,
+      ['admin'],
+      );
+
+    if(!hasPermission){
+          throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo no existe', 403);
+    }
+
+    const currentGroup = await this.groupRepository.findById(groupId);
+    const currentPhotoPath = currentGroup?.profilePicture?.path;
+
+    const cardsFilePaths = await this.boardRepository.getCardFilesPathByGroupId(groupId);
+
+    const isDeleted = await this.groupRepository.delete(groupId);
+
+    if(!isDeleted){
+      throw new AppError('No se ha podido eliminar el grupo', 400);
+    }
+
+    if(cardsFilePaths.length > 1)
+    await this.cloudinaryService.deleteMany(cardsFilePaths);
+
+    if(currentPhotoPath){
+      await this.cloudinaryService.delete(currentPhotoPath);
+    }
+
+  }
 
   async addMember(data: AddGroupMemberInput, userId: string): Promise<GroupResponse> {
 
@@ -68,7 +169,7 @@ export class GroupService {
           throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo no existe', 403);
     }
 
-    const user = await this.userRepo.findByEmail(data.email);
+    const user = await this.userRepository.findByEmail(data.email);
     if (!user) throw new AppError('El usuario relacionado no existe', 404);
 
     const alreadyMember = await this.groupRepository.isMember(
@@ -140,41 +241,4 @@ export class GroupService {
 
   }
 
-  async updateGroup(data: UpdateGroupInput, userId: string): Promise<GroupResponse> {
-
-    const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-      data.groupId,
-      userId,
-      ['admin'],
-      );
-
-    if(!hasPermission){
-          throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo no existe', 403);
-    }
-
-    const group = await this.groupRepository.update(data.groupId, data);
-
-    if(!group){
-      throw new AppError('No se ha podido actualizar el grupo o el grupo no existe', 404);
-    }
-
-    return GroupMapper.toResponse(group);
-
-  }
-
-  async deleteGroup(groupId: string, userId: string): Promise<void> {
-
-    const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-      groupId,
-      userId,
-      ['admin'],
-      );
-
-    if(!hasPermission){
-          throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo no existe', 403);
-    }
-
-    await this.groupRepository.delete(groupId);
-
-  }
 }

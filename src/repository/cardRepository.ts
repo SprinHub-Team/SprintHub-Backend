@@ -3,6 +3,7 @@ import { UploadFileResultDto } from '../utils/FileDto';
 import { IBoard } from '../models/Board';
 import {CardModel, ICard} from '../models/Card';
 import { IColumn } from '../models/Column';
+import { Types } from 'mongoose';
 
 type CardWithGroup = {
   columnId: Omit<IColumn, 'boardId'> & {
@@ -41,6 +42,47 @@ export class CardRepository{
         return {groupId, boardId};
     }
 
+    async getCardFilesPathByColumnId(columnId: string): Promise<string[]> {
+    interface AggregateResult {
+      paths: string[];
+    }
+
+    const results = await CardModel.aggregate<AggregateResult>(
+    [
+      {
+        $match: {
+          columnId: new Types.ObjectId(columnId),
+          files: { $exists: true, $not: { $size: 0 } }
+        }
+      },
+      {
+        $unwind: '$files'
+      },
+      {
+        $match: {
+          'files.path': { $ne: null, $exists: true }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          paths: { $addToSet: '$files.path' }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          paths: 1
+        }
+      }
+    ]);
+
+    if (!results || results.length === 0) {
+      return [];
+    }
+
+    return results[0].paths;
+  }
 
     async create(data: Pick<ICard, 'title' | 'description' | 'dueDate' | 'priority'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
         const newCard = await CardModel.create(data);
@@ -82,15 +124,19 @@ async removeFile(data: RemoveCardFileInput): Promise<ICard | null> {
 
 }
 
-async getFilesByCardId(cardId: string) {
+async getFilesPathByCardId(cardId: string): Promise<string[]> {
+
   const card = await CardModel.findById(cardId).select('files -_id').lean().exec();
-  return card ? card.files.map(file => file.path) : null;
+
+  if (!card || card.files.length === 0) {
+      return [];
+   }
+
+   const filesPath = card.files.flatMap(file => file.path !== null ? [file.path] : []);
+
+   return filesPath ;
+
 }
 
-async getFilesByColumnId(columnId: string) {
-    const cards = await CardModel.find({ columnId }).select('files -_id').lean().exec();
-    return cards ? cards.map(card => card.files).flatMap(files => files.map(file => file.path)) : null;
-
-}
 
 }

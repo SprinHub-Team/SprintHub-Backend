@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { mongoIdSchema } from '../../utils/idValidator';
+import { uploadFileInputRequestSchema } from '../../utils/FileDto';
 
 export const createGroupInputSchema = z.object({
   name: z.string().min(2, { error: 'El nombre debe tener al menos 2 caracteres' }).max(100),
   description: z.string().optional().default(''),
+  filePicture: uploadFileInputRequestSchema.optional()
 });
 export type CreateGroupInput = z.infer<typeof createGroupInputSchema>;
 
@@ -12,7 +14,7 @@ export const updateGroupInputSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   description: z.string().optional(),
   visibility: z.enum(['private', 'public']).optional(),
-  profilePicture: z.url().optional(),
+  filePicture: uploadFileInputRequestSchema.optional()
 });
 export type UpdateGroupInput = z.infer<typeof updateGroupInputSchema>;
 

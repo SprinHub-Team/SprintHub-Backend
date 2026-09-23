@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { IBoard } from '../models/Board';
 import { ColumnModel, IColumn } from '../models/Column';
 
@@ -14,6 +15,65 @@ export class ColumnRepository {
   async findById(id: string): Promise<IColumn | null> {
     return ColumnModel.findById(id).lean().exec();
   }
+
+  async getCardFilesPathByBoardId(boardId: string): Promise<string[]> {
+    interface AggregateResult {
+      paths: string[];
+    }
+
+    const results = await ColumnModel.aggregate<AggregateResult>([
+      {
+        $match: {
+          boardId: new Types.ObjectId(boardId)
+        }
+      },
+      {
+        $lookup: {
+          from: 'cards',
+          let: { columnId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$columnId', '$$columnId'] },
+                files: { $exists: true, $not: { $size: 0 } }
+              }
+            },
+            { $unwind: '$files' },
+            {
+              $match: {
+                'files.path': { $ne: null, $exists: true }
+              }
+            },
+            {
+              $project: {
+                _id: 0,
+                path: '$files.path'
+              }
+            }
+          ],
+          as: 'cards'
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          paths: {
+            $reduce: {
+              input: '$cards.path',
+              initialValue: [],
+              in: { $setUnion: ['$$value', ['$$this']] }
+            }
+          }
+        }
+      }
+    ]);
+
+    if (!results || results.length === 0) return [];
+
+    const allPaths = results.flatMap(r => r.paths);
+    return [...new Set(allPaths)];
+  }
+
 
   async getColumnContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
     

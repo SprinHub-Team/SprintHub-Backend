@@ -170,16 +170,17 @@ export class CardService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
         
-        const filesRemove = await this.cardRepository.getFilesByCardId(id);
+        const filesPath = await this.cardRepository.getFilesPathByCardId(id);
 
         const eliminado = await this.cardRepository.delete(id);
+
         if(!eliminado){
             throw new ValidationError('La tarjeta que se intenta elminar no existe');
         }
 
-        if(filesRemove!== null && filesRemove.length > 0){
+        if(filesPath.length > 0){
 
-        this.supabaseStorageService.deleteMany(filesRemove);
+        this.supabaseStorageService.deleteMany(filesPath);
 
         }
 
