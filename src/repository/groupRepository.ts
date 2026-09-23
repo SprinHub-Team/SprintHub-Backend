@@ -19,7 +19,7 @@ export class GroupRepository {
   }
 
   async create(
-    data: Pick<IGroup, 'name' | 'description'> & { ownerId: string },
+    data: Pick<IGroup, 'name' | 'description' | 'profilePicture'> & { ownerId: string },
   ): Promise<IGroup> {
     const group = await GroupModel.create({ ...data, members: [] });
     return group.toObject();
@@ -27,7 +27,7 @@ export class GroupRepository {
 
   async update(
     id: string,
-    data: Partial<Pick<IGroup, 'name' | 'description' | 'visibility'>>,
+    data: Partial<Pick<IGroup, 'name' | 'description' | 'profilePicture'>>,
   ): Promise<IGroup | null> {
     return GroupModel.findByIdAndUpdate(id, data, {
       returnDocument: 'after',

@@ -8,8 +8,7 @@ export class GroupMapper {
       id: group._id.toString(),
       name: group.name,
       description: group.description || '',
-      visibility: group.visibility,
-      profilePicture: group.profilePicture || '',
+      profilePicture: group.profilePicture?.url || '',
       ownerId: group.ownerId.toString(),
     };
   }
@@ -20,8 +19,7 @@ export class GroupMapper {
       id: group._id.toString(),
       name: group.name,
       description: group.description || '',
-      visibility: group.visibility,
-      profilePicture: group.profilePicture || '',
+      profilePicture: group.profilePicture?.url || '',
       owner: {
         id: group.ownerId._id.toString(),
         name: group.ownerId.name,

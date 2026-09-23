@@ -139,16 +139,17 @@ export class ColumnService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         };
 
-        const filesArray = await this.cardRepository.getFilesByColumnId(id);
+        const cardsFilesPath =  await this.cardRepository.getCardFilesPathByColumnId(id);
         
         const eliminado =  await this.columnRepository.delete(id);
+
         if(!eliminado){
             throw new ValidationError('La columna que se intenta eliminar no existe');
         }
 
-        if(filesArray!== null && filesArray.length > 0){
+        if(cardsFilesPath.length > 0){
 
-        this.supabaseStorageService.deleteMany(filesArray);
+        this.supabaseStorageService.deleteMany(cardsFilesPath);
         
         }
 

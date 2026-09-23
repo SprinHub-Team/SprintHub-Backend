@@ -13,7 +13,6 @@ export type GroupResponse = {
   id: string;
   name: string;
   description: string;
-  visibility: 'private' | 'public';
   profilePicture: string;
   ownerId: string;
 };
