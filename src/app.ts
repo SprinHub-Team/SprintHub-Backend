@@ -15,11 +15,9 @@ import templateRoutes from './routes/templateRoutes';
 import { errorMiddleware } from './middlewares/errorMiddleware';
 
 const app = express();
-import path from 'path';
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

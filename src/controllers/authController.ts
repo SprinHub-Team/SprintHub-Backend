@@ -8,7 +8,7 @@ export class AuthController{
   constructor(private readonly authService: AuthService) {}
 
 
-async register(req: Request, res: Response): Promise<void>  {
+async register(req: Request, res: Response) {
   try {
     const validation = registerInputSchema.safeParse(req.body);
     if (!validation.success) {
@@ -23,7 +23,7 @@ async register(req: Request, res: Response): Promise<void>  {
   }
 }
 
-  async login (req: Request, res: Response): Promise<void> {
+  async login (req: Request, res: Response) {
   try {
     const validation = loginInputSchema.safeParse(req.body);
     if (!validation.success) {
@@ -35,7 +35,7 @@ async register(req: Request, res: Response): Promise<void>  {
     res.json({
       message: 'Sesión iniciada correctamente',
       token: result.token,
-      user: { id: result.user.id, name: result.user.name, email: result.user.email, role: result.user.role, profilePicture: (result.user as any).profilePicture }
+      user: result.user
     });
   } catch (error: any) {
     res.status(error.statusCode || 500).json({ message: error.message || 'Error en el servidor al iniciar sesión' });

@@ -3,7 +3,7 @@ import { AuthSocket } from '../socketAuthMiddleware';
 import { services } from '../../dependencies/serviceDependency';
 import { mongoIdSchema } from '../../utils/idValidator';
 
-const { board: boardService, group: groupService } = services;
+const boardService = services.board;
 
 export function registerBoardHandlers(io: Server, socket: AuthSocket){
 
@@ -13,12 +13,7 @@ export function registerBoardHandlers(io: Server, socket: AuthSocket){
 
 			const boardIdParsed = mongoIdSchema.parse(boardId);
 
-            const board = await boardService.getBoardWhitDetails(boardIdParsed);
-
-            const isMember = await groupService.isMember(board.groupId.toString(), socket.data.userId);
-            if(!isMember){
-				return callback?.({ok: false, error: 'No tienes acceso a este tablero'});
-            }
+            const board = await boardService.getBoardWhitDetails(boardIdParsed, socket.data.userId);
 
 			socket.join(`board:${boardIdParsed}`);
 			callback?.({ok: true, board});

@@ -17,7 +17,7 @@ router.post('/:groupId/members', groupController.addMember.bind(groupController)
 router.put('/:id/members/:userId', groupController.updateMemberRole.bind(groupController));
 router.delete('/:id/members/:userId', groupController.removeMember.bind(groupController));
 router.put('/:id', groupController.updateGroup.bind(groupController));
-router.post('/:id/profile-picture', uploadToCloudinary.single('file'), groupController.uploadProfilePicture.bind(groupController));
+// router.post('/:id/profile-picture', uploadToCloudinary.single('file'), groupController.uploadProfilePicture.bind(groupController));
 router.delete('/:id', groupController.deleteGroup.bind(groupController));
 
 export default router;
