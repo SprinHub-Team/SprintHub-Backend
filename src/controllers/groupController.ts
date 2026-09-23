@@ -16,18 +16,20 @@ export class GroupController {
     next: NextFunction,
   ) {
     try {
-      const userId = req.user?.userId;
+
+      const userId = req.user.userId;
 
       const data = createGroupInputSchema.parse(req.body);
 
-      const group = await this.groupService.createGroup({
-        ...data,
-        ownerId: userId,
-      });
+      const group = await this.groupService.createGroup(
+        data,
+        userId
+      );
 
       return res.status(201).json({
         data: group,
       });
+
     } catch (error) {
       next(error);
     }
@@ -39,14 +41,12 @@ export class GroupController {
     next: NextFunction,
   ) {
     try {
+
       const groupId = mongoIdSchema.parse(req.params.groupId);
       const data = addGroupMemberInputSchema.parse(req.body);
+      const userId = req.user.userId;
 
-      const group = await this.groupService.addMember(
-        groupId,
-        data.email,
-        data.role,
-      );
+      const group = await this.groupService.addMember({groupId, email: data.email, role: data.role}, userId);
 
       return res.status(200).json({
         data: group,
@@ -62,13 +62,8 @@ export class GroupController {
     next: NextFunction,
   ) {
     try {
-      const userId = req.user?.userId;
 
-      if (!userId) {
-        return res.status(401).json({
-          message: 'No autorizado',
-        });
-      }
+      const userId = req.user.userId;
 
       const groups = await this.groupService.getGroupsForUser(userId);
 
@@ -88,7 +83,9 @@ export class GroupController {
     try {
       const groupId = mongoIdSchema.parse(req.params.id);
 
-      const group = await this.groupService.getGroupById(groupId);
+      const userId = req.user.userId;
+
+      const group = await this.groupService.getGroupById(groupId, userId);
 
       return res.status(200).json({
         data: group,
@@ -104,14 +101,14 @@ export class GroupController {
     next: NextFunction,
   ) {
     try {
+
+      const currentUserId = req.user.userId;
+
       const groupId = mongoIdSchema.parse(req.params.id);
       const userId = mongoIdSchema.parse(req.params.userId);
+      const role = req.body.role;
 
-      const updatedGroup = await this.groupService.updateMemberRole(
-        groupId,
-        userId,
-        req.body.role,
-      );
+      const updatedGroup = await this.groupService.updateMemberRole({groupId, userId, role}, currentUserId);
 
       return res.status(200).json({
         data: updatedGroup,
@@ -127,13 +124,13 @@ export class GroupController {
     next: NextFunction,
   ) {
     try {
+
+      const currentUserId = req.user.userId;
+
       const groupId = mongoIdSchema.parse(req.params.id);
       const userId = mongoIdSchema.parse(req.params.userId);
 
-      const updatedGroup = await this.groupService.removeMember(
-        groupId,
-        userId,
-      );
+      const updatedGroup = await this.groupService.removeMember({groupId,userId}, currentUserId);
 
       return res.status(200).json({
         data: updatedGroup,
@@ -151,7 +148,9 @@ export class GroupController {
     try {
       const groupId = mongoIdSchema.parse(req.params.id);
       const data = req.body;
-      const updatedGroup = await this.groupService.updateGroup(groupId, data);
+      const userId = req.user.userId;
+
+      const updatedGroup = await this.groupService.updateGroup({id: groupId, ...data},userId);
 
       return res.status(200).json({
         data: updatedGroup,
@@ -168,41 +167,45 @@ export class GroupController {
     next: NextFunction,
   ) {
     try {
-      const groupId = mongoIdSchema.parse(req.params.id);
 
-      await this.groupService.deleteGroup(groupId);
+      const groupId = mongoIdSchema.parse(req.params.id);
+      const userId = req.user.userId;
+
+      await this.groupService.deleteGroup(groupId, userId);
 
       return res.status(200).json({
         message: 'Grupo eliminado exitosamente',
       });
+
     } catch (error) {
       next(error);
     }
   }
 
-  async uploadProfilePicture(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-      const groupId = mongoIdSchema.parse(req.params.id);
-      if (!req.file) {
-        return res.status(400).json({ message: 'No se subió ninguna imagen' });
-      }
+  // async uploadProfilePicture(
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction,
+  // ) {
+  //   try {
+  //     const groupId = mongoIdSchema.parse(req.params.id);
+  //     if (!req.file) {
+  //       return res.status(400).json({ message: 'No se subió ninguna imagen' });
+  //     }
 
-      const file = req.file;
+  //     const file = req.file;
 
-      const fileResult = await this.cloudinaryService.upload({buffer: file.buffer,fileName: file.filename, mimeType: file.mimetype, path: 'GroupPhotos' });
+  //     const fileResult = await this.cloudinaryService.upload({buffer: file.buffer,fileName: file.filename, mimeType: file.mimetype, path: 'GroupPhotos' });
 
-      const updatedGroup = await this.groupService.updateGroup(groupId, { profilePicture: fileResult.url });
+  //     const updatedGroup = await this.groupService.updateGroup(groupId, { profilePicture: fileResult.url });
 
-      return res.status(200).json({
-        data: updatedGroup,
-        message: 'Imagen de grupo actualizada',
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
+  //     return res.status(200).json({
+  //       data: updatedGroup,
+  //       message: 'Imagen de grupo actualizada',
+  //     });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
+
 }

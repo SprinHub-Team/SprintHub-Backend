@@ -39,11 +39,26 @@ export class BoardService{
 
     }
 
-    async getBoardWhitDetails(boardId: string): Promise<BoardDetailsResponse> {
+    async getBoardWhitDetails(boardId: string, userId: string): Promise<BoardDetailsResponse> {
+
+        const groupId = await this.boardRepository.getGroupIdByBoardId(boardId);
+        if(!groupId){
+            throw new ValidationError('El tablero que se intenta obtener no existe');
+        }
+
+        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
+          groupId,
+          userId,
+          ['admin', 'collaborator'],
+        );
+
+        if(!hasPermission){
+            throw new ValidationError('El usuario no tiene permiso para realizar esta acción o el grupo no existe');
+        }
 
         const board = await this.boardRepository.getBoardWhitDetails(boardId);
         if(!board){
-            throw new ValidationError('El tablero buscado no existe');
+            throw new ValidationError('El tablero que se intenta obtener no existe');
         }
 
         return BoardMapper.toDetailsResponse(board);
