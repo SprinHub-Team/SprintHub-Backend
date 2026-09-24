@@ -58,7 +58,12 @@ export class GroupController {
 
       const userId = req.user.userId;
 
-      const data = await createGroupInputSchema.parseAsync({...req.body,filePicture: req.file} );
+      const file = {
+        fileName: req.file?.originalname,
+        buffer: req.file?.buffer
+      }
+
+      const data = await createGroupInputSchema.parseAsync({...req.body,filePicture: file} );
 
       const group = await this.groupService.createGroup(
         data,
@@ -82,7 +87,12 @@ export class GroupController {
     try {
       const groupId = mongoIdSchema.parse(req.params.id);
       const userId = req.user.userId;
-      const data = await updateGroupInputSchema.parseAsync({...req.body, id: groupId, filePicture: req.file});
+      const file = {
+        fileName: req.file?.originalname,
+        buffer: req.file?.buffer
+      }
+
+      const data = await updateGroupInputSchema.parseAsync({...req.body, groupId, filePicture: file});
       const updatedGroup = await this.groupService.updateGroup(data, userId);
 
       return res.status(200).json({

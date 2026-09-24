@@ -13,7 +13,6 @@ export const updateGroupInputSchema = z.object({
   groupId: mongoIdSchema,
   name: z.string().min(2).max(100).optional(),
   description: z.string().optional(),
-  visibility: z.enum(['private', 'public']).optional(),
   filePicture: uploadFileInputRequestSchema.optional()
 });
 export type UpdateGroupInput = z.infer<typeof updateGroupInputSchema>;

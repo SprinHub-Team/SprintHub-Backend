@@ -22,6 +22,7 @@ class CloudinaryStorageService {
             return reject(new ValidationError(`Error al subir el archivo: ${error?.message || 'Error desconocido'}`));
         }
 
+
         resolve({
             path: result.public_id,
             fileName: fileData.fileName,
@@ -29,7 +30,6 @@ class CloudinaryStorageService {
         });
         }
     );
-
     uploadStream.end(fileData.buffer);
     });
     
@@ -38,7 +38,8 @@ class CloudinaryStorageService {
 async delete(filePath: string): Promise<void> {
 
     try {
-        const result = await cloudinary.uploader.destroy(filePath);
+
+        const result = await cloudinary.uploader.destroy(filePath, {invalidate: true});
 
         if (result.result !== 'ok' && result.result !== 'not_found') {
         throw new Error(result.result);
@@ -57,7 +58,7 @@ async deleteMany(filePaths: string[]): Promise<void> {
     }
 
     try {
-    await cloudinary.api.delete_resources(filePaths);
+    await cloudinary.api.delete_resources(filePaths, {invalidate: true});
     } catch (error: any) {
     throw new ValidationError(`Error al eliminar los archivos: ${error.message}`);
     }
