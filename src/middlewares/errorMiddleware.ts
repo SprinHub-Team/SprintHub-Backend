@@ -9,6 +9,7 @@ export const errorMiddleware = (
     res:Response,
     next: NextFunction
 )=>{
+
     if(error instanceof ZodError){
         res.status(400).json({
             message: 'Datos invalidos',

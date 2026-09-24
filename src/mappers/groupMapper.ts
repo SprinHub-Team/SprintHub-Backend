@@ -9,7 +9,7 @@ export class GroupMapper {
       name: group.name,
       description: group.description || '',
       profilePicture: group.profilePicture?.url || '',
-      ownerId: group.ownerId.toString(),
+      ownerId: group.ownerId._id.toString(),
     };
   }
 
