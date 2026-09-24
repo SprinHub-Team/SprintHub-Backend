@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const controllerDependency_1 = require("../dependencies/controllerDependency");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const cardPBController = controllerDependency_1.controllers.cardPb;
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.requireAuth);
+router.post('/', cardPBController.create.bind(cardPBController));
+router.get('/group/:groupId', cardPBController.getBacklog.bind(cardPBController));
+router.delete('/:id', cardPBController.delete.bind(cardPBController));
+router.get('/group/:groupId/export-csv', cardPBController.exportCsv.bind(cardPBController));
+exports.default = router;

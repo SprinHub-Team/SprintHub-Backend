@@ -1,4 +1,4 @@
-import {Request, Response, NextFunction} from 'express';
+﻿import {Request, Response, NextFunction} from 'express';
 import { BoardService } from '../service/boardService';
 import {mongoIdSchema} from '../utils/idValidator'
 import { createBoardInputSchema, updateBoardInputSchema } from '../dtos/input/boardInputDto';
@@ -15,7 +15,7 @@ export class BoardController {
 
       const boards = await this.boardService.findByGroupId(groupId, userId);
 
-      return res.status(200).json(boards);
+      return res.status(200).json({ data: boards });
     } catch (error) {
       next(error);
     }

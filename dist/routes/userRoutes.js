@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const controllerDependency_1 = require("../dependencies/controllerDependency");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const uploadMiddleware_1 = require("../middlewares/uploadMiddleware");
+const userController = controllerDependency_1.controllers.user;
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.requireAuth);
+router.get('/', userController.getAllUsers.bind(userController));
+router.get('/me', userController.getUserById.bind(userController));
+router.get('/:id', userController.getUserById.bind(userController));
+router.put('/:id', userController.updateUser.bind(userController));
+router.post('/:id/profile-picture', uploadMiddleware_1.uploadToCloudinary.single('file'), userController.uploadProfilePicture.bind(userController));
+router.delete('/:id', userController.deleteUser.bind(userController));
+exports.default = router;

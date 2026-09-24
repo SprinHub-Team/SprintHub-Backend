@@ -1,4 +1,4 @@
-import cloudinary from '../../config/cloudinary';
+﻿import cloudinary from '../../config/cloudinary';
 import { UploadFileInputDto, UploadFileResultDto } from '../../utils/FileDto';
 import ValidationError from '../../errors/ValidationError';
 
@@ -8,6 +8,7 @@ class CloudinaryStorageService {
 
     return new Promise((resolve, reject) => {
 
+    
     const uniqueFileName = crypto.randomUUID();
     const folderPath = fileData.path ? fileData.path : '';
 

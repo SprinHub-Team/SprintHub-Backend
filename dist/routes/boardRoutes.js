@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const controllerDependency_1 = require("../dependencies/controllerDependency");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const boardController = controllerDependency_1.controllers.board;
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.requireAuth);
+router.get('/group/:groupId', boardController.findByGroupId.bind(boardController));
+router.post('/', boardController.create.bind(boardController));
+router.put('/:id', boardController.update.bind(boardController));
+router.post('/:id/apply-template', boardController.applyTemplate.bind(boardController));
+router.delete('/:id', boardController.delete.bind(boardController));
+exports.default = router;

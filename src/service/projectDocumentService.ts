@@ -1,4 +1,4 @@
-import { ProjectDocumentRepository } from '../repository/projectDocumentRepository';
+﻿import { ProjectDocumentRepository } from '../repository/projectDocumentRepository';
 import { GroupRepository } from '../repository/groupRepository';
 import AppError from '../errors/AppError';
 
@@ -42,6 +42,7 @@ export class ProjectDocumentService {
       throw new AppError('Solo administradores y colaboradores pueden eliminar documentos', 403);
     }
 
-    return this.docRepo.delete(id);
+    await this.docRepo.delete(id);
+    return doc.fileUrl;
   }
 }

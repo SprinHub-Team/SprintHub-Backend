@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const controllerDependency_1 = require("../dependencies/controllerDependency");
+const commentController = controllerDependency_1.controllers.comment;
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.requireAuth);
+router.get('/card/:id', commentController.findByCardId.bind(commentController));
+router.get('/:id', commentController.getCommentWhitDetails.bind(commentController));
+exports.default = router;

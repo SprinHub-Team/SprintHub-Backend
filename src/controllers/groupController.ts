@@ -82,7 +82,7 @@ export class GroupController {
     try {
       const groupId = mongoIdSchema.parse(req.params.id);
       const userId = req.user.userId;
-      const data = await updateGroupInputSchema.parseAsync({...req.body, id: groupId, filePicture: req.file});
+      const data = await updateGroupInputSchema.parseAsync({...req.body, groupId: groupId, filePicture: req.file});
       const updatedGroup = await this.groupService.updateGroup(data, userId);
 
       return res.status(200).json({
@@ -166,7 +166,6 @@ export class GroupController {
     next: NextFunction,
   ) {
     try {
-
       const currentUserId = req.user.userId;
 
       const groupId = mongoIdSchema.parse(req.params.id);
@@ -176,6 +175,28 @@ export class GroupController {
 
       return res.status(200).json({
         data: updatedGroup,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async uploadProfilePicture(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.groupId);
+      const userId = req.user.userId;
+      if (!req.file) throw new Error('No se subió ninguna imagen');
+      
+      const data = await updateGroupInputSchema.parseAsync({ groupId: groupId, filePicture: req.file });
+      const updatedGroup = await this.groupService.updateGroup(data, userId);
+
+      return res.status(200).json({
+        data: updatedGroup,
+        message: 'Foto de grupo actualizada exitosamente',
       });
     } catch (error) {
       next(error);

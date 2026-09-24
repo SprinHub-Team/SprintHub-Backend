@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authMiddleware_1 = require("../middlewares/authMiddleware");
+const controllerDependency_1 = require("../dependencies/controllerDependency");
+const uploadMiddleware_1 = require("../middlewares/uploadMiddleware");
+const projectDocumentController = controllerDependency_1.controllers.projectDd;
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.requireAuth);
+router.post('/:groupId', uploadMiddleware_1.uploadToSupabase.single('file'), projectDocumentController.upload.bind(projectDocumentController));
+router.get('/group/:groupId', projectDocumentController.getByGroup.bind(projectDocumentController));
+router.delete('/:id', projectDocumentController.delete.bind(projectDocumentController));
+exports.default = router;

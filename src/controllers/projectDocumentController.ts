@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProjectDocumentService } from '../service/projectDocumentService';
 import SupabaseStorageService from '../service/storage/supabaseStorageService';
+import { ProjectDocumentMapper } from '../mappers/projectDocumentMapper';
 
 export class ProjectDocumentController {
   constructor(
@@ -19,7 +20,7 @@ export class ProjectDocumentController {
       if (!userId) throw new Error('No autorizado');
       if (!title) throw new Error('El título es requerido');
 
-      const fileResult = await this.supabaseService.upload({ buffer: file.buffer, fileName: file.filename, mimeType: file.mimetype, path: 'ProjectsDocuments'});
+      const fileResult = await this.supabaseService.upload({ buffer: file.buffer, fileName: file.originalname, mimeType: file.mimetype, path: 'ProjectsDocuments'});
 
       const doc = await this.docService.createDocument({
         title,
@@ -29,7 +30,7 @@ export class ProjectDocumentController {
         uploadedBy: userId
       });
 
-      res.status(201).json(doc);
+      res.status(201).json({ data: ProjectDocumentMapper.toResponse(doc) });
     } catch (error) {
       next(error);
     }
@@ -43,7 +44,7 @@ export class ProjectDocumentController {
       if (!userId) throw new Error('No autorizado');
 
       const docs = await this.docService.getDocumentsByGroupId(groupId as string, userId);
-      res.json(docs);
+      res.status(200).json({ data: docs.map(d => ProjectDocumentMapper.toResponse(d)) });
     } catch (error) {
       next(error);
     }
@@ -56,7 +57,21 @@ export class ProjectDocumentController {
 
       if (!userId) throw new Error('No autorizado');
 
-      await this.docService.deleteDocument(id as string, userId);
+      const fileUrl = await this.docService.deleteDocument(id as string, userId);
+      
+      // Attempt to delete from Supabase
+      if (fileUrl) {
+        try {
+          const parts = fileUrl.split('/sprinthub-files/');
+          if (parts.length > 1) {
+            const filePath = parts[1];
+            await this.supabaseService.delete(filePath);
+          }
+        } catch (e) {
+          console.error('Error deleting from supabase:', e);
+        }
+      }
+
       res.status(204).send();
     } catch (error) {
       next(error);

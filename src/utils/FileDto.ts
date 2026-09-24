@@ -1,4 +1,4 @@
-import { fileTypeFromBuffer } from 'file-type';
+﻿import { fileTypeFromBuffer } from 'file-type';
 import { string, z } from 'zod';
 
 export const uploadFileInputSchema = z.object({
@@ -30,7 +30,7 @@ const ALLOWED_MIMES = [
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 
 export const uploadFileInputRequestSchema = z.object({
-  fileName: z.string(),
+  originalname: z.string(),
   buffer: z.instanceof(Buffer)
 })
 .superRefine(async (file, ctx) => {
@@ -57,7 +57,7 @@ export const uploadFileInputRequestSchema = z.object({
   const detectedType = await fileTypeFromBuffer(file.buffer);
   
   return {
-    fileName: file.fileName,
+    fileName: file.originalname,
     buffer: file.buffer,
     mimeType: detectedType?.mime ?? 'application/octet-stream'
   };

@@ -1,5 +1,6 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import { UserService } from '../service/userService';
+import { UserMapper } from '../mappers/userMapper';
 import { mongoIdSchema } from '../utils/idValidator';
 import CloudinaryStorageService from '../service/storage/cloudinaryStorageService';
 
@@ -43,7 +44,7 @@ export class UserController {
         req.body
       );
 
-      return res.status(200).json(updatedUser);
+      return res.status(200).json(UserMapper.toResponse(updatedUser));
     } catch (error: any) {
       return res.status(400).json({ message: error.message });
     }
@@ -73,11 +74,22 @@ export class UserController {
 
       const file = req.file;
 
-      const fileResult = await this.cloudinaryService.upload({ buffer: file.buffer, fileName: file.filename, mimeType: file.mimetype, path: 'UserPhotos'});
+      const user = await this.userService.getUserById(userId);
+      if (user && user.profilePicture) {
+        try {
+          const parts = user.profilePicture.split('/');
+          const publicId = parts.slice(-2).join('/').split('.')[0];
+          await this.cloudinaryService.delete(publicId);
+        } catch (e) {
+          console.error('Error eliminando foto anterior', e);
+        }
+      }
+
+      const fileResult = await this.cloudinaryService.upload({ buffer: file.buffer, fileName: file.originalname, mimeType: file.mimetype, path: 'UserPhotos'});
 
       const updatedUser = await this.userService.updateUser(userId, { profilePicture: fileResult.url });
 
-      return res.status(200).json(updatedUser);
+      return res.status(200).json(UserMapper.toResponse(updatedUser));
     } catch (error: any) {
       return res.status(400).json({ message: error.message });
     }
