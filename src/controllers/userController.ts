@@ -1,26 +1,15 @@
 import { Request, Response } from 'express';
 import { UserService } from '../service/userService';
 import { mongoIdSchema } from '../utils/idValidator';
-import CloudinaryStorageService from '../service/storage/cloudinaryStorageService';
 
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly cloudinaryService: CloudinaryStorageService
   ) {}
 
-  async getAllUsers(req: Request, res: Response) {
+  async getInfoMe(req: Request, res: Response) {
     try {
-      const users = await this.userService.getAllUsers();
-      return res.status(200).json(users);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
-    }
-  }
-
-  async getUserById(req: Request, res: Response) {
-    try {
-      const userId = mongoIdSchema.parse(req.params.id);
+      const userId = req.user.userId;
 
       const user = await this.userService.getUserById(userId);
 
@@ -35,18 +24,25 @@ export class UserController {
   }
 
   async updateUser(req: Request, res: Response) {
+
     try {
+
       const userId = mongoIdSchema.parse(req.params.id);
+
+      const userIdToken = req.user.userId;
 
       const updatedUser = await this.userService.updateUser(
         userId,
-        req.body
+        req.body,
+        userIdToken
       );
 
       return res.status(200).json(updatedUser);
+
     } catch (error: any) {
       return res.status(400).json({ message: error.message });
     }
+
   }
 
   async deleteUser(req: Request, res: Response) {
@@ -64,22 +60,4 @@ export class UserController {
     }
   }
 
-  async uploadProfilePicture(req: Request, res: Response) {
-    try {
-      const userId = mongoIdSchema.parse(req.params.id);
-      if (!req.file) {
-        return res.status(400).json({ message: 'No se subió ninguna imagen' });
-      }
-
-      const file = req.file;
-
-      const fileResult = await this.cloudinaryService.upload({ buffer: file.buffer, fileName: file.filename, mimeType: file.mimetype, path: 'UserPhotos'});
-
-      const updatedUser = await this.userService.updateUser(userId, { profilePicture: fileResult.url });
-
-      return res.status(200).json(updatedUser);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
-    }
-  }
 }

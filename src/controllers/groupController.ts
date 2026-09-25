@@ -1,13 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { GroupService } from '../service/groupService';
 import { mongoIdSchema } from '../utils/idValidator';
-import CloudinaryStorageService from '../service/storage/cloudinaryStorageService';
 import { addGroupMemberInputSchema, createGroupInputSchema, updateGroupInputSchema } from '../dtos/input/groupInputDto';
 
 export class GroupController {
   constructor(
     private readonly groupService: GroupService,
-    private readonly cloudinaryService: CloudinaryStorageService
   ) {}
 
     async getMyGroups(

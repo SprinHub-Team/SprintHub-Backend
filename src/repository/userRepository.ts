@@ -1,8 +1,9 @@
 // Usa llaves y el nombre exacto que tienes en tu archivo User.ts
-import { UserModel } from '../models/User';
+import { IUser, UserModel } from '../models/User';
 
 export class UserRepository {
-  async create(data: any) {
+
+  async create(data: Pick<IUser, 'document' | 'email' | 'name' | 'passwordHash' | 'profilePicture'>) {
     const newUser = new UserModel(data); 
     return await newUser.save();
   }
@@ -19,7 +20,7 @@ export class UserRepository {
     return await UserModel.findById(id).select('-password').lean().exec();
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: Partial<Pick<IUser, 'document' | 'email' | 'name' | 'passwordHash' | 'profilePicture'>>) {
     return await UserModel.findByIdAndUpdate(id, data, { new: true }).select('-password -passwordHash');
   }
 

@@ -5,10 +5,13 @@ const UserSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    documentId: { type: String, required: true, unique: true },
+    document: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
-    role: { type: String, enum: ['admin', 'user'], default: 'user' },
-    profilePicture: { type: String, default: '' },
+    profilePicture: {
+      path:{ type: String, required: true},
+      fileName: { type: String, required:true},
+      url: { type: String, required: true},
+    }
   },
   { timestamps: true, versionKey: false }
 );
