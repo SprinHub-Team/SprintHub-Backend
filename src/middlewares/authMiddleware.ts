@@ -5,7 +5,6 @@ import AppError from '../errors/AppError';
 
 interface JwtPayload {
   userId: string;
-  role: string;
 }
 
 export const requireAuth = (
@@ -31,7 +30,6 @@ export const requireAuth = (
 
     req.user = {
       userId: decoded.userId,
-      role: decoded.role,
     };
 
     next();

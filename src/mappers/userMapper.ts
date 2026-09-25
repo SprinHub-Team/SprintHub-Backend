@@ -8,10 +8,8 @@ export class UserMapper {
       id: user._id.toString(),
       name: user.name,
       email: user.email,
-      documentId: user.documentId,
-      role: user.role,
-      profilePicture: user.profilePicture || '',
-      createdAt: user.createdAt.toISOString(),
+      document: user.document,
+      profilePicture: user.profilePicture?.path || '',
     };
   }
 }

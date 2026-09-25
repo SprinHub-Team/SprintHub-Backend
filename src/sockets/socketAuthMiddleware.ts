@@ -7,7 +7,6 @@ import { JwtPayload } from '../utils/JwtPayload';
 export interface AuthSocket extends Socket{
     data:{
         userId: string;
-        role: string;
     }
 }
 
@@ -24,7 +23,6 @@ export function socketAuthMiddleware(socket: Socket, next:(err?: Error) => void)
 
 		const decoded = jwt.verify(token, env.jwtsecret) as JwtPayload
 		socket.data.userId = decoded.userId;
-		socket.data.role = decoded.role;
 		next();
 	}catch(err){
 		next(new ValidationError('Token inavlido para sesion de Sockets'));
