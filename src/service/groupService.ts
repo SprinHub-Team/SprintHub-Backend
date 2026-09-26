@@ -47,7 +47,7 @@ export class GroupService {
 
   async createGroup(data: CreateGroupInput, userId: string): Promise<GroupResponse> {
 
-    let profilePicture;
+    let profilePicture = undefined;
 
     if(data.filePicture){
       
@@ -55,7 +55,7 @@ export class GroupService {
 
     }
 
-      const group = await this.groupRepository.create({name: data.name, description: data.description, profilePicture, ownerId: userId});
+      const group = await this.groupRepository.create({name: data.name, description: data.description, ...(profilePicture && {profilePicture}), ownerId: userId});
       const result = await this.groupRepository.addMember(group._id.toString(), userId, 'admin');
 
       if(!result){
@@ -73,57 +73,56 @@ export class GroupService {
 
   }
 
-  async updateGroup(data: UpdateGroupInput, userId: string): Promise<GroupResponse> {
-
+ async updateGroup(data: UpdateGroupInput, userId: string): Promise<GroupResponse> {
     const hasPermission = await this.groupRepository.isMemberAndRoleValid(
       data.groupId,
       userId,
-      ['admin'],
-      );
+      ['admin']
+    );
 
-    if(!hasPermission){
-          throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo no existe', 403);
+    if (!hasPermission) {
+      throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo no existe', 403);
     }
 
+    let profilePicture = undefined;
+    let currentPhotoPath: string | undefined = undefined;
 
-    if(data.filePicture){
-      
-      const profilePicture = await this.cloudinaryService.upload({...data.filePicture, path: 'GroupImages' });
-
+    if (data.filePicture) {
       const currentGroup = await this.groupRepository.findById(data.groupId);
-      const currentPhotoPath = currentGroup?.profilePicture?.path;
+      currentPhotoPath = currentGroup?.profilePicture?.path;
 
-      const group = await this.groupRepository.update(data.groupId, {name: data.name, description: data.description, profilePicture});
-      
-      if(!group){
-
-        if(profilePicture){
-        await this.cloudinaryService.delete(profilePicture.path);
-        }
-
-        throw new AppError('No se ha podido actualizar el grupo o el grupo no existe', 404);
-      
-      }
-
-      if(currentPhotoPath){
-         await this.cloudinaryService.delete(currentPhotoPath);
-      }
-
-      return GroupMapper.toResponse(group);
-
+      profilePicture = await this.cloudinaryService.upload({
+        ...data.filePicture,
+        path: 'GroupImages'
+      });
     }
 
-    const group = await this.groupRepository.update(data.groupId, {name: data.name, description: data.description}); 
+    const updatePayload = {
+      name: data.name,
+      description: data.description,
+      ...(profilePicture && { profilePicture })
+    };
 
-    if(!group){
+    const group = await this.groupRepository.update(data.groupId, updatePayload);
+
+    if (!group) {
       
-        throw new AppError('No se ha podido actualizar el grupo o el grupo no existe', 404);
-      
+      if (profilePicture) {
+        await this.cloudinaryService.delete(profilePicture.path);
       }
+
+      throw new AppError('No se ha podido actualizar el grupo o el grupo no existe', 404);
+    }
+
+    if (currentPhotoPath) {
+      this.cloudinaryService.delete(currentPhotoPath).catch((err) => {
+        console.error(err);
+      });
+    }
 
     return GroupMapper.toResponse(group);
-
   }
+
 
   async deleteGroup(groupId: string, userId: string): Promise<void> {
 

@@ -26,7 +26,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(data.password, 10);
 
-    let profilePicture;
+    let profilePicture = undefined;
 
     try{
 
@@ -39,7 +39,7 @@ export class AuthService {
         email: data.email,
         document: data.document,
         passwordHash,
-        profilePicture
+        ...(profilePicture && {profilePicture})
       });
 
       return AuthMapper.toAuthRegisterResponse(newUser);
