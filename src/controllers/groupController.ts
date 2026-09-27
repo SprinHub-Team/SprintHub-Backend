@@ -56,12 +56,11 @@ export class GroupController {
 
       const userId = req.user.userId;
 
-      const file = {
-        fileName: req.file?.originalname,
-        buffer: req.file?.buffer
-      }
+      const file = req.file 
+      ? { fileName: req.file.originalname, buffer: req.file.buffer}
+      : undefined;
 
-      const data = await createGroupInputSchema.parseAsync({...req.body,filePicture: file} );
+      const data = await createGroupInputSchema.parseAsync({...req.body, ...(file && {filePicture: file})} );
 
       const group = await this.groupService.createGroup(
         data,
@@ -85,12 +84,11 @@ export class GroupController {
     try {
       const groupId = mongoIdSchema.parse(req.params.id);
       const userId = req.user.userId;
-      const file = {
-        fileName: req.file?.originalname,
-        buffer: req.file?.buffer
-      }
+      const file = req.file 
+      ? { fileName: req.file.originalname, buffer: req.file.buffer}
+      : undefined;
 
-      const data = await updateGroupInputSchema.parseAsync({...req.body, groupId, filePicture: file});
+      const data = await updateGroupInputSchema.parseAsync({...req.body, groupId, ...(file && {filePicture: file})});
       const updatedGroup = await this.groupService.updateGroup(data, userId);
 
       return res.status(200).json({
