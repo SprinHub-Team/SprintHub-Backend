@@ -30,11 +30,12 @@ export class UserController {
 
       const userId = req.user.userId;
 
-      const file = req.file 
-      ? { fileName: req.file.originalname, buffer: req.file.buffer}
-      : undefined;
+      const file = {
+        fileName: req.file?.originalname,
+        buffer: req.file?.buffer
+      }
 
-      const data = await updateUserInputSchema.parseAsync({...req.body, ...(file && {profilePicture: file})});
+      const data = await updateUserInputSchema.parseAsync({...req.body, profilePicture: file});
 
       const updatedUser = await this.userService.updateUser(
         data,
