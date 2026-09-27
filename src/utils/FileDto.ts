@@ -2,7 +2,11 @@ import { fileTypeFromBuffer } from 'file-type';
 import { string, z } from 'zod';
 
 export const uploadFileInputSchema = z.object({
-    buffer: z.instanceof(Buffer),
+    buffer: z.custom<Buffer | Uint8Array>((val) => {
+      return val instanceof Buffer || val instanceof Uint8Array;
+    }, {
+      message: "Debe ser un Buffer o Uint8Array válido"
+    }),
     fileName: string(),
     mimeType: string(),
     path: string()
