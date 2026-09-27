@@ -11,12 +11,11 @@ export class AuthController{
 async register(req: Request, res: Response) {
   try {
 
-    const file = {
-        fileName: req.file?.originalname,
-        buffer: req.file?.buffer
-      }
+    const file = req.file 
+      ? { fileName: req.file.originalname, buffer: req.file.buffer}
+      : undefined;
 
-    const data = await registerInputSchema.parseAsync({...req.body, profilePicture: file});
+    const data = await registerInputSchema.parseAsync({...req.body, ...(file && {profilePicture: file})});
 
     await this.authService.register(data);
     res.status(201).json({ message: 'Usuario registrado exitosamente' });
