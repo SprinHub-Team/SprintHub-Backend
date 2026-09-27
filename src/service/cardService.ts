@@ -96,6 +96,8 @@ export class CardService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
+        try{
+
         const card = await this.cardRepository.create({
             title: data.title,
             description: data.description,
@@ -105,6 +107,14 @@ export class CardService{
         }); 
 
         return {card: CardMapper.toResponse(card), boardId: columnContext.boardId}
+
+        }catch(error: unknown){
+
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            throw new ValidationError(`No se ha podido crear la tarjeta ${errorMessage}`);
+
+        }
+
     }
 
     async update(data: UpdateCardInput, userId: string): Promise<{card: CardResponse, boardId: string}>{

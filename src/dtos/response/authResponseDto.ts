@@ -6,7 +6,6 @@ export type AuthLoginResponse = {
 };
 
 export type AuthRegisterResponse = {
-    id: string;
     name: string;
     email: string;
 };

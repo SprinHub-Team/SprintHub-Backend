@@ -9,7 +9,7 @@ export class UserMapper {
       name: user.name,
       email: user.email,
       document: user.document,
-      profilePicture: user.profilePicture?.path || '',
+      profilePicture: user.profilePicture?.url || '',
     };
   }
 }

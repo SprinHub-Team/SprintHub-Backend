@@ -1,6 +1,6 @@
-import AppError from '../errors/AppError';
 import dotenv from 'dotenv';
 import { EnvDto, envSchema } from '../utils/EnvDto';
+import { ZodError } from 'zod/v3';
 dotenv.config();
 
 let env: EnvDto;
@@ -20,8 +20,11 @@ try {
     cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
   });
 
-} catch (error: any) {
-  throw new AppError(`Variables de entorno inválidas${error.message}`, 500);
+} catch (error: unknown) {
+  
+  const errorMessage = error instanceof ZodError ? error.message : 'Error desconocido';
+  throw new Error(`Variables de entorno no configuradas ${errorMessage}`);
+
 }
 
 export default env;

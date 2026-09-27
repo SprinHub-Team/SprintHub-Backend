@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { GroupService } from '../service/groupService';
 import { mongoIdSchema } from '../utils/idValidator';
-import { addGroupMemberInputSchema, createGroupInputSchema, updateGroupInputSchema } from '../dtos/input/groupInputDto';
+import { addGroupMemberInputSchema, createGroupInputSchema, removeGroupMemberInputSchema, updateGroupInputSchema, updateGroupMemberRoleInputSchema } from '../dtos/input/groupInputDto';
 
 export class GroupController {
   constructor(
@@ -131,11 +131,12 @@ export class GroupController {
   ) {
     try {
 
-      const groupId = mongoIdSchema.parse(req.params.groupId);
-      const data = addGroupMemberInputSchema.parse(req.body);
       const userId = req.user.userId;
 
-      const group = await this.groupService.addMember({groupId, email: data.email, role: data.role}, userId);
+      const groupId = mongoIdSchema.parse(req.params.groupId);
+      const data = addGroupMemberInputSchema.parse({...req.body, groupId});
+
+      const group = await this.groupService.addMember(data, userId);
 
       return res.status(200).json({
         data: group,
@@ -157,8 +158,9 @@ export class GroupController {
       const groupId = mongoIdSchema.parse(req.params.id);
       const userId = mongoIdSchema.parse(req.params.userId);
       const role = req.body.role;
+      const data = updateGroupMemberRoleInputSchema.parse({groupId, userId, role});
 
-      const updatedGroup = await this.groupService.updateMemberRole({groupId, userId, role}, currentUserId);
+      const updatedGroup = await this.groupService.updateMemberRole(data, currentUserId);
 
       return res.status(200).json({
         data: updatedGroup,
@@ -179,8 +181,9 @@ export class GroupController {
 
       const groupId = mongoIdSchema.parse(req.params.id);
       const userId = mongoIdSchema.parse(req.params.userId);
+      const data = removeGroupMemberInputSchema.parse({groupId, userId})
 
-      const updatedGroup = await this.groupService.removeMember({groupId,userId}, currentUserId);
+      const updatedGroup = await this.groupService.removeMember(data, currentUserId);
 
       return res.status(200).json({
         data: updatedGroup,

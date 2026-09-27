@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from 'express';
 import { BoardService } from '../service/boardService';
 import {mongoIdSchema} from '../utils/idValidator'
-import { createBoardInputSchema, updateBoardInputSchema } from '../dtos/input/boardInputDto';
+import { applyBoardTemplateInputSchema, createBoardInputSchema, updateBoardInputSchema } from '../dtos/input/boardInputDto';
 
 export class BoardController {
   constructor(private boardService: BoardService) {}
@@ -40,16 +40,17 @@ export class BoardController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
+      
       const userId = req.user.userId;
-
-      const data = updateBoardInputSchema.parse(req.body);
-
       const boardId = mongoIdSchema.parse(req.params.id);
 
-      const board = await this.boardService.update(boardId, data, userId);
+      const data = updateBoardInputSchema.parse({ ...req.body, id: boardId });
+
+
+      const board = await this.boardService.update(data, userId);
 
       return res.status(200).json({
-        message: 'Tablero actulizado correctamente',
+        message: 'Tablero actualizado correctamente',
         data: board,
       });
     } catch (error) {
@@ -66,7 +67,9 @@ export class BoardController {
 
       await this.boardService.delete(boardId, userId);
 
-      return res.status(204).send();
+      return res.status(200).json({
+        message: 'Tablero eliminado exitosamente',
+      });
     } catch (error) {
       next(error);
     }
@@ -78,7 +81,9 @@ export class BoardController {
       const boardId = mongoIdSchema.parse(req.params.id);
       const templateId = req.body.templateId;
 
-      await this.boardService.applyTemplate(boardId, templateId, userId);
+      const data = applyBoardTemplateInputSchema.parse({boardId, templateId});
+
+      await this.boardService.applyTemplate(data, userId);
 
       return res.status(200).json({
         message: 'Plantilla aplicada correctamente',

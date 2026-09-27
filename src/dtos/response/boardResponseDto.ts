@@ -3,10 +3,9 @@ export type BoardResponse = {
   title: string;
   description: string;
   groupId: string;
-  ownerId: string;
 };
 
-export type BoardDetailsResponse = Omit<BoardResponse, 'ownerId'> & {
+export type BoardDetailsResponse = BoardResponse & {
   columns: {
     id: string;
     cards: {

@@ -18,9 +18,7 @@ async findByBoardId(req: Request, res: Response, next: NextFunction){
 
     const columns = await this.columnService.findByBoardId(boardId, userId);
 
-    return res.status(200).json({
-      data: columns
-    });
+    return res.status(200).json(columns);
 
   }catch(error){
     next(error);
@@ -38,9 +36,7 @@ async getColumnWhitDetails(req: Request, res: Response, next: NextFunction){
 
     const column = await this.columnService.getColumnWhitDetails(columnId, userId);
 
-    return res.status(200).json({
-      data: column
-    });
+    return res.status(200).json(column);
 
   }catch(error){
     next(error);

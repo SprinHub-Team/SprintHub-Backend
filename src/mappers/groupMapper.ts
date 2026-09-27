@@ -9,7 +9,6 @@ export class GroupMapper {
       name: group.name,
       description: group.description || '',
       profilePicture: group.profilePicture?.url || '',
-      ownerId: group.ownerId._id.toString(),
     };
   }
 
@@ -20,11 +19,6 @@ export class GroupMapper {
       name: group.name,
       description: group.description || '',
       profilePicture: group.profilePicture?.url || '',
-      owner: {
-        id: group.ownerId._id.toString(),
-        name: group.ownerId.name,
-        email: group.ownerId.email,
-      },
       members: (group.members || []).map(member => ({
         id: member.user._id.toString(),
         name: member.user.name,

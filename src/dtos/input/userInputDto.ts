@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { mongoIdSchema } from '../../utils/idValidator';
-import { uploadFileInputRequestSchema, uploadFileInputSchema } from '../../utils/FileDto';
+import { uploadFileInputRequestSchema } from '../../utils/FileDto';
 
 export const updateUserInputSchema = z.object({
   name: z.string().min(2).max(100).optional(),

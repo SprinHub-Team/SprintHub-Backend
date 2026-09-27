@@ -132,7 +132,7 @@ export class BoardRepository {
     return resultado?.groupId?.toString() || null;
   }
 
-  async create(data: Pick<IBoard,'description' | 'title'>&{groupId: string, ownerId: string}): Promise<IBoard> {
+  async create(data: Pick<IBoard,'description' | 'title'>&{groupId: string}): Promise<IBoard> {
     
     const newBoard = await BoardModel.create(data);
     return newBoard.toObject();

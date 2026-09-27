@@ -20,7 +20,7 @@ export type UpdateGroupInput = z.infer<typeof updateGroupInputSchema>;
 export const addGroupMemberInputSchema = z.object({
   groupId: mongoIdSchema,
   email: z.email({ error: 'Debe ser un correo válido' }),
-  role: z.enum(['admin', 'collaborator', 'visitor']),
+  role: z.enum(['admin', 'collaborator']),
 });
 export type AddGroupMemberInput = z.infer<typeof addGroupMemberInputSchema>;
 
@@ -33,6 +33,6 @@ export type RemoveGroupMemberInput = z.infer<typeof removeGroupMemberInputSchema
 export const updateGroupMemberRoleInputSchema = z.object({
   groupId: mongoIdSchema,
   userId: mongoIdSchema,
-  role: z.enum(['admin', 'collaborator', 'visitor']),
+  role: z.enum(['admin', 'collaborator']),
 });
 export type UpdateGroupMemberRoleInput = z.infer<typeof updateGroupMemberRoleInputSchema>;

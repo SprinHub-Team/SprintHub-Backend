@@ -21,15 +21,11 @@ export class UserService {
     return UserMapper.toResponse(user);
   }
 
-  async updateUser(id: string, data: UpdateUserInput, userId: string): Promise<UserResponse> {
-
-    if (userId !== id) {
-      throw new AppError('No tienes permiso para realizar esa acción.', 403);
-    }
+  async updateUser(data: UpdateUserInput, userId: string): Promise<UserResponse> {
     
     if(data.email){
       const userFound = await this.userRepository.findByEmail(data.email);
-      if(userFound && userFound._id.toString() !== id){
+      if(userFound && userFound._id.toString() !== userId){
         throw new AppError('El correo electronico ya esta registrado.', 409);
       }
     }
@@ -45,7 +41,7 @@ export class UserService {
 
     if (data.profilePicture) {
 
-      const currentUser = await this.userRepository.findById(id);
+      const currentUser = await this.userRepository.findById(userId);
       if (!currentUser) {
         throw new AppError('El usuario que se intenta actualizar no existe.', 404);
       }
@@ -64,7 +60,7 @@ export class UserService {
       ...(profilePicture && { profilePicture })
     };
 
-    const user = await this.userRepository.update(id, updatePayload);
+    const user = await this.userRepository.update(userId, updatePayload);
       
     if (!user) {
 
@@ -76,17 +72,15 @@ export class UserService {
     }
 
     if (currentFilePath) {
-      this.cloudinaryStorageService.delete(currentFilePath).catch((err) => {
-        console.error(err);
-      });
+      await this.cloudinaryStorageService.delete(currentFilePath);
     }
 
     return UserMapper.toResponse(user);
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(userId: string) {
     
-    const deletedUser = await this.userRepository.delete(id);
+    const deletedUser = await this.userRepository.delete(userId);
     if (!deletedUser) {
       throw new AppError('Usuario no encontrado para eliminar', 404);
     }

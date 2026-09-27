@@ -88,9 +88,18 @@ export class ColumnService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
+        try{
+
         const column = await this.columnRepository.create(data);
 
         return ColumnMapper.toResponse(column);
+
+        }catch(error: unknown){
+
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            throw new ValidationError(`No se ha podido crear la columna ${errorMessage}`);
+
+        }
 
     }
 
