@@ -10,7 +10,7 @@ const BoardSchema = new Schema(
     versionKey: false
   }
 );
-//jcjbj
+
 BoardSchema.pre('findOneAndDelete', async function() {
   
   const boardId = this.getQuery()._id;
