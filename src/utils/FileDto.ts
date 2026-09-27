@@ -31,7 +31,11 @@ const MAX_FILE_SIZE = 15 * 1024 * 1024;
 
 export const uploadFileInputRequestSchema = z.object({
   fileName: z.string(),
-  buffer: z.instanceof(Buffer)
+  buffer: z.custom<Buffer | Uint8Array>((val) => {
+    return val instanceof Buffer || val instanceof Uint8Array;
+  }, {
+    message: "Debe ser un Buffer o Uint8Array válido"
+  })
 })
 .superRefine(async (file, ctx) => {
 
