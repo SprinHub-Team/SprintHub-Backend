@@ -17,7 +17,6 @@ export class AuthMapper {
 
   public static toAuthRegisterResponse(user: IUser): AuthRegisterResponse {
     return {
-      id: user._id.toString(),
       name: user.name,
       email: user.email,
     };

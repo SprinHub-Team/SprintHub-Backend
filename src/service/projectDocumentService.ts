@@ -13,7 +13,7 @@ export class ProjectDocumentService {
     if (!group) throw new AppError('Grupo no encontrado', 404);
 
     const member = group.members.find(m => m.user._id?.toString() === data.uploadedBy || m.user.toString() === data.uploadedBy);
-    if (!member || (member.role !== 'admin' && member.role !== 'collaborator' && group.ownerId._id?.toString() !== data.uploadedBy)) {
+    if (!member || (member.role !== 'admin' && member.role !== 'collaborator')) {
       throw new AppError('Solo administradores y colaboradores pueden subir documentos', 403);
     }
 
@@ -24,7 +24,7 @@ export class ProjectDocumentService {
     const group = await this.groupRepo.findById(groupId);
     if (!group) throw new AppError('Grupo no encontrado', 404);
 
-    const isMember = group.members.some(m => m.user._id?.toString() === userId || m.user.toString() === userId) || group.ownerId._id?.toString() === userId;
+    const isMember = group.members.some(m => m.user._id?.toString() === userId || m.user.toString() === userId);
     if (!isMember) throw new AppError('No tienes acceso a este grupo', 403);
 
     return this.docRepo.findByGroupId(groupId);
@@ -38,7 +38,7 @@ export class ProjectDocumentService {
     if (!group) throw new AppError('Grupo no encontrado', 404);
 
     const member = group.members.find(m => m.user._id?.toString() === userId || m.user.toString() === userId);
-    if (!member || (member.role !== 'admin' && member.role !== 'collaborator' && group.ownerId._id?.toString() !== userId)) {
+    if (!member || (member.role !== 'admin' && member.role !== 'collaborator')) {
       throw new AppError('Solo administradores y colaboradores pueden eliminar documentos', 403);
     }
 

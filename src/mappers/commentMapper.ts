@@ -24,7 +24,7 @@ export class CommentMapper {
         id: comment.createdBy._id.toString(),
         name: comment.createdBy.name,
         email: comment.createdBy.email,
-        profilePicture: comment.createdBy.profilePicture || '',
+        profilePicture: comment.createdBy.profilePicture?.url || '',
       },
     };
   }

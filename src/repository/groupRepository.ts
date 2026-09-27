@@ -4,7 +4,6 @@ export class GroupRepository {
   
   async findById(id: string): Promise<IGroup | null> {
     return GroupModel.findById(id)
-      .populate('ownerId', 'name email')
       .populate('members.user', 'name email')
       .lean()
       .exec();
@@ -12,18 +11,27 @@ export class GroupRepository {
 
   async findByUserId(userId: string): Promise<IGroup[]> {
     return GroupModel.find({ 'members.user': userId })
-      .populate('ownerId', 'name email')
       .populate('members.user', 'name email')
       .lean()
       .exec();
   }
 
   async create(
-    data: Pick<IGroup, 'name' | 'description' | 'profilePicture'> & { ownerId: string },
-  ): Promise<IGroup> {
-    const group = await GroupModel.create({ ...data, members: [] });
-    return group.toObject();
-  }
+  data: Pick<IGroup, 'name' | 'description' | 'profilePicture'>,
+  creatorId: string,
+): Promise<IGroup> {
+  const group = await GroupModel.create({
+    ...data,
+    members: [
+      { 
+        user: creatorId, 
+        role: 'admin' 
+      }
+    ],
+  });
+
+  return group.toObject();
+}
 
   async update(
     id: string,
@@ -40,7 +48,7 @@ export class GroupRepository {
   async addMember(
     groupId: string,
     userId: string,
-    role: 'admin' | 'collaborator' | 'visitor',
+    role: 'admin' | 'collaborator',
   ): Promise<IGroup | null> {
     return GroupModel.findByIdAndUpdate(
       groupId,
@@ -61,7 +69,7 @@ export class GroupRepository {
       .exec();
   }
 
-  async updateMemberRole(groupId: string, userId: string, role: 'admin' | 'collaborator' | 'visitor'): Promise<IGroup | null> {
+  async updateMemberRole(groupId: string, userId: string, role: 'admin' | 'collaborator'): Promise<IGroup | null> {
     return GroupModel.findOneAndUpdate(
       { _id: groupId, 'members.user': userId },
       { $set: { 'members.$.role': role } },

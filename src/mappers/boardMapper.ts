@@ -10,7 +10,6 @@ export class BoardMapper {
       title: board.title,
       description: board.description || '',
       groupId: board.groupId.toString(),
-      ownerId: board.ownerId.toString(),
     };
   }
 

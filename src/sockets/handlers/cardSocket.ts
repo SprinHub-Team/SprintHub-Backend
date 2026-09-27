@@ -18,7 +18,7 @@ export function registerCardHandlers(io: Server, socket: AuthSocket){
             callback?.({ok: true, card});
 
         }catch(err: any){
-            callback?.({ok: false, error: err.message});
+            callback?.({ok: false, error: err.flatten().fieldErrors});
         }
 
     });

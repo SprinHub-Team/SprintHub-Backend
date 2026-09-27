@@ -90,9 +90,18 @@ export class CommentService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
-        const comment = await this.commentRepository.create({...data, createdBy: userId});
-        
-        return {comment: CommentMapper.toResponse(comment), boardId: cardContext.boardId}
+        try{
+
+            const comment = await this.commentRepository.create({...data, createdBy: userId});
+            
+            return {comment: CommentMapper.toResponse(comment), boardId: cardContext.boardId}
+
+        }catch(error: unknown){
+
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            throw new ValidationError(`No se ha podido crear el comentario ${errorMessage}`);
+
+        }
 
     }
 

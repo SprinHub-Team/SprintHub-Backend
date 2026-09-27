@@ -2,12 +2,11 @@ import { z } from 'zod';
 import { mongoIdSchema } from '../../utils/idValidator';
 import { uploadFileInputRequestSchema } from '../../utils/FileDto';
 
-export const createCardInputSchema = z.object({
+export const  createCardInputSchema = z.object({
   title: z.string().min(2, { error: 'El título debe tener al menos 2 caracteres' }),
   description: z.string().optional().default(''),
   columnId: mongoIdSchema,
   assignedTo: mongoIdSchema.optional(),
-  dueDate: z.date().optional(),
   priority: z.enum(['alta', 'media', 'baja']).optional().default('media'),
 });
 export type CreateCardInput = z.infer<typeof createCardInputSchema>;
@@ -18,7 +17,6 @@ export const updateCardInputSchema = z.object({
   description: z.string().optional(),
   columnId: mongoIdSchema,
   assignedTo: mongoIdSchema.optional(),
-  dueDate: z.date().optional(),
   priority: z.enum(['alta', 'media', 'baja']).optional(),
 });
 

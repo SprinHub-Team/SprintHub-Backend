@@ -20,7 +20,7 @@ export const controllers = {
   cardPb: new CardPBController(s.cardPb),
   projectDd: new ProjectDocumentController(s.projectDd, s.supabase),
   sprint: new SprintController(s.sprint),
-  user: new UserController(s.user, s.cloudinary),
-  group: new GroupController(s.group, s.cloudinary),
+  user: new UserController(s.user),
+  group: new GroupController(s.group),
   report: new ReportController(s.report)
 };

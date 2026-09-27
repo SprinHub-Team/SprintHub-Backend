@@ -5,7 +5,6 @@ const BoardSchema = new Schema(
     title: { type: String, required: true },
     description: { type: String },
     groupId: { type: Schema.Types.ObjectId, ref: 'Group', required: true },
-    ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   { timestamps: true,
     versionKey: false

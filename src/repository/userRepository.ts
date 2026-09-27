@@ -4,8 +4,8 @@ import { IUser, UserModel } from '../models/User';
 export class UserRepository {
 
   async create(data: Pick<IUser, 'document' | 'email' | 'name' | 'passwordHash' | 'profilePicture'>) {
-    const newUser = new UserModel(data); 
-    return await newUser.save();
+    const newUser = await UserModel.create(data); 
+    return newUser.toObject();
   }
 
   async findByEmail(email: string) {

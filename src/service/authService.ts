@@ -16,7 +16,7 @@ export class AuthService {
     private cloudinaryStorageService: CloudinaryStorageService
   ) {}
 
-  async register(data: RegisterInput): Promise<AuthRegisterResponse> {
+  async register(data: RegisterInput): Promise<void> {
 
     const existingUser = await this.userRepository.findByEmail(data.email);
 
@@ -34,15 +34,13 @@ export class AuthService {
         profilePicture = await this.cloudinaryStorageService.upload({...data.profilePicture, path: 'UserImages'});
       }
 
-      const newUser = await this.userRepository.create({
+      await this.userRepository.create({
         name : data.name,
         email: data.email,
         document: data.document,
         passwordHash,
         ...(profilePicture && {profilePicture})
       });
-
-      return AuthMapper.toAuthRegisterResponse(newUser);
 
     }catch(error: unknown){
 

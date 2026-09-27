@@ -50,30 +50,27 @@ export class GroupService {
     let profilePicture = undefined;
 
     if(data.filePicture){
-      
       profilePicture = await this.cloudinaryService.upload({...data.filePicture, path: 'GroupImages' });
-
     }
 
-      const group = await this.groupRepository.create({name: data.name, description: data.description, ...(profilePicture && {profilePicture}), ownerId: userId});
-      const result = await this.groupRepository.addMember(group._id.toString(), userId, 'admin');
+    try{
+      
+      const group = await this.groupRepository.create({name: data.name, description: data.description, ...(profilePicture && {profilePicture}) }, userId);
+      return GroupMapper.toResponse(group);
 
-      if(!result){
+    }catch(error: unknown){
 
-        if(profilePicture){
-          await this.cloudinaryService.delete(profilePicture.path);
-        }
-
-        await this.groupRepository.delete(group._id.toString());
-
-        throw new AppError('No se ha podido crear el grupo.', 400);
+      if(profilePicture){
+        await this.cloudinaryService.delete(profilePicture.path);
       }
 
-      return GroupMapper.toResponse(result);
+      throw new AppError('No se ha podido crear el grupo.', 400);
+    }
 
   }
 
  async updateGroup(data: UpdateGroupInput, userId: string): Promise<GroupResponse> {
+
     const hasPermission = await this.groupRepository.isMemberAndRoleValid(
       data.groupId,
       userId,
@@ -97,13 +94,7 @@ export class GroupService {
       });
     }
 
-    const updatePayload = {
-      name: data.name,
-      description: data.description,
-      ...(profilePicture && { profilePicture })
-    };
-
-    const group = await this.groupRepository.update(data.groupId, updatePayload);
+    const group = await this.groupRepository.update(data.groupId, {name: data.name, description: data.description, ...(profilePicture && { profilePicture }) });
 
     if (!group) {
       
@@ -224,10 +215,7 @@ export class GroupService {
           throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo no existe', 403);
     }
 
-    const groupExists = await this.groupRepository.existById(data.groupId);
-    if (!groupExists) throw new AppError('Grupo no encontrado', 404);
-
-    const isMember = await this.groupRepository.isMember(data.groupId, userId);
+    const isMember = await this.groupRepository.isMember(data.groupId, data.userId);
     if (!isMember) throw new AppError('El usuario no pertenece al grupo', 404);
 
     const group = await this.groupRepository.updateMemberRole(data.groupId, data.userId, data.role);

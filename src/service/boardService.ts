@@ -1,5 +1,5 @@
 import { BoardDetailsResponse, BoardResponse } from '../dtos/response/boardResponseDto';
-import { CreateBoardInput, UpdateBoardInput } from '../dtos/input/boardInputDto';
+import { ApplyBoardTemplateInput, CreateBoardInput, UpdateBoardInput } from '../dtos/input/boardInputDto';
 import SupabaseStorageService from './storage/supabaseStorageService';
 import { ColumnRepository } from '../repository/columnRepository';
 import { BoardRepository} from '../repository/boardRepository';
@@ -76,39 +76,48 @@ export class BoardService{
             throw new AppError('El usuario no tiene permiso para realizar esta acción o el grupo u usuario no existen', 403);
         }
 
-        const newBoard = await this.boardRepository.create({
-            title: data.title,
-            description: data.description,
-            groupId: data.groupId,
-            ownerId: userId,
-        });
+        try{
 
-        const boardIdStr = newBoard._id.toString();
-        
-        let templateColumns = [
-            { name: 'Por hacer', boardId: boardIdStr },
-            { name: 'En proceso', boardId: boardIdStr },
-            { name: 'Hecho', boardId: boardIdStr }
-        ];
+            const newBoard = await this.boardRepository.create({
+                title: data.title,
+                description: data.description,
+                groupId: data.groupId,
+            });
 
-        if (data.templateId) {
-            const template = BOARD_TEMPLATES.find(t => t.id === data.templateId);
-            if (template) {
-                templateColumns = template.columns.map(c => ({
-                    name: c.title,
-                    boardId: boardIdStr
-                }));
+            const boardIdStr = newBoard._id.toString();
+            
+            let templateColumns = [
+                { name: 'Por hacer', boardId: boardIdStr },
+                { name: 'En proceso', boardId: boardIdStr },
+                { name: 'Hecho', boardId: boardIdStr }
+            ];
+
+            if (data.templateId) {
+                const template = BOARD_TEMPLATES.find(t => t.id === data.templateId);
+                if (template) {
+                    templateColumns = template.columns.map(c => ({
+                        name: c.title,
+                        boardId: boardIdStr
+                    }));
+                }
             }
+
+            await Promise.all(templateColumns.map(col => this.columnRepository.create(col)));
+            
+            return BoardMapper.toResponse(newBoard);
+            
+        }catch(error: unknown){
+
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            throw new AppError(`No se ha podido crear el tablero ${errorMessage}`, 500);
+
         }
 
-        await Promise.all(templateColumns.map(col => this.columnRepository.create(col)));
-        
-        return BoardMapper.toResponse(newBoard);
     }
 
-    async update(id: string, data: UpdateBoardInput, userId: string): Promise<BoardResponse>{
+    async update(data: UpdateBoardInput, userId: string): Promise<BoardResponse>{
 
-        const groupId = await this.boardRepository.getGroupIdByBoardId(id);
+        const groupId = await this.boardRepository.getGroupIdByBoardId(data.id);
         if(!groupId){
             throw new AppError('El tablero que se intenta actualizar no existe', 404);
         }
@@ -123,7 +132,7 @@ export class BoardService{
             throw new AppError('El usuario no tiene permiso para realizar esta acción', 403);
         }
 
-        const board = await this.boardRepository.update(id,
+        const board = await this.boardRepository.update(data.id,
             {title: data.title,
             description: data.description
         });
@@ -166,8 +175,9 @@ export class BoardService{
 
     }
 
-    async applyTemplate(boardId: string, templateId: string, userId: string): Promise<void> {
-        const board = await this.boardRepository.getBoardWhitDetails(boardId);
+    async applyTemplate(data: ApplyBoardTemplateInput, userId: string): Promise<void> {
+
+        const board = await this.boardRepository.getBoardWhitDetails(data.boardId);
         if (!board) throw new AppError('Tablero no encontrado', 404);
 
         const groupId = board.groupId._id ? board.groupId._id.toString() : board.groupId.toString();
@@ -178,14 +188,14 @@ export class BoardService{
             ['admin', 'collaborator']
         );
 
-        if (!hasPermission) throw new AppError('Sin permisos', 403);
+        if (!hasPermission) throw new AppError('El usuario no tiene permiso para realizar esta acción', 403);
 
-        const template = BOARD_TEMPLATES.find(t => t.id === templateId);
+        const template = BOARD_TEMPLATES.find(t => t.id === data.templateId);
         if (!template) throw new AppError('Plantilla no encontrada', 404);
 
         const newColumns = template.columns.map(c => ({
             name: c.title,
-            boardId: boardId
+            boardId: data.boardId
         }));
 
         await Promise.all(newColumns.map(col => this.columnRepository.create(col)));

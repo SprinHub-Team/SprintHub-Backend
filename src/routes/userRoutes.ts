@@ -12,6 +12,6 @@ router.use(requireAuth);
 
 router.get('/me', userController.getInfoMe.bind(userController));
 router.put('/:id', uploadToCloudinary.single('file'), userController.updateUser.bind(userController));
-router.delete('/:id', userController.deleteUser.bind(userController));
+router.delete('/', userController.deleteUser.bind(userController));
 
 export default router;

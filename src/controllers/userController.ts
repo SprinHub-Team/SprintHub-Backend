@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UserService } from '../service/userService';
 import { mongoIdSchema } from '../utils/idValidator';
+import { updateUserInputSchema } from '../dtos/input/userInputDto';
 
 export class UserController {
   constructor(
@@ -27,14 +28,18 @@ export class UserController {
 
     try {
 
-      const userId = mongoIdSchema.parse(req.params.id);
+      const userId = req.user.userId;
 
-      const userIdToken = req.user.userId;
+      const file = {
+        fileName: req.file?.originalname,
+        buffer: req.file?.buffer
+      }
+
+      const data = await updateUserInputSchema.parseAsync({...req.body, profilePicture: file});
 
       const updatedUser = await this.userService.updateUser(
-        userId,
-        req.body,
-        userIdToken
+        data,
+        userId
       );
 
       return res.status(200).json(updatedUser);
@@ -47,7 +52,8 @@ export class UserController {
 
   async deleteUser(req: Request, res: Response) {
     try {
-      const userId = mongoIdSchema.parse(req.params.id);
+
+      const userId = req.user.userId;
 
       const deletedUser = await this.userService.deleteUser(userId);
 
