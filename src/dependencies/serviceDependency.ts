@@ -26,8 +26,8 @@ export const services = {
   card: new CardService(r.card, r.column, r.user, r.comment, r.group, supabase),
   comment: new CommentService(r.comment, r.card, r.user, r.group),
   auth: new AuthService(r.user,cloudinary),
-  cardPb: new CardPBService(r.cardPb),
-  projectDd: new ProjectDocumentService(r.projectDd, r.group),
-  sprint: new SprintService(r.sprint, r.cardPb, r.card),
-  report: new ReportService(r.report)
+  cardPb: new CardPBService(r.cardPb, r.group),
+  projectDd: new ProjectDocumentService(r.projectDd, r.group, supabase),
+  sprint: new SprintService(r.sprint, r.cardPb, r.card, r.group, r.column),
+  report: new ReportService(r.report, r.group)
 };

@@ -1,7 +1,7 @@
 import { GroupRepository } from '../repository/groupRepository';
 import { UserRepository } from '../repository/userRepository';
 import AppError from '../errors/AppError';
-import { GroupResponse } from '../dtos/response/groupResponseDto';
+import { GroupDetailsResponse, GroupResponse } from '../dtos/response/groupResponseDto';
 import { GroupMapper } from '../mappers/groupMapper';
 import { AddGroupMemberInput, CreateGroupInput, RemoveGroupMemberInput, UpdateGroupInput, UpdateGroupMemberRoleInput } from '../dtos/input/groupInputDto';
 import CloudinaryStorageService from './storage/cloudinaryStorageService';
@@ -15,18 +15,18 @@ export class GroupService {
     private readonly cloudinaryService: CloudinaryStorageService
   ) {}
 
-    async getGroupsForUser(userId: string): Promise<GroupResponse[]> {
+    async getGroupsForUser(userId: string): Promise<GroupDetailsResponse[]> {
       
     const userExists = await this.userRepository.existById(userId);
     if (!userExists) throw new AppError('Usuario no encontrado', 404);
 
     const groups = await this.groupRepository.findByUserId(userId);
       
-    return groups.map(group => GroupMapper.toResponse(group));
+    return groups.map(group => GroupMapper.toDetailsResponse(group));
 
   }
 
-  async getGroupById(groupId: string, userId: string): Promise<GroupResponse> {
+  async getGroupById(groupId: string, userId: string): Promise<GroupDetailsResponse> {
 
     const hasPermission = await this.groupRepository.isMemberAndRoleValid(
       groupId,
@@ -41,7 +41,7 @@ export class GroupService {
     const group = await this.groupRepository.findById(groupId);
     if (!group) throw new AppError('El grupo buscado no existe', 404);
 
-    return GroupMapper.toResponse(group);
+    return GroupMapper.toDetailsResponse(group);
 
   }
 
@@ -69,7 +69,7 @@ export class GroupService {
 
   }
 
- async updateGroup(data: UpdateGroupInput, userId: string): Promise<GroupResponse> {
+ async updateGroup(data: UpdateGroupInput, userId: string): Promise<GroupDetailsResponse> {
 
     const hasPermission = await this.groupRepository.isMemberAndRoleValid(
       data.groupId,
@@ -111,7 +111,7 @@ export class GroupService {
       });
     }
 
-    return GroupMapper.toResponse(group);
+    return GroupMapper.toDetailsResponse(group);
   }
 
 
@@ -147,7 +147,7 @@ export class GroupService {
 
   }
 
-  async addMember(data: AddGroupMemberInput, userId: string): Promise<GroupResponse> {
+  async addMember(data: AddGroupMemberInput, userId: string): Promise<GroupDetailsResponse> {
 
     const hasPermission = await this.groupRepository.isMemberAndRoleValid(
       data.groupId,
@@ -175,11 +175,11 @@ export class GroupService {
       throw new AppError('No se ha podido añadir el miembro al grupo o el grupo no existe', 404);
     }
 
-    return GroupMapper.toResponse(group);
+    return GroupMapper.toDetailsResponse(group);
 
   }
 
-  async removeMember(data: RemoveGroupMemberInput, userId: string): Promise<GroupResponse> {
+  async removeMember(data: RemoveGroupMemberInput, userId: string): Promise<GroupDetailsResponse> {
 
     const hasPermission = await this.groupRepository.isMemberAndRoleValid(
       data.groupId,
@@ -200,10 +200,10 @@ export class GroupService {
       throw new AppError('No se ha podido remover el miembro del grupo o el grupo no existe', 404);
     }
 
-    return GroupMapper.toResponse(group);
+    return GroupMapper.toDetailsResponse(group);
   }
 
-  async updateMemberRole(data: UpdateGroupMemberRoleInput, userId: string): Promise<GroupResponse> {
+  async updateMemberRole(data: UpdateGroupMemberRoleInput, userId: string): Promise<GroupDetailsResponse> {
 
     const hasPermission = await this.groupRepository.isMemberAndRoleValid(
       data.groupId,
@@ -224,7 +224,7 @@ export class GroupService {
       throw new AppError('No se ha podido actualizar el miembro del grupo o el grupo no existe', 404);
     }
 
-    return GroupMapper.toResponse(group);
+    return GroupMapper.toDetailsResponse(group);
 
   }
 

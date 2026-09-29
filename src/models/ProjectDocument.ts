@@ -4,6 +4,7 @@ const ProjectDocumentSchema = new Schema({
   title: { type: String, required: true },
   fileName: { type: String, required: true },
   fileUrl: { type: String, required: true },
+  filePath: { type: String },
   groupId: { type: Schema.Types.ObjectId, ref: 'Group', required: true },
   uploadedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true, versionKey: false });

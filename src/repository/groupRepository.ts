@@ -1,18 +1,25 @@
+import { GroupWithDetailsResponse, Member } from '../dtos/response/groupResponseDto';
 import { GroupModel, IGroup } from '../models/Group';
 
-export class GroupRepository {
+export class GroupRepository {  
   
-  async findById(id: string): Promise<IGroup | null> {
+  async findById(id: string): Promise<GroupWithDetailsResponse | null> {
     return GroupModel.findById(id)
-      .populate('members.user', 'name email')
-      .lean()
+      .populate <Member> ({
+        path: 'members.user',
+        select: '_id name email' 
+      })
+      .lean<GroupWithDetailsResponse | null>()
       .exec();
   }
 
-  async findByUserId(userId: string): Promise<IGroup[]> {
+  async findByUserId(userId: string): Promise<GroupWithDetailsResponse[]> {
     return GroupModel.find({ 'members.user': userId })
-      .populate('members.user', 'name email')
-      .lean()
+      .populate <Member> ({
+        path: 'members.user',
+        select: '_id name email' 
+      })
+      .lean<GroupWithDetailsResponse[]>()
       .exec();
   }
 
@@ -36,12 +43,16 @@ export class GroupRepository {
   async update(
     id: string,
     data: Partial<Pick<IGroup, 'name' | 'description' | 'profilePicture'>>,
-  ): Promise<IGroup | null> {
+  ): Promise<GroupWithDetailsResponse | null> {
     return GroupModel.findByIdAndUpdate(id, data, {
       returnDocument: 'after',
       runValidators: true,
     })
-      .lean()
+    .populate <Member> ({
+        path: 'members.user',
+        select: '_id name email' 
+      })
+      .lean<GroupWithDetailsResponse | null>()
       .exec();
   }
 
@@ -49,32 +60,45 @@ export class GroupRepository {
     groupId: string,
     userId: string,
     role: 'admin' | 'collaborator',
-  ): Promise<IGroup | null> {
+  ): Promise<GroupWithDetailsResponse | null> {
     return GroupModel.findByIdAndUpdate(
       groupId,
       { $addToSet: { members: { user: userId, role } } },
       { returnDocument: 'after', runValidators: true },
     )
-      .lean()
+      .populate <Member> ({
+        path: 'members.user',
+        select: '_id name email' 
+      })
+      .lean<GroupWithDetailsResponse | null>()
       .exec();
   }
 
-  async removeMember(groupId: string, userId: string): Promise<IGroup | null> {
+  async removeMember(groupId: string, userId: string): Promise<GroupWithDetailsResponse | null> {
     return GroupModel.findByIdAndUpdate(
       groupId,
       { $pull: { members: { user: userId } } },
       { returnDocument: 'after' },
     )
-      .lean()
+      .populate <Member> ({
+        path: 'members.user',
+        select: '_id name email' 
+      })
+      .lean<GroupWithDetailsResponse | null>()
       .exec();
   }
 
-  async updateMemberRole(groupId: string, userId: string, role: 'admin' | 'collaborator'): Promise<IGroup | null> {
+  async updateMemberRole(groupId: string, userId: string, role: 'admin' | 'collaborator'): Promise<GroupWithDetailsResponse | null> {
     return GroupModel.findOneAndUpdate(
       { _id: groupId, 'members.user': userId },
       { $set: { 'members.$.role': role } },
       { returnDocument: 'after', runValidators: true }
-    ).lean().exec();
+    ).populate <Member> ({
+        path: 'members.user',
+        select: '_id name email' 
+      })
+      .lean<GroupWithDetailsResponse | null>()
+      .exec();
   }
 
   async isMember(groupId: string, userId: string): Promise<boolean> {

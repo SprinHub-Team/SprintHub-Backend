@@ -1,47 +1,88 @@
-import { ProjectDocumentRepository } from '../repository/projectDocumentRepository';
 import { GroupRepository } from '../repository/groupRepository';
+import SupabaseStorageService from './storage/supabaseStorageService';
+import { ProjectDocumentResponse } from '../dtos/response/projectDocumentResponseDto';
+import { UploadProjectDocumentInput } from '../dtos/input/projectDocumentInputDto';
+import { ProjectDocumentMapper } from '../mappers/projectDocumentMapper';
 import AppError from '../errors/AppError';
-
+import { ProjectDocumentRepository } from '../repository/projectDocumentRepository';
 export class ProjectDocumentService {
+
   constructor(
     private readonly docRepo: ProjectDocumentRepository,
-    private readonly groupRepo: GroupRepository
+    private readonly groupRepo: GroupRepository,
+    private readonly supabaseStorageService: SupabaseStorageService
   ) {}
 
-  async createDocument(data: { title: string; fileName: string; fileUrl: string; groupId: string; uploadedBy: string }) {
-    const group = await this.groupRepo.findById(data.groupId);
-    if (!group) throw new AppError('Grupo no encontrado', 404);
+  async createDocument(
+    data: UploadProjectDocumentInput,
+    userId: string
+  ): Promise<ProjectDocumentResponse> {
 
-    const member = group.members.find(m => m.user._id?.toString() === data.uploadedBy || m.user.toString() === data.uploadedBy);
-    if (!member || (member.role !== 'admin' && member.role !== 'collaborator')) {
+    const groupExists = await this.groupRepo.existById(data.groupId);
+    if (!groupExists) throw new AppError('Grupo no encontrado', 404);
+    const hasPermission = await this.groupRepo.isMemberAndRoleValid(
+      data.groupId,
+      userId,
+      ['admin', 'collaborator'],
+    );
+    if (!hasPermission) {
       throw new AppError('Solo administradores y colaboradores pueden subir documentos', 403);
     }
-
-    return this.docRepo.create(data);
-  }
-
-  async getDocumentsByGroupId(groupId: string, userId: string) {
-    const group = await this.groupRepo.findById(groupId);
-    if (!group) throw new AppError('Grupo no encontrado', 404);
-
-    const isMember = group.members.some(m => m.user._id?.toString() === userId || m.user.toString() === userId);
-    if (!isMember) throw new AppError('No tienes acceso a este grupo', 403);
-
-    return this.docRepo.findByGroupId(groupId);
-  }
-
-  async deleteDocument(id: string, userId: string) {
-    const doc = await this.docRepo.findById(id);
-    if (!doc) throw new AppError('Documento no encontrado', 404);
-
-    const group = await this.groupRepo.findById(doc.groupId.toString());
-    if (!group) throw new AppError('Grupo no encontrado', 404);
-
-    const member = group.members.find(m => m.user._id?.toString() === userId || m.user.toString() === userId);
-    if (!member || (member.role !== 'admin' && member.role !== 'collaborator')) {
-      throw new AppError('Solo administradores y colaboradores pueden eliminar documentos', 403);
+    const file = await this.supabaseStorageService.upload({ ...data.fileData, path: 'ProjectsDocuments' });
+    try {
+      const doc = await this.docRepo.create({
+        title: data.title,
+        fileName: data.fileData.fileName,
+        fileUrl: file.url,
+        filePath: file.path,
+        groupId: data.groupId,
+        uploadedBy: userId
+      });
+      return ProjectDocumentMapper.toResponse(doc);
+    } catch (error: unknown) {
+      await this.supabaseStorageService.delete(file.path);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      throw new AppError(`No se ha podido registrar el documento: ${errorMessage}`, 500);
     }
 
-    return this.docRepo.delete(id);
   }
+
+  async getDocumentsByGroupId(groupId: string, userId: string): Promise<ProjectDocumentResponse[]> {
+
+    const groupExists = await this.groupRepo.existById(groupId);
+    if (!groupExists) throw new AppError('Grupo no encontrado', 404);
+    const hasPermission = await this.groupRepo.isMemberAndRoleValid(
+      groupId,
+      userId,
+      ['admin', 'collaborator'],
+    );
+    if (!hasPermission) {
+      throw new AppError('No tienes acceso a este grupo', 403);
+    }
+    const docs = await this.docRepo.findByGroupId(groupId);
+    return docs.map(doc => ProjectDocumentMapper.toResponse(doc));
+
+  }
+
+  async deleteDocument(id: string, userId: string): Promise<void> {
+
+    const doc = await this.docRepo.findById(id);
+    if (!doc) throw new AppError('Documento no encontrado', 404);
+    const hasPermission = await this.groupRepo.isMemberAndRoleValid(
+      doc.groupId.toString(),
+      userId,
+      ['admin', 'collaborator'],
+    );
+
+    if (!hasPermission) {
+      throw new AppError('Solo administradores y colaboradores pueden eliminar documentos', 403);
+    }
+    
+    const deleted = await this.docRepo.delete(id);
+    if (!deleted) throw new AppError('Documento no encontrado', 404);
+    if (deleted.filePath) {
+      await this.supabaseStorageService.delete(deleted.filePath);
+    }
+  }
+
 }
