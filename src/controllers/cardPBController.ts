@@ -1,54 +1,64 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { CardPBService } from '../service/cardPbService';
+import {
+  createCardPbInputSchema,
+  getBacklogInputSchema,
+  deleteCardPbInputSchema,
+  exportBacklogCsvInputSchema,
+} from '../dtos/input/cardPbInputDto';
 
 export class CardPBController {
+
   constructor(private cardPBService: CardPBService) {}
 
-  async create(req: Request, res: Response) {
+  async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const newCard = await this.cardPBService.create(req.body);
+      const userId = req.user.userId;
+      const data = createCardPbInputSchema.parse(req.body);
+      const newCard = await this.cardPBService.create(data, userId);
       return res.status(201).json(newCard);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 
-  async getBacklog(req: Request, res: Response) {
+  async getBacklog(req: Request, res: Response, next: NextFunction) {
     try {
-      const { groupId } = req.params;
-      const { search, assignedTo } = req.query;
-      const cards = await this.cardPBService.getBacklog(
-        groupId as string, 
-        search as string, 
-        assignedTo as string
-      );
+      const userId = req.user.userId;
+      const data = getBacklogInputSchema.parse({
+        groupId: req.params.groupId,
+        search: req.query.search,
+        assignedTo: req.query.assignedTo,
+      });
+      const cards = await this.cardPBService.getBacklog(data, userId);
       return res.status(200).json(cards);
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 
-  async delete(req: Request, res: Response) {
+  async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      const deleted = await this.cardPBService.delete(id as string);
+      const userId = req.user.userId;
+      const id = deleteCardPbInputSchema.parse(req.params.id);
+      const deleted = await this.cardPBService.delete(id, userId);
       return res.status(200).json({ message: 'Actividad eliminada', data: deleted });
-    } catch (error: any) {
-      return res.status(400).json({ message: error.message });
+    } catch (error) {
+      next(error);
     }
   }
 
-  async exportCsv(req: Request, res: Response){
+  async exportCsv(req: Request, res: Response, next: NextFunction){
     try{
-      const { groupId } = req.params;
-      const csvData = await this.cardPBService.exportBacklogToCsv(groupId as string);
-
+      const userId = req.user.userId;
+      const groupId = exportBacklogCsvInputSchema.parse(req.params.groupId);
+      const csvData = await this.cardPBService.exportBacklogToCsv(groupId, userId);
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename=backlog_actividades.csv');
       return res.status(200).send(csvData);
-    } catch (error: any){
-      return res.status(400).json({message: error.message});
+    } catch (error){
+      next(error);
     }
   }
-
+  
 }

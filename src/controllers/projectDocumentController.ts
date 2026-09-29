@@ -1,34 +1,31 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProjectDocumentService } from '../service/projectDocumentService';
-import SupabaseStorageService from '../service/storage/supabaseStorageService';
-
+import {
+  uploadProjectDocumentInputSchema,
+  getProjectDocumentsInputSchema,
+  deleteProjectDocumentInputSchema,
+} from '../dtos/input/projectDocumentInputDto';
+import AppError from '../errors/AppError';
 export class ProjectDocumentController {
+
   constructor(
-    private readonly docService: ProjectDocumentService,
-    private readonly supabaseService: SupabaseStorageService
+    private readonly docService: ProjectDocumentService
   ) {}
 
   async upload(req: Request, res: Response, next: NextFunction) {
     try {
-      const { groupId } = req.params;
-      const { title } = req.body;
+      const userId = req.user.userId;
       const file = req.file;
-      const userId = req.user?.userId;
-
-      if (!file) throw new Error('No se subió ningún archivo');
-      if (!userId) throw new Error('No autorizado');
-      if (!title) throw new Error('El título es requerido');
-
-      const fileResult = await this.supabaseService.upload({ buffer: file.buffer, fileName: file.filename, mimeType: file.mimetype, path: 'ProjectsDocuments'});
-
-      const doc = await this.docService.createDocument({
-        title,
-        fileName: file.originalname,
-        fileUrl: fileResult.url,
-        groupId: groupId as string,
-        uploadedBy: userId
+      if (!file) throw new AppError('No se subió ningún archivo', 400);
+      const data = await uploadProjectDocumentInputSchema.parseAsync({
+        title: req.body.title,
+        groupId: req.params.groupId,
+        fileData: {
+          fileName: file.originalname,
+          buffer: file.buffer
+        }
       });
-
+      const doc = await this.docService.createDocument(data, userId);
       res.status(201).json(doc);
     } catch (error) {
       next(error);
@@ -37,12 +34,9 @@ export class ProjectDocumentController {
 
   async getByGroup(req: Request, res: Response, next: NextFunction) {
     try {
-      const { groupId } = req.params;
-      const userId = req.user?.userId;
-
-      if (!userId) throw new Error('No autorizado');
-
-      const docs = await this.docService.getDocumentsByGroupId(groupId as string, userId);
+      const userId = req.user.userId;
+      const { groupId } = getProjectDocumentsInputSchema.parse(req.params);
+      const docs = await this.docService.getDocumentsByGroupId(groupId, userId);
       res.json(docs);
     } catch (error) {
       next(error);
@@ -51,15 +45,13 @@ export class ProjectDocumentController {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      const userId = req.user?.userId;
-
-      if (!userId) throw new Error('No autorizado');
-
-      await this.docService.deleteDocument(id as string, userId);
+      const userId = req.user.userId;
+      const id = deleteProjectDocumentInputSchema.parse(req.params.id);
+      await this.docService.deleteDocument(id, userId);
       res.status(204).send();
     } catch (error) {
       next(error);
     }
   }
+  
 }

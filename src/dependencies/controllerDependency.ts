@@ -18,7 +18,7 @@ export const controllers = {
   comment: new CommentController(s.comment),
   auth: new AuthController(s.auth),
   cardPb: new CardPBController(s.cardPb),
-  projectDd: new ProjectDocumentController(s.projectDd, s.supabase),
+  projectDd: new ProjectDocumentController(s.projectDd),
   sprint: new SprintController(s.sprint),
   user: new UserController(s.user),
   group: new GroupController(s.group),

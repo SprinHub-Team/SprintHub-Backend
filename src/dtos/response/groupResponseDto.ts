@@ -1,9 +1,11 @@
 import { IGroup } from '../../models/Group';
 import { IUser } from '../../models/User';
 
+export type Member = Pick<IUser, '_id' | 'name' | 'email'>;
+
 export type GroupWithDetailsResponse = Omit<IGroup, 'members'> & {
   members: {
-    user: Pick<IUser, '_id' | 'name' | 'email'>;
+    user: Member;
     role: 'admin' | 'collaborator';
   }[];
 };

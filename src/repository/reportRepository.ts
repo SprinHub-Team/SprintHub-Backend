@@ -2,10 +2,10 @@ import { Types } from 'mongoose';
 import { BoardModel } from '../models/Board';
 import { ColumnModel } from '../models/Column';
 import { CardModel } from '../models/Card';
-
+import { GroupPerformanceResponse, UserPerformanceResponse, CompletedCard } from '../dtos/response/reportResponseDto';
 export class ReportRepository {
-  
-  async getGroupPerformance(groupId: string) {
+
+  async getGroupPerformance(groupId: string): Promise<GroupPerformanceResponse> {
     const boards = await BoardModel.find({ groupId: new Types.ObjectId(groupId) }).select('_id').lean().exec();
     const boardIds = boards.map(b => b._id);
     
@@ -15,7 +15,6 @@ export class ReportRepository {
     const finalColumnIds = columns
       .filter((c: any) => c.name.toLowerCase().includes('finalizad') || c.name.toLowerCase().includes('hecho') || c.name.toLowerCase().includes('done'))
       .map((c: any) => c._id);
-
     const cards = await CardModel.find({ columnId: { $in: columnIds } }).lean().exec();
     
     let created = 0;
@@ -46,9 +45,10 @@ export class ReportRepository {
       overdue,
       pending
     };
+
   }
   
-  async getUserPerformance(userId: string, startDate?: string, endDate?: string) {
+  async getUserPerformance(userId: string, startDate?: string, endDate?: string): Promise<UserPerformanceResponse> {
     
     const query: any = { assignedTo: new Types.ObjectId(userId) };
     
@@ -95,9 +95,11 @@ export class ReportRepository {
       overdue,
       pending
     };
+
   }
   
-  async getCompletedActivities(groupId: string) {
+  async getCompletedActivities(groupId: string): Promise<CompletedCard[]> {
+    
     const boards = await BoardModel.find({ groupId: new Types.ObjectId(groupId) }).select('_id').lean().exec();
     const boardIds = boards.map(b => b._id);
     
@@ -110,5 +112,7 @@ export class ReportRepository {
     const completedCards = await CardModel.find({ columnId: { $in: finalColumnIds } }).lean().exec();
     
     return completedCards;
+
   }
+
 }
