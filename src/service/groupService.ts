@@ -82,7 +82,7 @@ export class GroupService {
     }
 
     let profilePicture = undefined;
-    let currentPhotoPath: string | undefined = undefined;
+    let currentPhotoPath: string | undefined | null = undefined;
 
     if (data.filePicture) {
       const currentGroup = await this.groupRepository.findById(data.groupId);

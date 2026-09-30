@@ -6,9 +6,9 @@ const GroupSchema = new Schema(
     name: { type: String, required: true },
     description: { type: String },
     profilePicture: {
-      path:{ type: String, required: true},
-      fileName: { type: String, required:true},
-      url: { type: String, required: true},
+      path:{ type: String },
+      fileName: { type: String },
+      url: { type: String },
     },
     members: [
       {

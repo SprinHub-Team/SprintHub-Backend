@@ -43,12 +43,12 @@ export class ColumnRepository {
               {
                 $lookup: {
                   from: 'comments',
-                  let: { currentCardId: '$id'},
+                  let: { currentCardId: '$_id'},
                   pipeline:[
 
                     {$match: { $expr:{ $eq: ['$cardId', '$$currentCardId']} } },
                     
-                    { $sort: { createAt: -1 } },
+                    { $sort: { createdAt: -1 } },
 
                     {
                       $lookup: {
@@ -64,6 +64,7 @@ export class ColumnRepository {
                     {
                       $project: {
                         _id: 1,
+                        cardId: 1,
                         name: 1,
                         description: 1,
                         createdAt: 1,
