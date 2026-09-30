@@ -1,11 +1,9 @@
 import { IGroup } from '../../models/Group';
-import { IUser } from '../../models/User';
-
-export type Member = Pick<IUser, '_id' | 'name' | 'email'>;
+import { UserReference } from './userResponseDto';
 
 export type GroupWithDetailsResponse = Omit<IGroup, 'members'> & {
   members: {
-    user: Member;
+    user: UserReference;
     role: 'admin' | 'collaborator';
   }[];
 };

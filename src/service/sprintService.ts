@@ -5,7 +5,7 @@ import { ColumnRepository } from '../repository/columnRepository';
 import { GroupRepository } from '../repository/groupRepository';
 import { SprintResponse } from '../dtos/response/sprintResponseDto';
 import { CardPbResponse } from '../dtos/response/cardPbResponseDto';
-import { CardResponse } from '../dtos/response/cardResponseDto';
+import { CardDetailsResponse } from '../dtos/response/cardResponseDto';
 import {
   CreateSprintInput,
   MoveCardToSprintInput,
@@ -89,7 +89,7 @@ export class SprintService {
         return cards.map(card => CardPbMapper.toResponse(card));
     }
 
-    async exportToBoard(data: ExportToBoardInput, userId: string): Promise<CardResponse> {
+    async exportToBoard(data: ExportToBoardInput, userId: string): Promise<CardDetailsResponse> {
         const cardPb = await this.cardPBRepository.findById(data.cardId);
         if (!cardPb) throw new AppError('La actividad no existe en el Sprint/Backlog', 404);
         const hasPermission = await this.groupRepository.isMemberAndRoleValid(
@@ -115,7 +115,7 @@ export class SprintService {
             priority: cardPb.priority,
         });
         await this.cardPBRepository.delete(data.cardId);
-        return CardMapper.toResponse(newCard);
+        return CardMapper.toDetailsResponse(newCard);
     }
-    
+
 }

@@ -1,3 +1,10 @@
+import { IBoard } from "../../models/Board";
+import { ColumnDetailsResponse, ColumnWithDetails } from "./columnResponseDto";
+
+export type BoardWhitDetails = IBoard & {
+columns: ColumnWithDetails[]
+};
+
 export type BoardResponse = {
   id: string;
   title: string;
@@ -5,15 +12,11 @@ export type BoardResponse = {
   groupId: string;
 };
 
-export type BoardDetailsResponse = BoardResponse & {
-  columns: {
-    id: string;
-    cards: {
-      id: string;
-      title: string;
-      priority: 'alta' | 'media' | 'baja';
-      dueDate: string | null;
-      filesCount: number;
-    }[];
-  }[];
-};
+export interface BoardDetailsResponse {
+  id: string;
+  title: string;
+  description: string;
+  groupId: string;
+  columns: ColumnDetailsResponse[]
+}
+

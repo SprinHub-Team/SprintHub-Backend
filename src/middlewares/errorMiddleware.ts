@@ -2,6 +2,7 @@ import {ZodError} from 'zod';
 import{Request,Response,NextFunction} from 'express';
 import AppError from '../errors/AppError';
 import ValidationError from '../errors/ValidationError';
+import DatabaseError from '../errors/DatabaseError';
 
 export const errorMiddleware = (
     error: unknown,
@@ -26,6 +27,13 @@ export const errorMiddleware = (
     }
 
     if(error instanceof ValidationError){
+        res.status(500).json({
+            message: error.message
+        });
+        return;
+    }
+
+    if(error instanceof DatabaseError){
         res.status(500).json({
             message: error.message
         });

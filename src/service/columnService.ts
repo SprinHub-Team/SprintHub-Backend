@@ -3,11 +3,10 @@ import { BoardRepository } from '../repository/boardRepository';
 import { IColumn } from '../models/Column';
 import { CardRepository } from '../repository/cardRepository';
 import { GroupRepository } from '../repository/groupRepository';
-import AppError from '../errors/AppError';
 import ValidationError from '../errors/ValidationError';
 import SupabaseStorageService from './storage/supabaseStorageService';
 import { CreateColumnInput, UpdateColumnInput } from '../dtos/input/columnInputDto';
-import { ColumnDetailsResponse, ColumnResponse } from '../dtos/response/columnResponseDto';
+import { ColumnDetailsResponse } from '../dtos/response/columnResponseDto';
 import { ColumnMapper } from '../mappers/columnMapper';
 
 export class ColumnService{
@@ -20,58 +19,7 @@ export class ColumnService{
         private readonly supabaseStorageService: SupabaseStorageService
     ){}
 
-    async findByBoardId(boardId: string, userId: string): Promise<ColumnResponse[]>{
-
-        const groupId = await this.boardRepository.getGroupIdByBoardId(boardId);
-         if(!groupId){
-            throw new AppError('El tablero relacionado no existe', 404);
-        }
-
-        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          groupId,
-          userId,
-          ['admin', 'collaborator'],
-        );
-
-        if(!hasPermission){
-            throw new AppError('El usuario no tiene permiso para realizar esta acción', 403);
-        }
-
-        const columns = await this.columnRepository.findByBoardId(boardId);
-
-        return columns.map(column => ColumnMapper.toResponse(column));
-
-    }
-
-    async getColumnWhitDetails(columnId: string, userId: string): Promise<ColumnDetailsResponse>{
-
-        const columnContext = await this.columnRepository.getColumnContext(columnId);
-         if(!columnContext){
-            throw new AppError('La columna que se intenta obtener no existe', 404);
-        }
-
-        const hasPermission = await this.groupRepository.isMemberAndRoleValid(
-          columnContext.groupId,
-          userId,
-          ['admin', 'collaborator'],
-        );
-
-        if(!hasPermission){
-            throw new AppError('El usuario no tiene permiso para realizar esta acción', 403);
-        }
-
-        const column = await this.columnRepository.findById(columnId);
-        if(!column){
-        throw new AppError('La columna buscada no existe.', 404);
-        }
-        
-        const cards = await this.cardRepository.findByColumnId(columnId);
-
-        return ColumnMapper.toDetailsResponse({...column, cards});
-
-    }
-
-    async create(data: CreateColumnInput, userId: string): Promise<ColumnResponse>{
+    async create(data: CreateColumnInput, userId: string): Promise<ColumnDetailsResponse>{
 
         const groupId = await this.boardRepository.getGroupIdByBoardId(data.boardId);
          if(!groupId){
@@ -92,7 +40,7 @@ export class ColumnService{
 
         const column = await this.columnRepository.create(data);
 
-        return ColumnMapper.toResponse(column);
+        return ColumnMapper.toDetailsResponse(column);
 
         }catch(error: unknown){
 
@@ -103,7 +51,7 @@ export class ColumnService{
 
     }
 
-    async update(data: UpdateColumnInput, userId: string): Promise<ColumnResponse> {
+    async update(data: UpdateColumnInput, userId: string): Promise<ColumnDetailsResponse> {
 
 
         const columnContext = await this.columnRepository.getColumnContext(data.columnId);
@@ -127,7 +75,7 @@ export class ColumnService{
             throw new ValidationError('La columna no se ha podido actualizar.')
         }
 
-        return ColumnMapper.toResponse(column);
+        return ColumnMapper.toDetailsResponse(column);
 
     }
 

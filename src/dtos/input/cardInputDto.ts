@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { mongoIdSchema } from '../../utils/idValidator';
 import { uploadFileInputRequestSchema } from '../../utils/FileDto';
+import { ICard } from '../../models/Card';
 
 export const  createCardInputSchema = z.object({
   title: z.string().min(2, { error: 'El título debe tener al menos 2 caracteres' }),
@@ -37,3 +38,22 @@ export const removeCardFileInputSchema = z.object({
   filePath: z.string().min(1),
 });
 export type RemoveCardFileInput = z.infer<typeof removeCardFileInputSchema>;
+
+export type CreateCardDatabase = Pick<ICard,
+'title' |
+'description' |
+'dueDate' |
+'priority'> &
+{
+  columnId: string,
+  assignedTo?: string 
+};
+
+export type UpdateCardDatabase = Partial<Pick<ICard,
+'description'|
+'title' | 
+'priority' >> &
+{
+  columnId?: string,
+  assignedTo?: string
+};

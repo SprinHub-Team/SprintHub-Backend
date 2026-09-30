@@ -1,18 +1,13 @@
 import { IColumn } from '../../models/Column';
-import { ICard } from '../../models/Card';
-import { CardResponse } from './cardResponseDto';
+import { CardDetailsResponse, CardWithDetails } from './cardResponseDto';
 
 export type ColumnWithDetails = IColumn & {
-  cards: ICard[];
+  cards: CardWithDetails[];
 };
 
-
-export type ColumnResponse = {
+export type ColumnDetailsResponse = {
   id: string;
   name: string;
   boardId: string;
-};
-
-export type ColumnDetailsResponse = ColumnResponse & {
-  cards: CardResponse[];
+  cards: CardDetailsResponse[];
 };
