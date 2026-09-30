@@ -36,7 +36,7 @@ export class CardRepository{
         {
           $lookup: {
             from: 'comments',
-            let: {idTarjeta: '$id'},
+            let: { currentCardId: '$id'},
             pipeline:[
 
               {$match: { $expr:{ $eq: ['$cardId', '$$currentCardId']} } },

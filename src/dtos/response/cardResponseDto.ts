@@ -19,6 +19,7 @@ export interface CardDetailsResponse {
     id: string;
     name: string;
     email: string;
+    profilePicture: string | undefined;
   } | null;
   comments: CommentDetailsResponse[]; 
 }
