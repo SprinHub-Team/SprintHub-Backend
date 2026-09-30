@@ -1,21 +1,18 @@
 import { IComment } from '../../models/Comment';
-import { IUser } from '../../models/User';
+import { UserReference } from './userResponseDto';
+
 
 export type CommentWithDetails = Omit<IComment, 'createdBy'> & {
-  createdBy: IUser ;
+  createdBy: UserReference
 };
 
-export type CommentResponse = {
+export type CommentDetailsResponse = {
   id: string;
   name: string;
   description: string;
   cardId: string;
-  createdBy: string;
-};
-
-export type CommentDetailsResponse = Omit<CommentResponse, 'createdBy'> & {
   createdAt: string;
-  author: {
+  createdBy: {
     id: string;
     name: string;
     email: string;

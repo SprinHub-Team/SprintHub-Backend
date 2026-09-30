@@ -37,7 +37,7 @@ export class BoardService{
 
     }
 
-    async getBoardWhitDetails(boardId: string, userId: string): Promise<BoardDetailsResponse> {
+    async findBoardById(boardId: string, userId: string): Promise<BoardDetailsResponse> {
 
         const groupId = await this.boardRepository.getGroupIdByBoardId(boardId);
         if(!groupId){
@@ -54,7 +54,7 @@ export class BoardService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción o el grupo no existe');
         }
 
-        const board = await this.boardRepository.getBoardWhitDetails(boardId);
+        const board = await this.boardRepository.findById(boardId);
         if(!board){
             throw new ValidationError('El tablero que se intenta obtener no existe');
         }
@@ -64,7 +64,7 @@ export class BoardService{
 
 
 
-    async create(data: CreateBoardInput, userId: string): Promise<BoardResponse>{
+    async create(data: CreateBoardInput, userId: string): Promise<BoardDetailsResponse>{
 
         const hasPermission  = await this.groupRepository.isMemberAndRoleValid(
           data.groupId,
@@ -104,7 +104,7 @@ export class BoardService{
 
             await Promise.all(templateColumns.map(col => this.columnRepository.create(col)));
             
-            return BoardMapper.toResponse(newBoard);
+            return BoardMapper.toDetailsResponse(newBoard);
             
         }catch(error: unknown){
 
@@ -115,7 +115,7 @@ export class BoardService{
 
     }
 
-    async update(data: UpdateBoardInput, userId: string): Promise<BoardResponse>{
+    async update(data: UpdateBoardInput, userId: string): Promise<BoardDetailsResponse>{
 
         const groupId = await this.boardRepository.getGroupIdByBoardId(data.id);
         if(!groupId){
@@ -141,7 +141,7 @@ export class BoardService{
             throw new AppError('El tablero no se ha podido actualizar.', 500);
         }
 
-        return BoardMapper.toResponse(board);
+        return BoardMapper.toDetailsResponse(board);
     }
 
     async delete(id: string, userId: string): Promise<void>{
@@ -177,7 +177,7 @@ export class BoardService{
 
     async applyTemplate(data: ApplyBoardTemplateInput, userId: string): Promise<void> {
 
-        const board = await this.boardRepository.getBoardWhitDetails(data.boardId);
+        const board = await this.boardRepository.findById(data.boardId);
         if (!board) throw new AppError('Tablero no encontrado', 404);
 
         const groupId = board.groupId._id ? board.groupId._id.toString() : board.groupId.toString();

@@ -1,13 +1,14 @@
-import { GroupWithDetailsResponse, Member } from '../dtos/response/groupResponseDto';
+import { GroupWithDetailsResponse } from '../dtos/response/groupResponseDto';
+import { UserReference } from '../dtos/response/userResponseDto';
 import { GroupModel, IGroup } from '../models/Group';
 
 export class GroupRepository {  
   
   async findById(id: string): Promise<GroupWithDetailsResponse | null> {
     return GroupModel.findById(id)
-      .populate <Member> ({
+      .populate <UserReference> ({
         path: 'members.user',
-        select: '_id name email' 
+        select: '_id name email profilePicture' 
       })
       .lean<GroupWithDetailsResponse | null>()
       .exec();
@@ -15,9 +16,9 @@ export class GroupRepository {
 
   async findByUserId(userId: string): Promise<GroupWithDetailsResponse[]> {
     return GroupModel.find({ 'members.user': userId })
-      .populate <Member> ({
+      .populate <UserReference> ({
         path: 'members.user',
-        select: '_id name email' 
+        select: '_id name email profilePicture' 
       })
       .lean<GroupWithDetailsResponse[]>()
       .exec();
@@ -48,9 +49,9 @@ export class GroupRepository {
       returnDocument: 'after',
       runValidators: true,
     })
-    .populate <Member> ({
+    .populate <UserReference> ({
         path: 'members.user',
-        select: '_id name email' 
+        select: '_id name email profilePicture' 
       })
       .lean<GroupWithDetailsResponse | null>()
       .exec();
@@ -66,9 +67,9 @@ export class GroupRepository {
       { $addToSet: { members: { user: userId, role } } },
       { returnDocument: 'after', runValidators: true },
     )
-      .populate <Member> ({
+      .populate <UserReference> ({
         path: 'members.user',
-        select: '_id name email' 
+        select: '_id name email profilePicture' 
       })
       .lean<GroupWithDetailsResponse | null>()
       .exec();
@@ -80,9 +81,9 @@ export class GroupRepository {
       { $pull: { members: { user: userId } } },
       { returnDocument: 'after' },
     )
-      .populate <Member> ({
+      .populate <UserReference> ({
         path: 'members.user',
-        select: '_id name email' 
+        select: '_id name email profilePicture' 
       })
       .lean<GroupWithDetailsResponse | null>()
       .exec();
@@ -93,9 +94,9 @@ export class GroupRepository {
       { _id: groupId, 'members.user': userId },
       { $set: { 'members.$.role': role } },
       { returnDocument: 'after', runValidators: true }
-    ).populate <Member> ({
+    ).populate <UserReference> ({
         path: 'members.user',
-        select: '_id name email' 
+        select: '_id name email profilePicture' 
       })
       .lean<GroupWithDetailsResponse | null>()
       .exec();

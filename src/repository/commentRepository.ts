@@ -1,70 +1,42 @@
-import { IBoard } from '../models/Board';
-import { ICard } from '../models/Card';
-import { IColumn } from '../models/Column';
+import { Types } from 'mongoose';
+import { CommentWithDetails } from '../dtos/response/commentResponseDto';
+import DatabaseError from '../errors/DatabaseError';
 import { CommentModel, IComment } from '../models/Comment';
+import { UserReference } from '../dtos/response/userResponseDto';
+import { CreateCommentDatabase, UpdateCommentDatabase } from '../dtos/input/commentInputDto';
 
-type CommentWithGroup = {
-  cardId: Omit<ICard, 'columnId'> & {
-    columnId: Omit<IColumn, 'boardId'> & {
-      boardId: Pick<IBoard, 'groupId' | '_id'>
-    }
-  }
-};
 
 export class CommentRepository {
+
   
-  async findByCardId(cardId: string): Promise<IComment[]> {
-    return CommentModel.find({ cardId }).lean().exec();
+
+  async findById(commentId: string): Promise<CommentWithDetails | null> {
+
+    return CommentModel.findById(commentId)
+    .populate <{createdBy : UserReference}> ({
+            path: 'createdBy',
+            select: '_id name email profilePicture' 
+          })
+    .lean()
+    .exec();
+
   }
 
-  async getCommentContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
-    const resultado = await CommentModel.findById(id)
-      .populate<CommentWithGroup>({
-        path: 'cardId',
-        select: 'columnId',
-        populate: {
-          path: 'columnId',
-          select: 'boardId',
-          populate: {
-          path: 'boardId',
-          select: 'groupId _id',
-        }
-        } 
-      }).lean().exec();
+  async create(data: CreateCommentDatabase) : Promise<CommentWithDetails> {
 
-      if(!resultado?.cardId?.columnId?.boardId){
-        return null;
-      }
+    const newComment = (await CommentModel.create(data)).toObject();
 
-      const groupId = resultado?.cardId?.columnId.boardId.groupId.toString();
-      const boardId = resultado?.cardId?.columnId.boardId._id.toString();
+    const commentPopulate = await this.findById(newComment._id.toString());
+    if(!commentPopulate){
+      throw new DatabaseError('No se ha podido crear el commentario.');
+    }
 
-      return {groupId, boardId};
+    return commentPopulate;
+
   }
 
-  async existById(id: string) {
-    const existe = await CommentModel.exists({ _id: id }).exec();
-    return existe !== null;
-  }
+  async update(idActualizar: string, data: UpdateCommentDatabase): Promise<CommentWithDetails | null> {
 
-  async findById(commentId: string): Promise<IComment | null> {
-    return CommentModel.findById(commentId).lean().exec();
-  }
-
-  async create(
-    data: Pick<IComment, 'name' | 'description'> & {
-      cardId: string;
-      createdBy: string;
-    },
-  ): Promise<IComment> {
-    const newComment = await CommentModel.create(data);
-    return newComment.toObject();
-  }
-
-  async update(
-    idActualizar: string,
-    data: Partial<Pick<IComment, 'name' | 'description'>>,
-  ): Promise<IComment | null> {
     const updateComment = await CommentModel.findByIdAndUpdate(
       idActualizar,
       data,
@@ -72,19 +44,51 @@ export class CommentRepository {
         returnDocument: 'after',
         runValidators: true,
       },
-    ).exec();
-    return updateComment ? updateComment.toObject() : null;
+    )
+    .populate <{createdBy : UserReference}> ({
+            path: 'createdBy',
+            select: '_id name email profilePicture' 
+    })
+    .lean()
+    .exec();
+
+    return updateComment ? updateComment : null;
+
   }
 
   async delete(idEliminar: string): Promise<boolean> {
+
     const resultado = await CommentModel.findByIdAndDelete(idEliminar).exec();
     return resultado !== null;
+
   }
 
-  async existManyByIds(commentsIds: string[]): Promise<boolean> {
-    const conteo = await CommentModel.countDocuments({
-      _id: { $in: commentsIds },
-    }).exec();
-    return conteo === commentsIds.length;
+  async getCommentContext(id: string): Promise<{ groupId: string; boardId: string } | null> {
+      
+    const [resultado] = await CommentModel.aggregate([
+
+      { $match: { _id: new Types.ObjectId(id) } },
+
+      { $lookup: { from: 'cards', localField: 'cardId', foreignField: '_id', as: 'card' } },
+      { $unwind: '$card' },
+
+      { $lookup: { from: 'columns', localField: 'card.columnId', foreignField: '_id', as: 'column' } },
+      { $unwind: '$column' },
+
+      { $lookup: { from: 'boards', localField: 'column.boardId', foreignField: '_id', as: 'board' } },
+      { $unwind: '$board' },
+
+      {
+        $project: {
+          _id: 0,
+          boardId: { $toString: '$board._id' },
+          groupId: { $toString: '$board.groupId' }
+        }
+      }
+    ]);
+
+    return resultado || null;
+
   }
+
 }

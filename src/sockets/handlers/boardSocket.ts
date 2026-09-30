@@ -13,7 +13,7 @@ export function registerBoardHandlers(io: Server, socket: AuthSocket){
 
 			const boardIdParsed = mongoIdSchema.parse(boardId);
 
-            const board = await boardService.getBoardWhitDetails(boardIdParsed, socket.data.userId);
+            const board = await boardService.findBoardById(boardIdParsed, socket.data.userId);
 
 			socket.join(`board:${boardIdParsed}`);
 			callback?.({ok: true, board});

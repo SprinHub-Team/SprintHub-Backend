@@ -1,9 +1,12 @@
-import { RemoveCardFileInput } from '../dtos/input/cardInputDto';
 import { UploadFileResultDto } from '../utils/FileDto';
 import { IBoard } from '../models/Board';
 import {CardModel, ICard} from '../models/Card';
 import { IColumn } from '../models/Column';
 import { Types } from 'mongoose';
+import { CardWithDetails } from '../dtos/response/cardResponseDto';
+import mongoose from 'mongoose';
+import DatabaseError from '../errors/DatabaseError';
+import { CreateCardDatabase, RemoveCardFileInput, UpdateCardDatabase } from '../dtos/input/cardInputDto';
 
 type CardWithGroup = {
   columnId: Omit<IColumn, 'boardId'> & {
@@ -12,37 +15,182 @@ type CardWithGroup = {
 
 export class CardRepository{
 
-    async findByColumnId(columnId: string):Promise<ICard[]>{
-        return CardModel.find({ columnId }).lean().exec();
-    }
+  async findById(id: string):Promise<CardWithDetails | null>{
 
-    async findById(id: string):Promise<ICard | null>{
-        return CardModel.findById(id).lean().exec();
-    }
+    try{
 
-    async getCardContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
-        
-        const resultado = await CardModel.findById(id)
-        .populate<CardWithGroup>({
-          path: 'columnId',
-          select: 'boardId',
-          populate:{
-          path: 'boardId',
-          select: 'groupId _id'
+      const [card] = await CardModel.aggregate([
+
+        {$match: {_id: new mongoose.Types.ObjectId(id)}},
+
+        {
+          $lookup:{
+            from: 'users',
+            localField: 'assignedTo',
+            foreignField: '_id',
+            as: 'assignedTo'
           }
-        }).lean().exec();
+        },
+        {$unwind: { path: '$assignedTo', preserveNullAndEmptyArrays: true }},
 
-        if(!resultado?.columnId?.boardId){
-            return null;
+        {
+          $lookup: {
+            from: 'comments',
+            let: {idTarjeta: '$id'},
+            pipeline:[
+
+              {$match: { $expr:{ $eq: ['$cardId', '$$currentCardId']} } },
+
+              { $sort: { createAt: -1 } },
+
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'createdBy',
+                  foreignField: '_id',
+                  as: 'createdBy'
+                }
+              },
+              {$unwind: '$createdBy'},
+
+              {
+                $project:{
+                  _id: 1,
+                  name: 1,
+                  description: 1,
+                  createAt: 1,
+                  updatedAt: 1,
+                  'createdBy._id': 1,
+                  'createdBy.name': 1,
+                  'createdBy.email': 1,
+                  'createdBy.profilePicture': 1
+                }
+              }
+
+            ],
+            as: 'comments'
+          }
+        },
+
+        {
+          $project: {
+            _id: 1,
+            columnId: 1,
+            title: 1,
+            description: 1,
+            dueDate: 1,
+            priority: 1,
+            files: 1,
+            createdAt: 1,
+            updateAt: 1,
+            assignedTo:{
+              _id: '$assignedTo._id',
+              name: '$assignedTo.name',
+              email: '$assignedTo.email',
+              profilePicture: '$assignedTo.profilePicture'
+            },
+            comments: 1
+          }
         }
-    
-        const groupId = resultado?.columnId?.boardId.groupId.toString();
-        const boardId = resultado?.columnId?.boardId._id.toString();
 
-        return {groupId, boardId};
+      ]);
+
+      return card || null;
+    }catch(error: unknown){
+      throw new DatabaseError('Error en la busqueda de la tarjeta');
     }
 
-    async getCardFilesPathByColumnId(columnId: string): Promise<string[]> {
+  }
+
+  
+
+  async create(data: CreateCardDatabase ): Promise<CardWithDetails>{
+
+      const newCard = await CardModel.create(data);
+
+      const cardPopulate = await this.findById(newCard._id.toString());
+      if(!cardPopulate){
+        throw new DatabaseError('Error al crear la tarjeta.');
+      }
+
+      return cardPopulate;
+
+  }
+
+  async update(idActualizar: string, data: UpdateCardDatabase ):Promise<CardWithDetails | null>{
+
+      const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
+          returnDocument: 'after',
+          runValidators: true
+      }).exec();
+      if(!updateCard){
+        throw new DatabaseError('Error al actualizar la tarjeta.');
+      }
+
+      return this.findById(updateCard._id.toString());
+
+  }
+
+  async delete(idEliminar: string): Promise<boolean>{
+      
+      const resultado = await CardModel.findByIdAndDelete(idEliminar).exec();
+      return resultado !== null;
+      
+  }
+
+  async addFile(cardId: string, file: UploadFileResultDto): Promise<CardWithDetails | null> {
+
+    const updateCard =  await CardModel.findByIdAndUpdate(
+        cardId,
+        { $push: { files: file } },
+        { new: true }
+    ).lean().exec();
+    if(!updateCard){
+        throw new DatabaseError('Error al actualizar la tarjeta.');
+      }
+
+    return this.findById(updateCard._id.toString());
+      
+  }
+
+  async removeFile(data: RemoveCardFileInput): Promise<CardWithDetails | null> { 
+
+    const updateCard =  await CardModel.findByIdAndUpdate( 
+        data.cardId, 
+        { $pull: { files: { path: data.filePath } } }, 
+        { new: true } 
+    ).lean().exec();
+    if(!updateCard){
+        throw new DatabaseError('Error al actualizar la tarjeta.');
+      }
+
+    return this.findById(updateCard._id.toString());
+
+  }
+
+  async getCardContext(id: string): Promise<{ groupId: string; boardId: string; } | null> {
+          
+    const resultado = await CardModel.findById(id)
+    .populate<CardWithGroup>({
+      path: 'columnId',
+      select: 'boardId',
+      populate:{
+      path: 'boardId',
+      select: 'groupId _id'
+      }
+    }).lean().exec();
+
+    if(!resultado?.columnId?.boardId){
+        return null;
+    }
+
+    const groupId = resultado?.columnId?.boardId.groupId.toString();
+    const boardId = resultado?.columnId?.boardId._id.toString();
+
+    return {groupId, boardId};
+  }
+
+  async getCardFilesPathByColumnId(columnId: string): Promise<string[]> {
     interface AggregateResult {
       paths: string[];
     }
@@ -84,59 +232,19 @@ export class CardRepository{
     return results[0].paths;
   }
 
-    async create(data: Pick<ICard, 'title' | 'description' | 'dueDate' | 'priority'>&{columnId: string, assignedTo?: string }): Promise<ICard>{
-        const newCard = await CardModel.create(data);
-        return newCard.toObject();
+  async getFilesPathByCardId(cardId: string): Promise<string[]> {
+
+    const card = await CardModel.findById(cardId).select('files -_id').lean().exec();
+
+    if (!card || card.files.length === 0) {
+        return [];
     }
 
-    async update(idActualizar: string, data: Partial<Pick<ICard,'description' |'title' | 'priority' >>&{columnId?: string, assignedTo?: string }):Promise<ICard | null>{
-        const updateCard = await CardModel.findByIdAndUpdate(idActualizar,data,{
-            returnDocument: 'after',
-            runValidators: true
-        }).exec();
-        return updateCard ? updateCard.toObject(): null;
-    }
+    const filesPath = card.files.flatMap(file => file.path !== null ? [file.path] : []);
 
-    async delete(idEliminar: string): Promise<boolean>{
-        
-        const resultado = await CardModel.findByIdAndDelete(idEliminar).exec();
-        return resultado !== null;
-        
-    }
+    return filesPath ;
 
-    async addFile(cardId: string, file: UploadFileResultDto): Promise<ICard | null> {
-
-        return CardModel.findByIdAndUpdate(
-            cardId,
-            { $push: { files: file } },
-            { new: true }
-        ).lean().exec();
-        
-    }
-
-async removeFile(data: RemoveCardFileInput): Promise<ICard | null> { 
-
-    return CardModel.findByIdAndUpdate( 
-        data.cardId, 
-        { $pull: { files: { path: data.filePath } } }, 
-        { new: true } 
-    ).lean().exec(); 
-
-}
-
-async getFilesPathByCardId(cardId: string): Promise<string[]> {
-
-  const card = await CardModel.findById(cardId).select('files -_id').lean().exec();
-
-  if (!card || card.files.length === 0) {
-      return [];
-   }
-
-   const filesPath = card.files.flatMap(file => file.path !== null ? [file.path] : []);
-
-   return filesPath ;
-
-}
+  }
 
 
 }

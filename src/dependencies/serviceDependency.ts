@@ -23,7 +23,7 @@ export const services = {
   group: new GroupService(r.group, r.user, r.board, cloudinary),
   board: new BoardService(r.board, r.group, r.column, supabase),
   column: new ColumnService(r.column, r.board, r.card, r.group, supabase),
-  card: new CardService(r.card, r.column, r.user, r.comment, r.group, supabase),
+  card: new CardService(r.card, r.column, r.user, r.group, supabase),
   comment: new CommentService(r.comment, r.card, r.user, r.group),
   auth: new AuthService(r.user,cloudinary),
   cardPb: new CardPBService(r.cardPb, r.group),
