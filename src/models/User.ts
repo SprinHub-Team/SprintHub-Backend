@@ -8,9 +8,9 @@ const UserSchema = new Schema(
     document: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
     profilePicture: {
-      path:{ type: String, required: true},
-      fileName: { type: String, required:true},
-      url: { type: String, required: true},
+      path:{ type: String },
+      fileName: { type: String },
+      url: { type: String },
     }
   },
   { timestamps: true, versionKey: false }

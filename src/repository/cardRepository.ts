@@ -36,12 +36,12 @@ export class CardRepository{
         {
           $lookup: {
             from: 'comments',
-            let: { currentCardId: '$id'},
+            let: { currentCardId: '$_id'},
             pipeline:[
 
               {$match: { $expr:{ $eq: ['$cardId', '$$currentCardId']} } },
 
-              { $sort: { createAt: -1 } },
+              { $sort: { createdAt: -1 } },
 
               {
                 $lookup: {
@@ -56,9 +56,10 @@ export class CardRepository{
               {
                 $project:{
                   _id: 1,
+                  cardId: 1,
                   name: 1,
                   description: 1,
-                  createAt: 1,
+                  createdAt: 1,
                   updatedAt: 1,
                   'createdBy._id': 1,
                   'createdBy.name': 1,
@@ -82,7 +83,7 @@ export class CardRepository{
             priority: 1,
             files: 1,
             createdAt: 1,
-            updateAt: 1,
+            updatedAt: 1,
             assignedTo:{
               _id: '$assignedTo._id',
               name: '$assignedTo.name',

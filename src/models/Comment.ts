@@ -16,7 +16,7 @@ const CommentSchema = new Schema(
 export type IComment = InferSchemaType<typeof CommentSchema> & {
   _id: mongoose.Types.ObjectId;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
 };
 
 export const CommentModel = mongoose.model<IComment>('Comment', CommentSchema);

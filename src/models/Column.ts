@@ -24,7 +24,7 @@ ColumnSchema.pre('findOneAndDelete', async function(){
 export type IColumn = InferSchemaType<typeof ColumnSchema> & {
   _id: mongoose.Types.ObjectId;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
 };
 
 export const ColumnModel = mongoose.model<IColumn>('Column', ColumnSchema);

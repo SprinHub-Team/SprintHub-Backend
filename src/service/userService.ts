@@ -37,7 +37,7 @@ export class UserService {
     
 
     let profilePicture = undefined;
-    let currentFilePath: string | undefined = undefined;
+    let currentFilePath: string | undefined | null = undefined;
 
     if (data.profilePicture) {
 

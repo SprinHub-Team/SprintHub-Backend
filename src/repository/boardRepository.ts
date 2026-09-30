@@ -60,6 +60,7 @@ export class BoardRepository {
                           {
                             $project: {
                               _id: 1,
+                              cardId: 1,
                               name: 1,
                               description: 1,
                               createdAt: 1,

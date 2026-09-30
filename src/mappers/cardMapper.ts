@@ -10,11 +10,11 @@ export class CardMapper {
       columnId: card.columnId.toString(),
       priority: card.priority,
       dueDate: card.dueDate ? card.dueDate.toISOString() : null,
-      assignedTo: card.assignedTo ? {
+      assignedTo: card.assignedTo && card.assignedTo._id ? {
         id: card.assignedTo._id.toString(),
         name: card.assignedTo.name,
         email: card.assignedTo.email,
-        profilePicture: card.assignedTo.profilePicture?.url
+        profilePicture: card.assignedTo.profilePicture?.url? card.assignedTo.profilePicture?.url : ''
       } : null,
       files: (card.files || []).map(f => ({
         fileName: f.fileName,
