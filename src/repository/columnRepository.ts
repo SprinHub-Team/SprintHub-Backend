@@ -43,10 +43,13 @@ export class ColumnRepository {
               {
                 $lookup: {
                   from: 'comments',
-                  let: { currentCardId: '$_id' },
-                  pipeline: [
-                    { $match: { $expr: { $eq: ['$cardId', '$$currentCardId'] } } },
-                    { $sort: { createdAt: -1 } },
+                  let: { currentCardId: '$id'},
+                  pipeline:[
+
+                    {$match: { $expr:{ $eq: ['$cardId', '$$currentCardId']} } },
+                    
+                    { $sort: { createAt: -1 } },
+
                     {
                       $lookup: {
                         from: 'users',
@@ -67,7 +70,8 @@ export class ColumnRepository {
                         updatedAt: 1,
                         'createdBy._id': 1,
                         'createdBy.name': 1,
-                        'createdBy.email': 1
+                        'createdBy.email': 1,
+                        'createdBy.profilePicture': 1
                       }
                     }
                   ],
@@ -89,7 +93,8 @@ export class ColumnRepository {
                   assignedTo: {
                     _id: '$assignedTo._id',
                     name: '$assignedTo.name',
-                    email: '$assignedTo.email'
+                    email: '$assignedTo.email',
+                    profilePicture: '$assignedTo.profilePicture'
                   },
                   comments: 1
                 }

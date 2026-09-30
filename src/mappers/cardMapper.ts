@@ -14,6 +14,7 @@ export class CardMapper {
         id: card.assignedTo._id.toString(),
         name: card.assignedTo.name,
         email: card.assignedTo.email,
+        profilePicture: card.assignedTo.profilePicture?.url
       } : null,
       files: (card.files || []).map(f => ({
         fileName: f.fileName,
