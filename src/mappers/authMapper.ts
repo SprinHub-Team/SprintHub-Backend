@@ -10,7 +10,7 @@ export class AuthMapper {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
-        profilePicture: user.profilePicture?.path || '',
+        profilePicture: user.profilePicture?.url || '',
       },
     };
   }
