@@ -1,4 +1,5 @@
 import express from 'express';
+import https from 'https';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
@@ -10,6 +11,7 @@ import sprintRoutes from './routes/sprintRoutes';
 import projectDocumentRoutes from './routes/projectDocumentRoutes';
 import templateRoutes from './routes/templateRoutes';
 import { errorMiddleware } from './middlewares/errorMiddleware';
+import env from './config/env';
 
 const app = express();
 
@@ -36,6 +38,15 @@ app.get('/api/health', (req, res) => {
     message: 'Api funcionando.',
   });
 });
+
+setInterval(() => {
+  const url: string = env.serverUrl; 
+  https.get(url, (res) => {
+    console.log(`Self-ping exitoso: Código ${res.statusCode}`);
+  }).on('error', (err: Error) => {
+    console.error('Error en el self-ping:', err.message);
+  });
+}, 14 * 60 * 1000);
 
 app.use(errorMiddleware);
 
