@@ -5,31 +5,14 @@ on:
     branches:
       - main
 
-permissions:
-  deployments: write
-  contents: read
-
 jobs:
   update-deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Start GitHub Deployment
-        uses: bobheadxi/deployments@v1
-        id: deployment
-        with:
-          step: start
-          env: Production
-          ref: ${{ github.sha }}
+    environment:
+      name: Production
+      url: https://sprinthub-backend-mlw8.onrender.com
 
+    steps:
       - name: Trigger Render Deployment
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
-
-      - name: Mark Deployment as Successful
-        uses: bobheadxi/deployments@v1
-        if: always()
-        with:
-          step: finish
-          status: success
-          env: ${{ steps.deployment.outputs.env }}
-          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
