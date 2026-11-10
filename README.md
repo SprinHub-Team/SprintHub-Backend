@@ -831,7 +831,7 @@ curl https://sprinthub-api.onrender.com/api/health
 
 ### Reglas
 
-- ✅ Pasa `npm run check` antes de commitear
+- ✅ Pasa `npm run check` antes de commitear.
 - ✅ Usa TypeScript estricto (no `any` sin justificación)
 - ✅ Valida todos los inputs con Zod
 - ✅ Maneja errores en `errorMiddleware`, no en controllers
