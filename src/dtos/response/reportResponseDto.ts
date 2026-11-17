@@ -12,6 +12,13 @@ export type UserPerformanceResponse = GroupPerformanceResponse & {
   userId: string;
 };
 
+export type GroupStatisticsResponse = {
+  totals: GroupPerformanceResponse;
+  unassigned: GroupPerformanceResponse;
+  users: (GroupPerformanceResponse & { id: string; name: string; profilePicture: string })[];
+  generatedAt: string;
+};
+
 export type CompletedCard = Omit<ICard, 'assignedTo' | 'dueDate' | 'createdAt'> & {
   assignedTo?: Types.ObjectId | string | null;
   dueDate?: Date | string | null;

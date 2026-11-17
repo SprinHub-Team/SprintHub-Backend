@@ -1,3 +1,5 @@
+import { setIo } from './realtime';
+export { getIo } from './realtime';
 import { Server as SocketServer } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import env from '../config/env';
@@ -7,7 +9,7 @@ import { registerColumnsHandlers } from './handlers/columnSocket';
 import { registerCardHandlers } from './handlers/cardSocket';
 import { registerCommentHandlers } from './handlers/commentSocket';
 
-let ioInstance : SocketServer;
+
 
 export function configureSockets(httpServer: HttpServer){
 
@@ -34,14 +36,7 @@ export function configureSockets(httpServer: HttpServer){
 
     });
 
-    ioInstance = io;
+    setIo(io);
     return io;
 
-}
-
-export function getIo(): SocketServer{
-    if(!ioInstance){
-        throw new Error('Socket.io no ha sido inicializado');
-    }
-    return ioInstance;
 }

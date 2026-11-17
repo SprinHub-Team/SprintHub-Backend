@@ -9,6 +9,9 @@ export type CardWithDetails = Omit<ICard, 'assignedTo'> & {
 
 export interface CardDetailsResponse {
   id: string;
+  status: 'pendiente' | 'en_progreso' | 'completada';
+  subtasks: { id: string; title: string; completed: boolean }[];
+  completedAt: string | null;
   title: string;
   description: string;
   columnId: string;

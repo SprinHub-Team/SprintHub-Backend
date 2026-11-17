@@ -7,6 +7,7 @@ const router = Router();
 
 router.use(requireAuth);
 router.get('/groups/:groupId', reportController.getGroupPerformance.bind(reportController));
+router.get('/groups/:groupId/statistics', reportController.getGroupStatistics.bind(reportController));
 router.get('/users/:userId', reportController.getUserPerformance.bind(reportController));
 router.get('/groups/:groupId/completed', reportController.getCompletedActivities.bind(reportController));
 

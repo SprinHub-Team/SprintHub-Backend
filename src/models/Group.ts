@@ -1,5 +1,7 @@
 import mongoose, { Schema, InferSchemaType } from 'mongoose';
 import { BoardModel } from './Board';
+import { CardPBModel } from './CardPB';
+import { SprintModel } from './Sprint';
 
 const GroupSchema = new Schema(
   {
@@ -23,6 +25,7 @@ const GroupSchema = new Schema(
 GroupSchema.pre('findOneAndDelete', async function() {
   
   const groupId = this.getQuery()._id;
+  await Promise.all([CardPBModel.deleteMany({ groupId }), SprintModel.deleteMany({ groupId })]);
   const boards = await BoardModel.find({groupId}).select('_id');
 
   for(const board of boards){

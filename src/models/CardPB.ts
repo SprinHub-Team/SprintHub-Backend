@@ -2,6 +2,11 @@ import mongoose, { Schema, InferSchemaType } from 'mongoose';
 
 export const CardPbSchema = new Schema(
   {
+    rank: { type: Number, default: 0 },
+    issueType: { type: String, enum: ['historia', 'tarea', 'error'], default: 'historia' },
+    epic: { type: String, default: '' },
+    storyPoints: { type: Number, default: 0, min: 0, max: 1000 },
+    status: { type: String, enum: ['pendiente', 'en_progreso', 'completada'], default: 'pendiente' },
     title: { type: String, required: true },
     description: { type: String },
     groupId: { type: Schema.Types.ObjectId, ref: 'Group', required: true },

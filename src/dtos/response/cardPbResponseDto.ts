@@ -7,6 +7,11 @@ export type CardPbWithUser = Omit<ICardPB, 'assignedTo'> & {
 
 export type CardPbResponse = {
   id: string;
+  rank: number;
+  issueType: 'historia' | 'tarea' | 'error';
+  epic: string;
+  storyPoints: number;
+  status: 'pendiente' | 'en_progreso' | 'completada';
   title: string;
   description: string;
   groupId: string;

@@ -1,3 +1,5 @@
+import { CardPBModel } from '../models/CardPB';
+import { CardModel } from '../models/Card';
 import { CardDetailsResponse } from '../dtos/response/cardResponseDto';
 import { CreateCardInput, RemoveCardFileInput, UpdateCardInput } from '../dtos/input/cardInputDto';
 import SupabaseStorageService from './storage/supabaseStorageService';
@@ -38,6 +40,9 @@ export class CardService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
+        if (data.assignedTo && !await this.groupRepository.isMember(columnContext.groupId, data.assignedTo)) {
+            throw new ValidationError('El responsable debe pertenecer al grupo');
+        }
         try{
 
         const card = await this.cardRepository.create({
@@ -45,7 +50,7 @@ export class CardService{
             description: data.description,
             columnId: data.columnId,
             assignedTo: data.assignedTo,
-            priority: data.priority
+            priority: data.priority, dueDate: data.dueDate,
         }); 
 
         return {card: CardMapper.toDetailsResponse(card), boardId: columnContext.boardId}
@@ -76,33 +81,38 @@ export class CardService{
             throw new ValidationError('El usuario no tiene permiso para realizar esta acción');
         }
 
-        if (data.assignedTo) {
-        const asignedToExist = await this.userRepository.existById(data.assignedTo);
-        if(!asignedToExist){
-                throw new ValidationError('El usuario asignado no existe');
+        if (data.assignedTo && !await this.groupRepository.isMember(cardContext.groupId, data.assignedTo)) {
+            throw new ValidationError('El responsable debe pertenecer al grupo');
         }
+        const destination = await this.columnRepository.getColumnContext(data.columnId);
+        if (!destination || destination.boardId !== cardContext.boardId) {
+            throw new ValidationError('La columna destino debe pertenecer al mismo tablero');
         }
-
-        if (data.columnId) {
-            const columnExist = await this.columnRepository.existById(data.columnId);
-            if(!columnExist){
-                throw new ValidationError('La columna relacionada no existe');
-            }
-        }
-        
+        const previous = await this.cardRepository.findById(data.cardId);
+        if (!previous) throw new ValidationError('Tarjeta no encontrada');
+        if (data.subtask) await this.cardRepository.changeSubtask(data.cardId, data.subtask);
         const card = await this.cardRepository.update(data.cardId, {
             description: data.description,
             title: data.title,
             columnId: data.columnId,
             assignedTo: data.assignedTo,
             priority: data.priority,
+            dueDate: data.dueDate,
+            status: data.status,
+            completedAt: data.status === undefined ? undefined : data.status === 'completada' ? previous.completedAt ?? new Date() : null,
         });
 
         if(!card){
             throw new ValidationError('No se ha podido actualizar la card.')
         }
 
-        return{card: CardMapper.toDetailsResponse(card), boardId: cardContext.boardId};
+        const source = await CardModel.findById(data.cardId).select('sourceBacklogId').lean();
+        if (source?.sourceBacklogId) await CardPBModel.findByIdAndUpdate(source.sourceBacklogId, {
+            title: card.title, description: card.description, assignedTo: card.assignedTo?._id ?? null,
+            dueDate: card.dueDate ?? null, priority: card.priority, status: card.status,
+        });
+        const after = CardMapper.toDetailsResponse(card);
+        return{card: after, boardId: cardContext.boardId};
     }
 
     async delete(id: string, userId: string): Promise<string>{

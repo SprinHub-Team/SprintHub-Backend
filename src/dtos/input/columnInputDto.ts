@@ -20,7 +20,8 @@ export type DeleteColumnInput = z.infer<typeof deleteColumnInputSchema>;
 export type CreateColumnDatabase = Pick<IColumn, 
 'name'>&
 {
-  boardId: string
+  boardId: string;
+  templateOrder?: number;
 };
 
 export type UpdateColumnDatabase = {name: string | undefined};

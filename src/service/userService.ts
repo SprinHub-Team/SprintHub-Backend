@@ -102,7 +102,7 @@ export class UserService {
 
     await this.cardRepository.unassignUserFromAllCards(currentUser._id.toString());
 
-    return deletedUser;
+    return UserMapper.toResponse(currentUser);
     
   }
 

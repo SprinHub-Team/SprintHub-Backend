@@ -6,6 +6,8 @@ const sprintController = controllers.sprint;
 const router = Router();
 
 router.use(requireAuth);
+router.delete('/:sprintId', sprintController.delete.bind(sprintController));
+router.patch('/:sprintId/status', sprintController.transition.bind(sprintController));
 router.post('/', sprintController.create.bind(sprintController));
 router.get('/group/:groupId',sprintController.getByGroup.bind(sprintController));
 router.put('/cards/:cardId/move', sprintController.moveCard.bind(sprintController));

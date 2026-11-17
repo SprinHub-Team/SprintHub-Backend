@@ -2,117 +2,90 @@ import { Types } from 'mongoose';
 import { BoardModel } from '../models/Board';
 import { ColumnModel } from '../models/Column';
 import { CardModel } from '../models/Card';
-import { GroupPerformanceResponse, UserPerformanceResponse, CompletedCard } from '../dtos/response/reportResponseDto';
+import type { CompletedCard, GroupPerformanceResponse, UserPerformanceResponse } from '../dtos/response/reportResponseDto';
+
+type ReportCard = Pick<CompletedCard, 'columnId' | 'assignedTo' | 'dueDate'>;
+
+const emptyPerformance = (): GroupPerformanceResponse => ({ created: 0, completed: 0, overdue: 0, pending: 0 });
+
+function finalColumns(columns: { _id: Types.ObjectId; name: string }[]) {
+  return columns.filter(column => {
+    const name = column.name.trim().toLowerCase();
+    return /finalizad|hecho|done/.test(name) || name === 'listo' || name === 'resuelto';
+  }).map(column => column._id);
+}
+
+function addCard(counts: GroupPerformanceResponse, completed: boolean, overdue: boolean) {
+  counts.created++;
+  if (completed) {
+    counts.completed++;
+  } else {
+    counts.pending++;
+    if (overdue) counts.overdue++;
+  }
+}
+
+function summarizeCards(cards: ReportCard[], finishedColumns: Types.ObjectId[]) {
+  const finished = new Set(finishedColumns.map(id => id.toString()));
+  const now = new Date();
+  const totals = emptyPerformance();
+  const unassigned = emptyPerformance();
+  const byUser = new Map<string, GroupPerformanceResponse>();
+
+  for (const card of cards) {
+    const completed = finished.has(card.columnId.toString());
+    const overdue = Boolean(card.dueDate && new Date(card.dueDate) < now);
+    addCard(totals, completed, overdue);
+
+    if (!card.assignedTo) {
+      addCard(unassigned, completed, overdue);
+      continue;
+    }
+    const userId = card.assignedTo.toString();
+    const counts = byUser.get(userId) ?? emptyPerformance();
+    addCard(counts, completed, overdue);
+    byUser.set(userId, counts);
+  }
+
+  return { totals, unassigned, byUser };
+}
+
 export class ReportRepository {
+  private async getGroupColumns(groupId: string) {
+    const boards = await BoardModel.find({ groupId }).select('_id').lean().exec();
+    return ColumnModel.find({ boardId: { $in: boards.map(board => board._id) } })
+      .select('_id name').lean().exec();
+  }
 
   async getGroupPerformance(groupId: string): Promise<GroupPerformanceResponse> {
-    const boards = await BoardModel.find({ groupId: new Types.ObjectId(groupId) }).select('_id').lean().exec();
-    const boardIds = boards.map(b => b._id);
-    
-    const columns = await ColumnModel.find({ boardId: { $in: boardIds } }).select('_id name').lean().exec();
-    const columnIds = columns.map(c => c._id);
-    
-    const finalColumnIds = columns
-      .filter((c: any) => c.name.toLowerCase().includes('finalizad') || c.name.toLowerCase().includes('hecho') || c.name.toLowerCase().includes('done'))
-      .map((c: any) => c._id);
-    const cards = await CardModel.find({ columnId: { $in: columnIds } }).lean().exec();
-    
-    let created = 0;
-    let completed = 0;
-    let overdue = 0;
-    let pending = 0;
-    
-    const now = new Date();
-    
-    for (const card of cards) {
-      created++;
-      
-      const isCompleted = finalColumnIds.some(fid => fid.equals(card.columnId));
-      
-      if (isCompleted) {
-        completed++;
-      } else {
-        pending++;
-        if (card.dueDate && new Date(card.dueDate) < now) {
-          overdue++;
-        }
-      }
-    }
-    
-    return {
-      created,
-      completed,
-      overdue,
-      pending
-    };
-
+    return (await this.getGroupBreakdown(groupId)).totals;
   }
-  
+
+  async getGroupBreakdown(groupId: string) {
+    const columns = await this.getGroupColumns(groupId);
+    const cards = await CardModel.find({ columnId: { $in: columns.map(column => column._id) } })
+      .select('columnId assignedTo dueDate').lean().exec();
+    return summarizeCards(cards, finalColumns(columns));
+  }
+
   async getUserPerformance(userId: string, startDate?: string, endDate?: string): Promise<UserPerformanceResponse> {
-    
-    const query: any = { assignedTo: new Types.ObjectId(userId) };
-    
-    if (startDate || endDate) {
-      query.createdAt = {};
-      if (startDate) query.createdAt.$gte = new Date(startDate);
-      if (endDate) query.createdAt.$lte = new Date(endDate);
-    }
-    
-    const cards = await CardModel.find(query).lean().exec();
-    const columnIds = [...new Set(cards.map(c => c.columnId))];
+    const cards = await CardModel.find({
+      assignedTo: new Types.ObjectId(userId),
+      ...(startDate || endDate ? {
+        createdAt: {
+          ...(startDate ? { $gte: new Date(startDate) } : {}),
+          ...(endDate ? { $lte: new Date(endDate) } : {}),
+        },
+      } : {}),
+    }).select('columnId assignedTo dueDate').lean().exec();
+    const columnIds = [...new Set(cards.map(card => card.columnId.toString()))];
     const columns = await ColumnModel.find({ _id: { $in: columnIds } }).select('_id name').lean().exec();
-    
-    const finalColumnIds = columns
-      .filter((c: any) => c.name.toLowerCase().includes('finalizad') || c.name.toLowerCase().includes('hecho') || c.name.toLowerCase().includes('done'))
-      .map((c: any) => c._id);
-      
-    let created = 0;
-    let completed = 0;
-    let overdue = 0;
-    let pending = 0;
-    
-    const now = new Date();
-    
-    for (const card of cards) {
-      created++;
-      
-      const isCompleted = finalColumnIds.some(fid => fid.equals(card.columnId));
-      
-      if (isCompleted) {
-        completed++;
-      } else {
-        pending++;
-        if (card.dueDate && new Date(card.dueDate) < now) {
-          overdue++;
-        }
-      }
-    }
-    
-    return {
-      userId,
-      created,
-      completed,
-      overdue,
-      pending
-    };
-
+    return { userId, ...summarizeCards(cards, finalColumns(columns)).totals };
   }
-  
+
   async getCompletedActivities(groupId: string): Promise<CompletedCard[]> {
-    
-    const boards = await BoardModel.find({ groupId: new Types.ObjectId(groupId) }).select('_id').lean().exec();
-    const boardIds = boards.map(b => b._id);
-    
-    const columns = await ColumnModel.find({ boardId: { $in: boardIds } }).select('_id name').lean().exec();
-    
-    const finalColumnIds = columns
-      .filter((c: any) => c.name.toLowerCase().includes('finalizad') || c.name.toLowerCase().includes('hecho') || c.name.toLowerCase().includes('done'))
-      .map((c: any) => c._id);
-      
-    const completedCards = await CardModel.find({ columnId: { $in: finalColumnIds } }).lean().exec();
-    
-    return completedCards;
-
+    const columns = await this.getGroupColumns(groupId);
+    return CardModel.find({ columnId: { $in: finalColumns(columns) } })
+      .sort({ updatedAt: -1, _id: -1 }).lean().exec();
   }
-
 }

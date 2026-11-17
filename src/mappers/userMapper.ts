@@ -1,5 +1,6 @@
 import { UserResponse } from '../dtos/response/userResponseDto';
 import { IUser } from '../models/User';
+import { profilePictureUrl } from '../utils/profilePicture';
 
 export class UserMapper {
 
@@ -8,8 +9,8 @@ export class UserMapper {
       id: user._id.toString(),
       name: user.name,
       email: user.email,
-      document: user.document,
-      profilePicture: user.profilePicture?.url || '',
+      document: user.document ?? '',
+      profilePicture: profilePictureUrl(user.profilePicture),
     };
   }
 }

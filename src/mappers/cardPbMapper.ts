@@ -6,6 +6,7 @@ export class CardPbMapper {
     return {
       id: card._id.toString(),
       title: card.title,
+      rank: card.rank ?? 0, issueType: card.issueType ?? 'historia', epic: card.epic ?? '', storyPoints: card.storyPoints ?? 0, status: card.status ?? 'pendiente',
       description: card.description || '',
       groupId: card.groupId.toString(),
       sprintId: card.sprintId ? card.sprintId.toString() : null,

@@ -23,6 +23,7 @@ export class BoardRepository {
             localField: '_id',
             foreignField: 'boardId',
             pipeline: [
+              { $sort: { createdAt: 1, _id: 1 } },
               {
 
                 $lookup: {
@@ -83,6 +84,7 @@ export class BoardRepository {
                         title: 1,
                         description: 1,
                         dueDate: 1,
+            status: 1, completedAt: 1, subtasks: 1,
                         priority: 1,
                         files: 1,
                         createdAt: 1,
@@ -106,6 +108,7 @@ export class BoardRepository {
                   _id: 1,
                   name: 1,
                   boardId: 1,
+                  templateOrder: 1,
                   createdAt: 1,
                   updatedAt: 1,
                   cards: 1

@@ -5,7 +5,7 @@ import { ColumnRepository } from '../repository/columnRepository';
 import { BoardRepository} from '../repository/boardRepository';
 import { GroupRepository } from '../repository/groupRepository';
 import ValidationError from '../errors/ValidationError';
-import { BOARD_TEMPLATES } from '../utils/templates';
+import { BOARD_TEMPLATES, DEFAULT_BOARD_COLUMNS } from '../utils/templates';
 import { BoardMapper } from '../mappers/boardMapper';
 import AppError from '../errors/AppError';
 
@@ -86,25 +86,15 @@ export class BoardService{
 
             const boardIdStr = newBoard._id.toString();
             
-            let templateColumns = [
-                { name: 'Por hacer', boardId: boardIdStr },
-                { name: 'En proceso', boardId: boardIdStr },
-                { name: 'Hecho', boardId: boardIdStr }
-            ];
-
-            if (data.templateId) {
-                const template = BOARD_TEMPLATES.find(t => t.id === data.templateId);
-                if (template) {
-                    templateColumns = template.columns.map(c => ({
-                        name: c.title,
-                        boardId: boardIdStr
-                    }));
-                }
-            }
-
-            await Promise.all(templateColumns.map(col => this.columnRepository.create(col)));
+            const template = BOARD_TEMPLATES.find(t => t.id === data.templateId);
+            const templateColumns = template?.columns ?? DEFAULT_BOARD_COLUMNS.map((title, index) => ({ title, order: index + 1 }));
+            const columns = await Promise.all(templateColumns.map(column => this.columnRepository.create({
+                name: column.title,
+                boardId: boardIdStr,
+                templateOrder: column.order,
+            })));
             
-            return BoardMapper.toDetailsResponse(newBoard);
+            return BoardMapper.toDetailsResponse({ ...newBoard, columns });
             
         }catch(error: unknown){
 
@@ -193,12 +183,9 @@ export class BoardService{
         const template = BOARD_TEMPLATES.find(t => t.id === data.templateId);
         if (!template) throw new AppError('Plantilla no encontrada', 404);
 
-        const newColumns = template.columns.map(c => ({
-            name: c.title,
-            boardId: data.boardId
-        }));
-
-        await Promise.all(newColumns.map(col => this.columnRepository.create(col)));
+        for (const column of [...template.columns].sort((a, b) => a.order - b.order)) {
+            await this.columnRepository.create({ name: column.title, boardId: data.boardId });
+        }
     }
     
 }

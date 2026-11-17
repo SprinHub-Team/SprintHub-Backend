@@ -19,6 +19,9 @@ const SprintSchema = new Schema(
   }
 );
 
+// Enforce the single-active-sprint rule even when requests arrive concurrently.
+SprintSchema.index({ groupId: 1 }, { unique: true, partialFilterExpression: { status: 'activo' } });
+
 export type ISprint = InferSchemaType<typeof SprintSchema> & {
   _id: moongose.Types.ObjectId;
   createdAt: Date;

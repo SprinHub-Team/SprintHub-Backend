@@ -1,11 +1,15 @@
 import { CardDetailsResponse, CardWithDetails } from "../dtos/response/cardResponseDto";
 import { CommentMapper } from "./commentMapper";
+import { profilePictureUrl } from '../utils/profilePicture';
 export class CardMapper {
 
   public static toDetailsResponse(card: CardWithDetails): CardDetailsResponse {
     return {
       id: card._id.toString(),
       title: card.title,
+      status: card.status ?? 'pendiente',
+      completedAt: card.completedAt?.toISOString() ?? null,
+      subtasks: (card.subtasks ?? []).map(t => ({ id: t.id, title: t.title, completed: t.completed })),
       description: card.description || '',
       columnId: card.columnId.toString(),
       priority: card.priority,
@@ -14,7 +18,7 @@ export class CardMapper {
         id: card.assignedTo._id.toString(),
         name: card.assignedTo.name,
         email: card.assignedTo.email,
-        profilePicture: card.assignedTo.profilePicture?.url? card.assignedTo.profilePicture?.url : ''
+        profilePicture: profilePictureUrl(card.assignedTo.profilePicture),
       } : null,
       files: (card.files || []).map(f => ({
         fileName: f.fileName,

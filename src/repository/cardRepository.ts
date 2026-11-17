@@ -14,6 +14,16 @@ type CardWithGroup = {
 };
 
 export class CardRepository{
+  async changeSubtask(cardId: string, change: NonNullable<import('../dtos/input/cardInputDto').UpdateCardInput['subtask']>) {
+    if (change.action === 'add') {
+      await CardModel.updateOne({ _id: cardId, 'subtasks.id': { $ne: change.id } }, { $push: { subtasks: { id: change.id, title: change.title, completed: false } } }, { runValidators: true });
+    } else if (change.action === 'toggle') {
+      await CardModel.updateOne({ _id: cardId, 'subtasks.id': change.id }, { $set: { 'subtasks.$.completed': change.completed } });
+    } else {
+      await CardModel.updateOne({ _id: cardId }, { $pull: { subtasks: { id: change.id } } });
+    }
+  }
+
 
   async findById(id: string):Promise<CardWithDetails | null>{
 
@@ -80,6 +90,7 @@ export class CardRepository{
             title: 1,
             description: 1,
             dueDate: 1,
+            status: 1, completedAt: 1, subtasks: 1,
             priority: 1,
             files: 1,
             createdAt: 1,

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+import { mongoIdSchema } from '../utils/idValidator';
 import { Request, Response, NextFunction } from 'express';
 import { SprintService } from '../service/sprintService';
 import {
@@ -11,6 +13,19 @@ export class SprintController{
 
     constructor(private sprintService: SprintService){}
 
+    async delete(req: Request, res: Response, next: NextFunction) {
+        try {
+            await this.sprintService.deleteSprint(mongoIdSchema.parse(req.params.sprintId), req.user.userId);
+            res.status(204).end();
+        } catch (error) { next(error); }
+    }
+
+    async transition(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = z.object({ status: z.enum(['activo', 'completado']), columnId: mongoIdSchema.optional() }).parse(req.body);
+            res.json(await this.sprintService.transition(mongoIdSchema.parse(req.params.sprintId), data.status, req.user.userId, data.columnId));
+        } catch (error) { next(error); }
+    }
     async create(req: Request, res: Response, next: NextFunction){
         try{
             const userId = req.user.userId;

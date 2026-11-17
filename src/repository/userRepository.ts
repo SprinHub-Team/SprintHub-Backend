@@ -17,11 +17,12 @@ export class UserRepository {
   }
 
   async findById(id: string) {
-    return await UserModel.findById(id).select('-password').lean().exec();
+    return await UserModel.findById(id).select('-password -passwordHash').lean().exec();
   }
 
   async update(id: string, data: Partial<Pick<IUser, 'document' | 'email' | 'name' | 'passwordHash' | 'profilePicture'>>) {
-    return await UserModel.findByIdAndUpdate(id, data, { new: true }).select('-password -passwordHash');
+    return await UserModel.findByIdAndUpdate(id, data, { returnDocument: 'after' })
+      .select('-password -passwordHash').lean().exec();
   }
 
   async delete(id: string) {

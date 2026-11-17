@@ -6,6 +6,9 @@ const cardPBController = controllers.cardPb;
 const router = Router();
 
 router.use(requireAuth);
+router.get('/group/:groupId/planning', cardPBController.getPlanning.bind(cardPBController));
+router.post('/reorder', cardPBController.reorder.bind(cardPBController));
+router.patch('/:id', cardPBController.update.bind(cardPBController));
 router.post('/', cardPBController.create.bind(cardPBController));
 router.get('/group/:groupId',cardPBController.getBacklog.bind(cardPBController));
 router.delete('/:id', cardPBController.delete.bind(cardPBController));

@@ -1,5 +1,6 @@
 import { AuthLoginResponse, AuthRegisterResponse } from "../dtos/response/authResponseDto";
 import { IUser } from "../models/User";
+import { profilePictureUrl } from '../utils/profilePicture';
 
 export class AuthMapper {
 
@@ -10,7 +11,7 @@ export class AuthMapper {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
-        profilePicture: user.profilePicture?.url || '',
+        profilePicture: profilePictureUrl(user.profilePicture),
       },
     };
   }

@@ -1,7 +1,8 @@
+import { mongoIdSchema } from '../utils/idValidator';
 import { Request, Response, NextFunction } from 'express';
 import { CardPBService } from '../service/cardPbService';
 import {
-  createCardPbInputSchema,
+  createCardPbInputSchema, updateCardPbInputSchema, reorderBacklogInputSchema,
   getBacklogInputSchema,
   deleteCardPbInputSchema,
   exportBacklogCsvInputSchema,
@@ -11,6 +12,26 @@ export class CardPBController {
 
   constructor(private cardPBService: CardPBService) {}
 
+  async getPlanning(req: Request, res: Response, next: NextFunction) {
+    try {
+      const groupId = mongoIdSchema.parse(req.params.groupId);
+      res.json(await this.cardPBService.getPlanning(groupId, req.user.userId));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async reorder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = reorderBacklogInputSchema.parse(req.body);
+      await this.cardPBService.reorder(data.groupId, data.sprintId, data.ids, req.user.userId);
+      res.status(204).end();
+    } catch (error) { next(error); }
+  }
+  async update(req: Request, res: Response, next: NextFunction) {
+    try { res.json(await this.cardPBService.update(deleteCardPbInputSchema.parse(req.params.id), updateCardPbInputSchema.parse(req.body), req.user.userId)); }
+    catch (error) { next(error); }
+  }
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user.userId;

@@ -10,6 +10,16 @@ export class ReportController {
 
   constructor(private reportService: ReportService) {}
 
+  async getGroupStatistics(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { groupId } = getGroupPerformanceInputSchema.parse(req.params);
+      const data = await this.reportService.getGroupStatistics(groupId, req.user.userId);
+      return res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getGroupPerformance(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user.userId;

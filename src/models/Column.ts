@@ -4,6 +4,7 @@ import { CardModel } from './Card';
 const ColumnSchema = new Schema(
   {
     name:{ type: String, required:true},
+    templateOrder: { type: Number },
     boardId:{type: Schema.Types.ObjectId, ref: 'Board', required: true}
   },
   {timestamps: true,

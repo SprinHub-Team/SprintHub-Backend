@@ -9,6 +9,10 @@ const CardSchema = new Schema(
     assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
     dueDate: { type: Date },
     priority: { type: String, enum: ['alta', 'media', 'baja'], default: 'media' },
+    status: { type: String, enum: ['pendiente', 'en_progreso', 'completada'], default: 'pendiente' },
+    completedAt: { type: Date, default: null },
+    subtasks: [{ id: { type: String, required: true }, title: { type: String, required: true }, completed: { type: Boolean, default: false }, _id: false }],
+    sourceBacklogId: { type: Schema.Types.ObjectId, ref: 'CardPB' },
     files: [{
       path:{ type: String, required: true},
       fileName: { type: String, required:true},
@@ -19,6 +23,8 @@ const CardSchema = new Schema(
     versionKey: false
   }
 );
+
+CardSchema.index({ sourceBacklogId: 1 }, { unique: true, sparse: true });
 
 CardSchema.pre('findOneAndDelete', async function(){
 

@@ -1,4 +1,4 @@
-import { string } from 'zod';
+import type { ClientSession } from 'mongoose';
 import { SprintModel, ISprint } from '../models/Sprint';
 
 export class SprintRepository {
@@ -14,6 +14,10 @@ export class SprintRepository {
 
     async findById(id: string): Promise<ISprint | null > {
         return await SprintModel.findById(id);
+    }
+
+    async delete(id: string, groupId: string, session: ClientSession): Promise<ISprint | null> {
+        return SprintModel.findOneAndDelete({ _id: id, groupId }, { session });
     }
     
     async update(id: string, updateData: Partial<ISprint>): Promise<ISprint | null>{

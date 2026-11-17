@@ -7,7 +7,7 @@ export const createSprintInputSchema = z
     goal: z.string().optional().default(''),
     startDate: z.coerce.date({ error: 'La fecha de inicio es obligatoria y debe ser válida' }),
     endDate: z.coerce.date({ error: 'La fecha de fin es obligatoria y debe ser válida' }),
-    status: z.enum(['planificado', 'activo', 'completado']).optional().default('planificado'),
+    status: z.literal('planificado').optional().default('planificado'),
     groupId: mongoIdSchema,
   })
   .refine(d => d.startDate.getTime() < d.endDate.getTime(), {

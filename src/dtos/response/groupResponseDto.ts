@@ -20,6 +20,7 @@ export type GroupDetailsResponse = GroupResponse & {
     id: string;
     name: string;
     email: string;
+    profilePicture: string;
     role: 'admin' | 'collaborator';
   }[];
 };
